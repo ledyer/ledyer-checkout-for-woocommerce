@@ -5,11 +5,7 @@
 
   #lco-order-review,
   #lco-iframe {
-    width: 50%;
-
-    @media (max-width: 921px) {
-      width: 100%;
-    }
+    width: 100%;
   }
 
   .woocommerce-billing-fields,
@@ -20,5 +16,6 @@
 
   #lco-iframe {
     display: flex;
+    justify-content: center;
   }
 }
