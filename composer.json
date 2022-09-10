@@ -1,0 +1,15 @@
+{
+    "version": "1.0.0",
+    "name": "maksimer/ledyer-checkout-for-woocommerce",
+    "type": "wordpress-plugin",
+    "license": "GPLv2",
+    "authors": [
+        {
+            "name": "Maksimer",
+            "email": "post@maksimer.no"
+        }
+    ],
+    "scripts": {
+        "build-assets": "npm ci && npm run build"
+    }
+}
