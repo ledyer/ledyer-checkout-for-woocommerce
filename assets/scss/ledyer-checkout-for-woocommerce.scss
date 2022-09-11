@@ -1,24 +1,21 @@
 #lco-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 
-	display: flex;
-	flex-wrap: wrap;
+  #lco-order-review,
+  #lco-iframe {
+    width: 100%;
+  }
 
-	#lco-order-review,
-	#lco-iframe {
-		width: 50%;
+  .woocommerce-billing-fields,
+  .woocommerce-shipping-fields,
+  .woocommerce-terms-and-conditions-wrapper {
+    display: none;
+  }
 
-		@media (max-width: 921px) {
-			width: 100%;
-		}
-	}
-
-	.woocommerce-billing-fields,
-	.woocommerce-shipping-fields,
-	.woocommerce-terms-and-conditions-wrapper {
-		display: none;
-	}
-
-	#lco-iframe {
-		display: flex;
-	}
+  #lco-iframe {
+    display: flex;
+    justify-content: center;
+  }
 }
