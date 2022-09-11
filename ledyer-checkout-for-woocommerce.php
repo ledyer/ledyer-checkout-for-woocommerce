@@ -5,7 +5,7 @@
  * Description: Ledyer Checkout payment gateway for WooCommerce.
  * Author: Maksimer
  * Author URI: https://www.maksimer.com/
- * Version: 1.0.0
+ * Version: 1.0.1
  * Text Domain: ledyer-checkout-for-woocommerce
  * Domain Path: /languages
  *
