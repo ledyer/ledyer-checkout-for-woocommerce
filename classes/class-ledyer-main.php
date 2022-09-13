@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Class file for Ledyer_Checkout_For_WooCommerce class.
  *
@@ -10,14 +11,15 @@ namespace Ledyer;
 
 use Ledyer\Admin\Meta_Box;
 
-\defined( 'ABSPATH' ) || die();
+\defined('ABSPATH') || die();
 
 /**
  * Ledyer_Checkout_For_WooCommerce class.
  *
  * Init class
  */
-class Ledyer_Checkout_For_WooCommerce {
+class Ledyer_Checkout_For_WooCommerce
+{
 	use Singleton;
 
 	/**
@@ -55,17 +57,18 @@ class Ledyer_Checkout_For_WooCommerce {
 	const SLUG = 'ledyer-checkout-for-woocommerce';
 	const SETTINGS = 'ledyer_checkout_for_woocommerce_settings';
 
-	public function actions() {
-		\add_action( 'plugins_loaded', [ $this, 'on_plugins_loaded' ] );
-		\add_action( 'admin_init', array( $this, 'on_admin_init' ) );
+	public function actions()
+	{
+		\add_action('plugins_loaded', [$this, 'on_plugins_loaded']);
+		\add_action('admin_init', array($this, 'on_admin_init'));
 
-		add_action( 'rest_api_init', function () {
-			register_rest_route( 'ledyer/v1', '/notifications/', array(
+		add_action('rest_api_init', function () {
+			register_rest_route('ledyer/v1', '/notifications/', array(
 				'methods'             => 'POST',
-				'callback'            => [ $this, 'update_order_status' ],
+				'callback'            => [$this, 'update_order_status'],
 				'permission_callback' => '__return_true'
-			) );
-		} );
+			));
+		});
 
 		add_action(
 			'woocommerce_checkout_fields',
@@ -76,7 +79,6 @@ class Ledyer_Checkout_For_WooCommerce {
 			20,
 			1,
 		);
-
 	}
 
 	/**
@@ -85,36 +87,37 @@ class Ledyer_Checkout_For_WooCommerce {
 	 *
 	 * @return \WP_REST_Response
 	 */
-	public function update_order_status( $request ) {
+	public function update_order_status($request)
+	{
 		$request_body = $request->get_body();
 
 
-		if( ! $this->is_json( $request_body ) ) {
-			Logger::log( 'Request body isn\'t valid JSON string.' );
+		if (!$this->is_json($request_body)) {
+			Logger::log('Request body isn\'t valid JSON string.');
 
 			$data = array(
 				'message'         => 'Request body isn\'t valid JSON string.',
 				'json' => $request_body,
 			);
 
-			$response = new \WP_REST_Response( $data );
-			$response->set_status( 404 );
+			$response = new \WP_REST_Response($data);
+			$response->set_status(404);
 
 			return $response;
 		}
 
-		$request_body = json_decode( $request_body, true );
+		$request_body = json_decode($request_body, true);
 
-		if( ! is_array( $request_body ) || empty( $request_body['orderId'] || empty( $request_body['eventType'] ) ) ) {
-			Logger::log( 'Request body doesn\'t hold orderId and eventType data.' );
+		if (!is_array($request_body) || empty($request_body['orderId'] || empty($request_body['eventType']))) {
+			Logger::log('Request body doesn\'t hold orderId and eventType data.');
 
 			$data = array(
 				'message'         => 'Request body doesn\'t hold orderId and eventType data.',
 				'json' => $request_body,
 			);
 
-			$response = new \WP_REST_Response( $data );
-			$response->set_status( 404 );
+			$response = new \WP_REST_Response($data);
+			$response->set_status(404);
 
 			return $response;
 		}
@@ -128,50 +131,51 @@ class Ledyer_Checkout_For_WooCommerce {
 			'meta_value'  => $order_id,
 		);
 
-		$orders = new \WP_Query( $args );
+		$orders = new \WP_Query($args);
 
-		$ledyer_order = ledyer()->api->get_order( $order_id );
+		$ledyer_order = ledyer()->api->get_order($order_id);
 
-		if ( ! $ledyer_order || ( is_object( $ledyer_order ) && 'WP_Error' === get_class( $ledyer_order ) ) || $ledyer_order['id'] !== $order_id ) {
-			Logger::log( $order_id . ': Could not get Ledyer order.' );
+		if (!$ledyer_order || (is_object($ledyer_order) && 'WP_Error' === get_class($ledyer_order)) || $ledyer_order['id'] !== $order_id) {
+			Logger::log($order_id . ': Could not get Ledyer order.');
 
 			$data = array(
 				'message'         => $order_id . ': Could not get Ledyer order.',
 				'ledyer_order_id' => $order_id,
 			);
 
-			$response = new \WP_REST_Response( $data );
-			$response->set_status( 404 );
+			$response = new \WP_REST_Response($data);
+			$response->set_status(404);
 
 			return $response;
 		}
 
-		if ( $orders->have_posts() && in_array( $request_body['eventType'], array('com.ledyer.order.ready_for_capture', 'com.ledyer.order.create') ) ) {
-			foreach ( $orders->posts as $order ) {
-				if ( 'revision' !== $order->post_status ) {
+		if ($orders->have_posts() && in_array($request_body['eventType'], array('com.ledyer.order.ready_for_capture', 'com.ledyer.order.create'))) {
+			foreach ($orders->posts as $order) {
+				if ('revision' !== $order->post_status) {
 
-					$order = wc_get_order( $order->ID );
+					$order = wc_get_order($order->ID);
 
-					if( 'com.ledyer.order.create' === $request_body['eventType'] ) {
-						$order->payment_complete( $order_id );
-						$response = ledyer()->api->acknowledge_order( $order_id );
-						if( is_wp_error( $response ) ) {
-							\Ledyer\Logger::log( 'Couldn\'t acknowledge order ' . $order_id  );
+					if ('com.ledyer.order.create' === $request_body['eventType']) {
+						// TODO: if order was on hold or pending, set to processing (update_status)
+						$order->payment_complete($order_id);
+						$response = ledyer()->api->acknowledge_order($order_id);
+						if (is_wp_error($response)) {
+							\Ledyer\Logger::log('Couldn\'t acknowledge order ' . $order_id);
 						}
 					}
 
-					switch ( $ledyer_order['status'] ) {
+					switch ($ledyer_order['status']) {
 						case 'fullyCaptured':
-							$order->update_status( 'completed' );
-							$order->add_order_note( sprintf( __( 'Payment Completed in Ledyer with Payment ID %1$s. Payment type - %2$s.', 'ledyer-checkout-for-woocommerce' ), $order_id, $request['paymentMethod']['type'] ) );
+							$order->update_status('completed');
+							$order->add_order_note(sprintf(__('Payment Completed in Ledyer with Payment ID %1$s. Payment type - %2$s.', 'ledyer-checkout-for-woocommerce'), $order_id, $request['paymentMethod']['type']));
 							break;
 						case 'cancelled':
-							$order->update_status( 'canceled' );
-							$order->add_order_note( sprintf( __( 'Payment Canceled in Ledyer with Payment ID %1$s. Payment type - %2$s.', 'ledyer-checkout-for-woocommerce' ), $order_id, $request['paymentMethod']['type'] ) );
+							$order->update_status('canceled');
+							$order->add_order_note(sprintf(__('Payment Canceled in Ledyer with Payment ID %1$s. Payment type - %2$s.', 'ledyer-checkout-for-woocommerce'), $order_id, $request['paymentMethod']['type']));
 							break;
 						case 'fullyRefunded':
-							$order->update_status( 'refunded' );
-							$order->add_order_note( sprintf( __( 'Payment Fully Refunded in Ledyer with Payment ID %1$s. Payment type - %2$s.', 'ledyer-checkout-for-woocommerce' ), $order_id, $request['paymentMethod']['type'] ) );
+							$order->update_status('refunded');
+							$order->add_order_note(sprintf(__('Payment Fully Refunded in Ledyer with Payment ID %1$s. Payment type - %2$s.', 'ledyer-checkout-for-woocommerce'), $order_id, $request['paymentMethod']['type']));
 							break;
 					}
 				}
@@ -182,23 +186,22 @@ class Ledyer_Checkout_For_WooCommerce {
 				'ledyer_order_id' => $order_id,
 			);
 
-			$response = new \WP_REST_Response( $data );
-			$response->set_status( 201 );
+			$response = new \WP_REST_Response($data);
+			$response->set_status(201);
 
 			return $response;
 		} else {
-			Logger::log( $order_id . ': Could not find Ledyer order in Woo.' );
+			Logger::log($order_id . ': Could not find Ledyer order in Woo.');
 			$data = array(
-				'message' => 'Ledyer order '. $order_id .' doesn\'t exists in Woo.',
+				'message' => 'Ledyer order ' . $order_id . ' doesn\'t exists in Woo.',
 				'ledyer_order_id' => $order_id,
 			);
 
-			$response = new \WP_REST_Response( $data );
-			$response->set_status( 200 );
+			$response = new \WP_REST_Response($data);
+			$response->set_status(200);
 
 			return $response;
 		}
-
 	}
 
 	/**
@@ -207,8 +210,9 @@ class Ledyer_Checkout_For_WooCommerce {
 	 *
 	 * @return bool
 	 */
-	public function is_json( $string ) {
-		json_decode( $string );
+	public function is_json($string)
+	{
+		json_decode($string);
 
 		return json_last_error() === JSON_ERROR_NONE;
 	}
@@ -219,8 +223,9 @@ class Ledyer_Checkout_For_WooCommerce {
 	 *
 	 * @since 1.0.0
 	 */
-	public function on_plugins_loaded() {
-		if ( ! defined( 'WC_VERSION' ) ) {
+	public function on_plugins_loaded()
+	{
+		if (!defined('WC_VERSION')) {
 			return;
 		}
 
@@ -236,27 +241,28 @@ class Ledyer_Checkout_For_WooCommerce {
 		$this->merchant_urls = new Merchant_URLs();
 		$this->api           = new API();
 
-		load_plugin_textdomain( 'ledyer-checkout-for-woocommerce', false, LCO_WC_PLUGIN_NAME . '/languages' );
+		load_plugin_textdomain('ledyer-checkout-for-woocommerce', false, LCO_WC_PLUGIN_NAME . '/languages');
 
-		add_filter( 'woocommerce_payment_gateways', array( $this, 'add_gateways' ) );
-		add_filter( 'plugin_action_links_' . plugin_basename( LCO_WC_MAIN_FILE ), array(
+		add_filter('woocommerce_payment_gateways', array($this, 'add_gateways'));
+		add_filter('plugin_action_links_' . plugin_basename(LCO_WC_MAIN_FILE), array(
 			$this,
 			'plugin_action_links'
-		) );
+		));
 	}
 
 	/**
 	 * Autoload classes
 	 */
-	public function include_files() {
+	public function include_files()
+	{
 		include_once LCO_WC_PLUGIN_PATH . '/includes/lco-functions.php';
 
 		spl_autoload_register(
-			function ( $class ) {
-				if ( strpos( $class, 'Ledyer\\' ) === 0 ) {
-					$class = strtolower( $class );
-					$class = str_replace( [ '\\', '_', 'ledyer/' ], [ '/', '-', '' ], $class );
-					$class = preg_replace( '/(.*\/)?([a-z-]+)$/', '$1/class-ledyer-$2.php', $class );
+			function ($class) {
+				if (strpos($class, 'Ledyer\\') === 0) {
+					$class = strtolower($class);
+					$class = str_replace(['\\', '_', 'ledyer/'], ['/', '-', ''], $class);
+					$class = preg_replace('/(.*\/)?([a-z-]+)$/', '$1/class-ledyer-$2.php', $class);
 					include_once __DIR__ . '/' . $class;
 				}
 			}
@@ -270,7 +276,8 @@ class Ledyer_Checkout_For_WooCommerce {
 	 *
 	 * @return string Setting link
 	 */
-	public function get_setting_link() {
+	public function get_setting_link()
+	{
 		$section_slug = 'lco';
 
 		$params = array(
@@ -279,15 +286,16 @@ class Ledyer_Checkout_For_WooCommerce {
 			'section' => $section_slug,
 		);
 
-		$admin_url = add_query_arg( $params, 'admin.php' );
+		$admin_url = add_query_arg($params, 'admin.php');
 		return $admin_url;
 	}
 
 	/**
 	 * Set LCO settings.
 	 */
-	public function set_settings() {
-		self::$settings = get_option( 'woocommerce_lco_settings' );
+	public function set_settings()
+	{
+		self::$settings = get_option('woocommerce_lco_settings');
 	}
 
 	/**
@@ -296,8 +304,9 @@ class Ledyer_Checkout_For_WooCommerce {
 	 *
 	 * @return mixed
 	 */
-	public function get_setting( $key ) {
-		return self::$settings[ $key ];
+	public function get_setting($key)
+	{
+		return self::$settings[$key];
 	}
 
 	/**
@@ -308,7 +317,8 @@ class Ledyer_Checkout_For_WooCommerce {
 	 * @return array $methods Payment methods.
 	 * @since  1.0.0
 	 */
-	public function add_gateways( $methods ) {
+	public function add_gateways($methods)
+	{
 		$methods[] = 'Ledyer\LCO_Gateway';
 
 		return $methods;
@@ -321,19 +331,21 @@ class Ledyer_Checkout_For_WooCommerce {
 	 *
 	 * @return array Filtered links.
 	 */
-	public function plugin_action_links( $links ) {
+	public function plugin_action_links($links)
+	{
 		$setting_link = $this->get_setting_link();
 		$plugin_links = array(
-			'<a href="' . $setting_link . '">' . __( 'Settings', 'ledyer-checkout-for-woocommerce' ) . '</a>',
+			'<a href="' . $setting_link . '">' . __('Settings', 'ledyer-checkout-for-woocommerce') . '</a>',
 		);
 
-		return array_merge( $plugin_links, $links );
+		return array_merge($plugin_links, $links);
 	}
 
 	/**
 	 * Init meta box on admin hook.
 	 */
-	public function on_admin_init() {
+	public function on_admin_init()
+	{
 		new Meta_Box();
 	}
 
@@ -346,26 +358,27 @@ class Ledyer_Checkout_For_WooCommerce {
 	 *
 	 * @return array $checkout_fields
 	 */
-	public function modify_checkout_fields( $checkout_fields ) {
+	public function modify_checkout_fields($checkout_fields)
+	{
 
-		if( ! is_checkout() ) {
+		if (!is_checkout()) {
 			return $checkout_fields;
 		}
 
-		if( ! isset( WC()->session ) || empty( WC()->session->get('chosen_payment_method') ) ) {
+		if (!isset(WC()->session) || empty(WC()->session->get('chosen_payment_method'))) {
 			return $checkout_fields;
 		}
 
-		if( 'lco' === WC()->session->get('chosen_payment_method') ) {
-			foreach ( $checkout_fields['billing'] as $key => $field ) {
-				if( false !== stripos( $key, 'first_name' ) || false !== stripos( $key, 'last_name' ) ) {
-					$checkout_fields['billing'][ $key ]['required'] = false;
+		if ('lco' === WC()->session->get('chosen_payment_method')) {
+			foreach ($checkout_fields['billing'] as $key => $field) {
+				if (false !== stripos($key, 'first_name') || false !== stripos($key, 'last_name')) {
+					$checkout_fields['billing'][$key]['required'] = false;
 				}
 			}
 
-			foreach ( $checkout_fields['shipping'] as $key => $field ) {
-				if( false !== stripos( $key, 'first_name' ) || false !== stripos( $key, 'last_name' ) ) {
-					$checkout_fields['shipping'][ $key ]['required'] = false;
+			foreach ($checkout_fields['shipping'] as $key => $field) {
+				if (false !== stripos($key, 'first_name') || false !== stripos($key, 'last_name')) {
+					$checkout_fields['shipping'][$key]['required'] = false;
 				}
 			}
 		}
