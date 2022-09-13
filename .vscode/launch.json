@@ -1,0 +1,14 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Listen for XDebug",
+        "type": "php",
+        "request": "launch",
+        "port": 8999,
+        "pathMappings": {
+          "/var/www/html/wp-content/plugins/ledyer-checkout-for-woocommerce": "${workspaceRoot}/",
+        }
+      }
+    ]
+  }
