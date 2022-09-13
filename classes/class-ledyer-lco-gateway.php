@@ -105,10 +105,12 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				return;
 			}
 
+			$scriptSrc = ledyer()->get_setting( 'testmode' ) ? 'sandbox' : 'live';
+
 			//Register iframe script
 			wp_register_script(
 				'lco-iframe',
-				'https://checkout.sandbox.ledyer.com/bootstrap.js',
+				'https://checkout.' . $scriptSrc . '.ledyer.com/bootstrap.js',
 				array( 'jquery', 'wc-cart', 'jquery-blockui' ),
 				LCO_WC_VERSION,
 				true
