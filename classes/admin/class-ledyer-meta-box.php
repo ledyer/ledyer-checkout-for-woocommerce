@@ -54,7 +54,7 @@ class Meta_Box {
 
 			// TODO: if ledyer_pending or status on-hold: get info from session
 			// Then: print_standard_content but with session info
-			// Below request wiill fail if no order has been created yet (fetch from get_order_session instead)
+			// Below request will fail if no order has been created yet (fetch from get_order_session instead)
 			$ledyer_order = ledyer()->api->get_order( get_post_meta( $order_id, '_wc_ledyer_order_id', true ) );
 
 			if ( is_wp_error( $ledyer_order ) ) {
