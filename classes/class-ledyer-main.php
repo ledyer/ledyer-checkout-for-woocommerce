@@ -153,6 +153,8 @@ class Ledyer_Checkout_For_WooCommerce {
 					$order = wc_get_order( $order->ID );
 
 					if( 'com.ledyer.order.create' === $request_body['eventType'] ) {
+						// TODO: if order was on hold or pending and notification is received, set to processing (update_status)
+
 						$order->payment_complete( $order_id );
 						$response = ledyer()->api->acknowledge_order( $order_id );
 						if( is_wp_error( $response ) ) {
@@ -189,7 +191,7 @@ class Ledyer_Checkout_For_WooCommerce {
 		} else {
 			Logger::log( $order_id . ': Could not find Ledyer order in Woo.' );
 			$data = array(
-				'message' => 'Ledyer order '. $order_id .' doesn\'t exists in Woo.',
+				'message' => 'Ledyer order '. $order_id .' doesn\'t exist in Woo.',
 				'ledyer_order_id' => $order_id,
 			);
 

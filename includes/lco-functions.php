@@ -183,7 +183,7 @@ function wc_ledyer_confirm_ledyer_order( $order_id, $ledyer_pending ) {
 	if( ! $ledyer_pending ) {
 		$request = ledyer()->api->get_order( $payment_id );
 	} else {
-		$request = ledyer()->api->get_order_session( $session_id );
+		$request = ledyer()->api->get_order_session($payment_id);
 	}
 
 	if ( isset( $request['orderAmount'] ) || isset( $request['id'] ) ) {
@@ -207,6 +207,7 @@ function wc_ledyer_confirm_ledyer_order( $order_id, $ledyer_pending ) {
 				\Ledyer\Logger::log( 'Couldn\'t acknowledge order ' . $payment_id  );
 			}
 		} else {
+			$order->update_status('on-hold');
 			$order->add_order_note( sprintf( __( 'New payment created in Ledyer with Payment ID %1$s. Payment type - %2$s. Awaiting signature.', 'ledyer-checkout-for-woocommerce' ), $session_id, $request['paymentMethod']['type'] ) );
         }
 
