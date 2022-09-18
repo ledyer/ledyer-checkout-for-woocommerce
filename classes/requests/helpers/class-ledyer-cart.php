@@ -262,7 +262,7 @@ class Cart {
 					$coupon_tax_amount = - WC()->cart->get_coupon_discount_tax_amount( $coupon_key ) * 100;
 				}
 				// Add separate discount line item, but only if it's a smart coupon or country is US.
-				if ( 'smart_coupon' !== $coupon->get_discount_type() ) {
+				if ( 'smart_coupon' === $coupon->get_discount_type() ) {
 					$discount            = array(
 						'type'               => 'discount',
 						'reference'          => substr( (string) $coupon_key, 0, 64 ),
@@ -277,7 +277,10 @@ class Cart {
 					$this->order_lines[] = $discount;
 				}
 
-				if ( 'smart_coupon' === $coupon->get_discount_type() ) {
+				// Standard cart, product, percentage discounts and gift cards end up here
+				// Discount coupons are created as a separate line item only for reference that a discount has been applied to product items
+				// The real discount will have been calculated and applied on each individual existing product order lines as unitDiscountAmount
+				if ( 'smart_coupon' !== $coupon->get_discount_type() ) {
 					$discount            = array(
 						'type'               => 'giftCard',
 						'reference'          => substr( (string) $coupon_key, 0, 64 ),
