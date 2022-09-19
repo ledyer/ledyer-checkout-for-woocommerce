@@ -163,7 +163,7 @@ class Cart {
 					'description'        => $this->get_item_name( $cart_item ),
 					'quantity'           => $this->get_item_quantity( $cart_item ),
 					'unitPrice'          => $this->get_item_price( $cart_item ),
-					'unitDiscountAmount' => $this->get_item_discount_amount( $cart_item, $product ),
+					'unitDiscountAmount' => $this->get_item_discount_amount( $cart_item, $product ) / $this->get_item_quantity( $cart_item ),
 					'vat'                => $this->get_item_tax_rate( $cart_item, $product ),
 					'totalAmount'        => $this->get_item_total_amount( $cart_item, $product ),
 					'totalVatAmount'     => $this->get_item_tax_amount( $cart_item, $product ),
@@ -241,7 +241,8 @@ class Cart {
 	public function process_coupons() {
 		if ( ! empty( WC()->cart->get_coupons() ) ) {
 			foreach ( WC()->cart->get_coupons() as $coupon_key => $coupon ) {
-				$coupon_reference  		= 'Discount';
+				$coupon_description 	= 'Gift card';
+				$coupon_reference	  	= substr( (string) $coupon_key, 0, 64 );
 				$coupon_amount     		= 0;
 				$coupon_discount_amount = 0;
 				$coupon_tax_amount 		= 0;
@@ -252,21 +253,22 @@ class Cart {
 					// If Smart coupon is applied before tax calculation,
 					// the sum is discounted from order lines so we send it as 0 for reference.
 					if ( wc_tax_enabled() && 'yes' === $apply_before_tax ) {
-						$coupon_amount    = 0;
-						$coupon_reference = __( 'Discount', 'ledyer-checkout-for-woocommerce' ) . ' (amount: ' . WC()->cart->get_coupon_discount_amount( $coupon_key ) . ')';
+						$coupon_amount    	= 0;
+						$coupon_description = __( 'Gift card', 'ledyer-checkout-for-woocommerce' ) . ' (amount: ' . WC()->cart->get_coupon_discount_amount( $coupon_key ) . ')';
 					} else {
 						$coupon_discount_amount	= WC()->cart->get_coupon_discount_amount( $coupon_key ) * 100;
 						$coupon_amount    		= - WC()->cart->get_coupon_discount_amount( $coupon_key ) * 100;
-						$coupon_reference 		= __( 'Discount', 'ledyer-checkout-for-woocommerce' );
+						$coupon_description 	= __( 'Discount', 'ledyer-checkout-for-woocommerce' );
 					}
 					$coupon_tax_amount = - WC()->cart->get_coupon_discount_tax_amount( $coupon_key ) * 100;
 				}
+
 				// Add separate discount line item, but only if it's a smart coupon or country is US.
 				if ( 'smart_coupon' === $coupon->get_discount_type() ) {
 					$discount            = array(
 						'type'               => 'discount',
-						'reference'          => substr( (string) $coupon_key, 0, 64 ),
-						'description'        => $coupon_reference,
+						'reference'          => $coupon_reference,
+						'description'        => $coupon_description,
 						'quantity'           => 1,
 						'unitPrice'          => 0,
 						'unitDiscountAmount' => $coupon_discount_amount,
@@ -283,8 +285,8 @@ class Cart {
 				if ( 'smart_coupon' !== $coupon->get_discount_type() ) {
 					$discount            = array(
 						'type'               => 'giftCard',
-						'reference'          => substr( (string) $coupon_key, 0, 64 ),
-						'description'        => $coupon_reference,
+						'reference'          => $coupon_reference,
+						'description'        => $coupon_description . ': ' . $coupon_reference,
 						'quantity'           => 1,
 						'unitPrice'          => $coupon_amount,
 						'unitDiscountAmount' => 0,
