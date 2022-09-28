@@ -220,7 +220,7 @@ class AJAX extends \WC_AJAX {
 						$fields['billing_address'][ $key ] = isset( $ledyer_order['customer']['billingAddress'] ) ? $ledyer_order['customer']['billingAddress']['city'] : '';
 						break;
 					case 'shipping_city':
-						$fields['shipping_address'][ $key ] = isset( $ledyer_order['customer']['shipping_address'] ) ? $ledyer_order['customer']['shipping_address']['city'] : '';
+						$fields['shipping_address'][ $key ] = isset( $ledyer_order['customer']['shippingAddress'] ) ? $ledyer_order['customer']['shippingAddress']['city'] : '';
 						break;
 					case 'billing_phone':
 						$fields['billing_address'][ $key ] = $ledyer_order['customer']['phone'];
