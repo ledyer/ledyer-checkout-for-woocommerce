@@ -272,7 +272,7 @@ class Cart {
 						'quantity'           => 1,
 						'unitPrice'          => 0,
 						'unitDiscountAmount' => $coupon_discount_amount,
-						'vat'                => 0, // TODO: this needs to be accurate!
+						'vat'                => 2500,
 						'totalAmount'        => $coupon_amount,
 						'totalVatAmount'     => - self::format_number( $coupon_tax_amount ),
 					);
