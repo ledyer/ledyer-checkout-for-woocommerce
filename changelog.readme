@@ -1,0 +1,5 @@
+## 1.0.2
+* Bugfix: billing and shipping address. Use streetAddress, not country
+
+## 1.0.0
+* Initial project setup
