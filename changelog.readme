@@ -1,0 +1,8 @@
+## 1.0.2
+* Bugfix: billing and shipping address. Use streetAddress, not country
+
+## 1.0.1
+* Bugfix: center iframe; 100% width and place checkout below shipping
+
+## 1.0.0
+* Initial project setup

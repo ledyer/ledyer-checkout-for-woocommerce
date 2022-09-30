@@ -208,7 +208,7 @@ class AJAX extends \WC_AJAX {
 						$fields['billing_address'][ $key ] = isset( $ledyer_order['customer']['billingAddress'] ) ? ( empty( $ledyer_order['customer']['billingAddress']['streetAddress'] ) ? $ledyer_order['customer']['billingAddress']['companyName'] : $ledyer_order['customer']['billingAddress']['streetAddress'] ) : '';
 						break;
 					case 'shipping_address_1':
-						$fields['shipping_address'][ $key ] = isset( $ledyer_order['customer']['shippingAddress'] ) ? ( empty( $ledyer_order['customer']['shippingAddress']['country'] ) ? $ledyer_order['customer']['billingAddress']['companyName'] : $ledyer_order['customer']['shippingAddress']['country'] ) : '';
+						$fields['shipping_address'][ $key ] = isset( $ledyer_order['customer']['shippingAddress'] ) ? ( empty( $ledyer_order['customer']['shippingAddress']['streetAddress'] ) ? $ledyer_order['customer']['shippingAddress']['companyName'] : $ledyer_order['customer']['shippingAddress']['streetAddress'] ) : '';
 						break;
 					case 'billing_postcode':
 						$fields['billing_address'][ $key ] = isset( $ledyer_order['customer']['billingAddress'] ) ? $ledyer_order['customer']['billingAddress']['postalCode'] : '';
@@ -217,10 +217,10 @@ class AJAX extends \WC_AJAX {
 						$fields['shipping_address'][ $key ] = isset( $ledyer_order['customer']['shippingAddress'] ) ? $ledyer_order['customer']['shippingAddress']['postalCode'] : '';
 						break;
 					case 'billing_city':
-						$fields['billing_address'][ $key ] = isset( $ledyer_order['customer']['shippingAddress'] ) ? $ledyer_order['customer']['shippingAddress']['city'] : '';
+						$fields['billing_address'][ $key ] = isset( $ledyer_order['customer']['billingAddress'] ) ? $ledyer_order['customer']['billingAddress']['city'] : '';
 						break;
 					case 'shipping_city':
-						$fields['shipping_address'][ $key ] = isset( $ledyer_order['customer']['billingAddress'] ) ? $ledyer_order['customer']['billingAddress']['city'] : '';
+						$fields['shipping_address'][ $key ] = isset( $ledyer_order['customer']['shippingAddress'] ) ? $ledyer_order['customer']['shippingAddress']['city'] : '';
 						break;
 					case 'billing_phone':
 						$fields['billing_address'][ $key ] = $ledyer_order['customer']['phone'];
