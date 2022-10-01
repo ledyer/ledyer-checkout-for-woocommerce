@@ -163,7 +163,7 @@ class Cart {
 					'description'        => $this->get_item_name( $cart_item ),
 					'quantity'           => $this->get_item_quantity( $cart_item ),
 					'unitPrice'          => $this->get_item_price( $cart_item ),
-					'unitDiscountAmount' => $this->get_item_discount_amount( $cart_item, $product ),
+					'unitDiscountAmount' => $this->get_item_discount_amount( $cart_item, $product ) / $this->get_item_quantity( $cart_item ),
 					'vat'                => $this->get_item_tax_rate( $cart_item, $product ),
 					'totalAmount'        => $this->get_item_total_amount( $cart_item, $product ),
 					'totalVatAmount'     => $this->get_item_tax_amount( $cart_item, $product ),
@@ -241,9 +241,11 @@ class Cart {
 	public function process_coupons() {
 		if ( ! empty( WC()->cart->get_coupons() ) ) {
 			foreach ( WC()->cart->get_coupons() as $coupon_key => $coupon ) {
-				$coupon_reference  = '';
-				$coupon_amount     = 0;
-				$coupon_tax_amount = '';
+				$coupon_description 	= 'Gift card';
+				$coupon_reference	  	= substr( (string) $coupon_key, 0, 64 );
+				$coupon_amount     		= 0;
+				$coupon_discount_amount = 0;
+				$coupon_tax_amount 		= 0;
 
 				// Smart coupons are processed as real line items, cart and product discounts sent for reference only.
 				if ( 'smart_coupon' === $coupon->get_discount_type() ) {
@@ -251,35 +253,40 @@ class Cart {
 					// If Smart coupon is applied before tax calculation,
 					// the sum is discounted from order lines so we send it as 0 for reference.
 					if ( wc_tax_enabled() && 'yes' === $apply_before_tax ) {
-						$coupon_amount    = 0;
-						$coupon_reference = __( 'Gift card', 'ledyer-checkout-for-woocommerce' ) . ' (amount: ' . WC()->cart->get_coupon_discount_amount( $coupon_key ) . ')';
+						$coupon_amount    	= 0;
+						$coupon_description = __( 'Gift card', 'ledyer-checkout-for-woocommerce' ) . ' (amount: ' . WC()->cart->get_coupon_discount_amount( $coupon_key ) . ')';
 					} else {
-						$coupon_amount    = - WC()->cart->get_coupon_discount_amount( $coupon_key ) * 100;
-						$coupon_reference = __( 'Gift card', 'ledyer-checkout-for-woocommerce' );
+						$coupon_discount_amount	= WC()->cart->get_coupon_discount_amount( $coupon_key ) * 100;
+						$coupon_amount    		= - WC()->cart->get_coupon_discount_amount( $coupon_key ) * 100;
+						$coupon_description 	= __( 'Discount', 'ledyer-checkout-for-woocommerce' );
 					}
 					$coupon_tax_amount = - WC()->cart->get_coupon_discount_tax_amount( $coupon_key ) * 100;
 				}
+
 				// Add separate discount line item, but only if it's a smart coupon or country is US.
-				if ( 'smart_coupon' !== $coupon->get_discount_type() ) {
+				if ( 'smart_coupon' === $coupon->get_discount_type() ) {
 					$discount            = array(
 						'type'               => 'discount',
-						'reference'          => substr( (string) $coupon_key, 0, 64 ),
-						'description'        => $coupon_reference,
+						'reference'          => $coupon_reference,
+						'description'        => $coupon_description,
 						'quantity'           => 1,
-						'unitPrice'          => $coupon_amount,
-						'unitDiscountAmount' => 0,
-						'vat'                => 0,
+						'unitPrice'          => 0,
+						'unitDiscountAmount' => $coupon_discount_amount,
+						'vat'                => 2500,
 						'totalAmount'        => $coupon_amount,
 						'totalVatAmount'     => - self::format_number( $coupon_tax_amount ),
 					);
 					$this->order_lines[] = $discount;
 				}
 
-				if ( 'smart_coupon' === $coupon->get_discount_type() ) {
+				// Standard cart, product, percentage discounts and gift cards end up here
+				// Discount coupons are created as a separate line item only for reference that a discount has been applied to product items
+				// The real discount will have been calculated and applied on each individual existing product order lines as unitDiscountAmount
+				if ( 'smart_coupon' !== $coupon->get_discount_type() ) {
 					$discount            = array(
 						'type'               => 'giftCard',
-						'reference'          => substr( (string) $coupon_key, 0, 64 ),
-						'description'        => $coupon_reference,
+						'reference'          => $coupon_reference,
+						'description'        => $coupon_description . ': ' . $coupon_reference,
 						'quantity'           => 1,
 						'unitPrice'          => $coupon_amount,
 						'unitDiscountAmount' => 0,
@@ -312,13 +319,13 @@ class Cart {
 				$gift_card = array(
 					'type'                  => 'giftCard',
 					'reference'             => $gift_card_code,
-					'name'                  => __( 'Gift card', 'ledyer-checkout-for-woocommerce' ),
+					'description'           => __( 'Gift card', 'ledyer-checkout-for-woocommerce' ),
 					'quantity'              => 1,
-					'tax_rate'              => 0,
-					'total_discount_amount' => 0,
-					'total_tax_amount'      => 0,
-					'unit_price'            => $gift_card_amount,
-					'total_amount'          => $gift_card_amount,
+					'vat'             		=> 0,
+					'unitDiscountAmount' 	=> 0,
+					'totalVatAmount'  	    => 0,
+					'unitPrice'            	=> $gift_card_amount,
+					'totalAmount'          	=> $gift_card_amount,
 				);
 
 				$this->order_lines[] = $gift_card;
@@ -338,13 +345,13 @@ class Cart {
 				$gift_card           = array(
 					'type'                  => 'giftCard',
 					'reference'             => $giftcard_sku,
-					'name'                  => $label,
+					'description'          	=> $label,
 					'quantity'              => 1,
-					'unit_price'            => $coupon_amount,
-					'tax_rate'              => 0,
-					'total_amount'          => $coupon_amount,
-					'total_discount_amount' => 0,
-					'total_tax_amount'      => 0,
+					'unitPrice'	            => $coupon_amount,
+					'vat'	     	        => 0,
+					'totalAmount'        	=> $coupon_amount,
+					'unitDiscountAmount' 	=> 0,
+					'totalVatAmount'      	=> 0,
 				);
 				$this->order_lines[] = $gift_card;
 			}
@@ -360,13 +367,13 @@ class Cart {
 				$gift_card           = array(
 					'type'                  => 'giftCard',
 					'reference'             => $giftcard_sku,
-					'name'                  => $label,
+					'description'	        => $label,
 					'quantity'              => 1,
-					'unit_price'            => $coupon_amount,
-					'tax_rate'              => 0,
-					'total_amount'          => $coupon_amount,
-					'total_discount_amount' => 0,
-					'total_tax_amount'      => 0,
+					'unitDiscountAmount'    => $coupon_amount,
+					'vat'              		=> 0,
+					'totalAmount'          	=> $coupon_amount,
+					'unitDiscountAmount' 	=> 0,
+					'totalVatAmount'      	=> 0,
 				);
 				$this->order_lines[] = $gift_card;
 			}
