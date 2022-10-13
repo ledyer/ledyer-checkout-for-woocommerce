@@ -16,7 +16,7 @@ services:
       - db
     build:
       context: .
-      dockerfile: Dockerfile-wpdebug
+      dockerfile: Dockerfile-wpdebug-php${PHP_VERSION}
     ports:
       - 8181:80
     restart: on-failure
