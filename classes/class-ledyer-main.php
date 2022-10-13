@@ -132,7 +132,7 @@ class Ledyer_Checkout_For_WooCommerce {
 
 		$ledyer_order = ledyer()->api->get_order( $order_id );
 
-		if ( ! $ledyer_order || ( is_object( $ledyer_order ) && 'WP_Error' === get_class( $ledyer_order ) ) || $ledyer_order['id'] !== $order_id ) {
+		if ( ! $ledyer_order || ( is_object( $ledyer_order ) && is_wp_error( $ledyer_order ) ) || $ledyer_order['id'] !== $order_id ) {
 			Logger::log( $order_id . ': Could not get Ledyer order.' );
 
 			$data = array(
