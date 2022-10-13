@@ -262,7 +262,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 			$ledyer_order = ledyer()->api->get_order_session( $ledyer_order_id );
 
-			if ( ! $ledyer_order || 'WP_Error' === get_class( $ledyer_order ) ) {
+			if ( ! $ledyer_order || is_wp_error( $ledyer_order ) ) {
 				return false;
 			}
 
@@ -376,7 +376,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 			$ledyer_order = ledyer()->api->update_order_reference( $ledyer_order_id, array( 'reference' => strval( $order_id ) ) );
 
-			if ( ! $ledyer_order || ( is_object( $ledyer_order ) && 'WP_Error' === get_class( $ledyer_order ) ) ) {
+			if ( ! $ledyer_order || ( is_object( $ledyer_order ) && is_wp_error( $ledyer_order ) ) ) {
 				// If failed then bail.
 				return;
 			}
