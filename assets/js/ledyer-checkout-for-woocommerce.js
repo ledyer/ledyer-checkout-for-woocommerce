@@ -19,6 +19,7 @@ jQuery(function ($) {
         // Form fields.
         shippingUpdated: false,
         blocked: false,
+        isValidating: false,
 
         preventPaymentMethodChange: false,
 
@@ -64,10 +65,7 @@ jQuery(function ($) {
          * Resumes the LCO Iframe
          */
         lcoResume: function () {
-            var isBlocked = $('form.checkout').find('.blockUI');
-
             if (window.ledyer) {
-                //console.log( $('form.checkout').find( '.blockUI' ) );
                 window.ledyer.api.resume();
                 console.log('resume');
             }
@@ -322,7 +320,45 @@ jQuery(function ($) {
             }
         },
 
-        placeLedyerOrder: function (order_in_sessions = false) {
+        /**
+         * Fails the Ledyer order.
+         * @param {string} error_message
+         */
+        failOrder: function (error_message = "TODO: default error message here") {
+            console.log("fail", { error_message })
+            window.ledyer.api.clientValidation({
+                shouldProceed: false, message: {
+                    title: "Something went wrong", // TODO: translate
+                    body: error_message // TODO: what format is this?
+                }
+            })
+
+            lco_wc.isValidating = false;
+
+            const className = lco_params.pay_for_order ? 'div.woocommerce-notices-wrapper' : 'form.checkout';
+
+            // Update the checkout and reenable the form.
+            $('body').trigger('update_checkout');
+
+            const error_div = `<div class="woocommerce-error">${error_message}</div>`;
+
+            // Print error messages, and trigger checkout_error, and scroll to notices.
+            $('.woocommerce-NoticeGroup-checkout, .woocommerce-error, .woocommerce-message').remove();
+            $(className).prepend(`<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout"> ${error_div} </div>`);
+            $(className).removeClass('processing').unblock();
+            $(className).find('.input-text, select, input:checkbox').trigger('validate').blur();
+            $(document.body).trigger('checkout_error', [error_message]);
+            $('html, body').animate({
+                scrollTop: ($(className).offset().top - 100)
+            }, 1000);
+        },
+
+        /**
+         * Places the Ledyer order
+         * @param {string} order_in_sessions
+         * @param {string} should_validate
+         */
+        placeLedyerOrder: function (order_in_sessions = false, should_validate = false) {
             lco_wc.blocked = true;
             lco_wc.getLedyerOrder().done(function (response) {
                 if (response.success) {
@@ -340,7 +376,7 @@ jQuery(function ($) {
                         dataType: 'json',
                         success: function (data) {
                             try {
-                                if ('success' === data.result) {
+                                if ('0success' === data.result) {
                                     lco_wc.logToFile('Successfully placed order.');
                                     let url = new URL(data.redirect);
 
@@ -349,18 +385,36 @@ jQuery(function ($) {
                                     } else {
                                         url.searchParams.append('lco_pending', 'no');
                                     }
+                                    console.log("placeLedyerorder SUCCESS", { should_validate })
+                                    if (should_validate) {
+                                        window.ledyer.api.clientValidation({
+                                            shouldProceed: true
+                                        })
+                                        // Ledyer will respond with a new event when order is complet
+                                        // So don't redirect just yet
+                                        lco_wc.isValidating = false;
+                                        return;
+                                    }
 
                                     window.location.href = url.toString();
-                                    //callback({ should_proceed: true });
                                 } else {
-                                    //console.log(data, 33);
+                                    console.log("placeledyerOrder !== success")
+                                    console.table(data)
+                                    // lco_wc.failOrder();
                                     throw 'Result failed';
                                 }
                             } catch (err) {
+                                console.log("placeledyerOrder CATCH")
+                                console.table(data)
+                                console.table(err)
+
                                 if (data.messages) {
                                     lco_wc.logToFile('Checkout error | ' + data.messages);
+                                    lco_wc.failOrder(data.messages);
+
                                 } else {
                                     lco_wc.logToFile('Checkout error | No message' + err);
+                                    lco_wc.failOrder();
                                 }
                             }
                         },
@@ -370,10 +424,12 @@ jQuery(function ($) {
                             } catch (e) {
                                 lco_wc.logToFile('AJAX error | Failed to parse error message.');
                             }
+                            lco_wc.failOrder('Internal Server Error')
                         }
                     });
                 } else {
                     lco_wc.logToFile('Failed to get the order from Ledyer.');
+                    lco_wc.failOrder('Failed to get the order from Ledyer.');
                 }
             });
         },
@@ -409,35 +465,35 @@ jQuery(function ($) {
 
             $(document).on('ledyerCheckoutOrderComplete', function (event) {
                 lco_wc.logToFile('ledyerCheckoutOrderComplete from Ledyer triggered');
-                if (lco_params.pay_for_order) {
-                    console.log('should_proceed: true');
-                    //callback({ should_proceed: true });
-                } else {
-                    lco_wc.placeLedyerOrder(false);
+                console.log("ORDER COMPLTE", { "lco_wc.isValidating": lco_wc.isValidating })
+
+
+                if (!lco_params.pay_for_order) {
+                    lco_wc.placeLedyerOrder(false, lco_wc.isValidating);
                 }
             });
 
             $(document).on('ledyerCheckoutOrderPending', function (event) {
                 lco_wc.logToFile('ledyerCheckoutOrderPending from Ledyer triggered');
-                if (lco_params.pay_for_order) {
-                    console.log('should_proceed: true');
-                    //callback({ should_proceed: true });
-                } else {
+                if (!lco_params.pay_for_order) {
                     lco_wc.placeLedyerOrder(true);
                 }
             });
             $(document).on('ledyerCheckoutWaitingForClientValidation', function (event) {
                 lco_wc.logToFile('ledyerCheckoutWaitingForClientValidation from Ledyer triggered');
 
-
                 console.log("MERCHANT IS CALLING CLIENT VALIDATION API!")
 
-                window.ledyer.api.clientValidation({
-                    shouldProceed: true, message: {
-                        title: "HAHAHAHA LOL",
-                        body: "Du får inte handla!"
-                    }
-                })
+
+                lco_wc.isValidating = true;
+
+                if (lco_params.pay_for_order) {
+                    window.ledyer.api.clientValidation({
+                        shouldProceed: true
+                    })
+                } else {
+                    lco_wc.placeLedyerOrder(false, true);
+                }
             });
         },
     }

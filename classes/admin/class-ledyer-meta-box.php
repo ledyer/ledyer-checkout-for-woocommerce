@@ -78,8 +78,7 @@ class Meta_Box {
 			<?php if ( $ledyer_order ) { ?>
 				<?php
 				if ( '' !== ledyer()->get_setting('testmode') ) {
-					// $environment = 'yes' === ledyer()->get_setting('testmode') ? 'Sandbox' : 'Production';
-					$environment = 'yes' === ledyer()->get_setting('testmode') ? 'Dev' : 'Production';
+					$environment = 'yes' === ledyer()->get_setting('testmode') ? 'Sandbox' : 'Production';
 					?>
                     <strong><?php esc_html_e( 'Ledyer Environment: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong><?php echo esc_html( $environment ); ?><br/>
 				<?php } ?>
