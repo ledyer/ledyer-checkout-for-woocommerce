@@ -325,10 +325,11 @@ jQuery(function ($) {
          * @param {string} error_message
          */
         failOrder: function (error_message = "TODO: default error message here") {
-            console.log("fail", { error_message })
+            console.log("LCO FAIL ORDER", { error_message })
+
             window.ledyer.api.clientValidation({
                 shouldProceed: false, message: {
-                    title: "Something went wrong", // TODO: translate
+                    title: "Something went wrong", // TODO: translate?
                     body: error_message // TODO: what format is this?
                 }
             })
@@ -376,16 +377,18 @@ jQuery(function ($) {
                         dataType: 'json',
                         success: function (data) {
                             try {
-                                if ('0success' === data.result) {
+                                if ('success' === data.result) {
                                     lco_wc.logToFile('Successfully placed order.');
-                                    let url = new URL(data.redirect);
+                                    const url = new URL(data.redirect);
 
                                     if (order_in_sessions) {
                                         url.searchParams.append('lco_pending', 'yes');
                                     } else {
                                         url.searchParams.append('lco_pending', 'no');
                                     }
-                                    console.log("placeLedyerorder SUCCESS", { should_validate })
+
+                                    console.log("LCO placeLedyerOrder SUCCESS", { should_validate });
+
                                     if (should_validate) {
                                         window.ledyer.api.clientValidation({
                                             shouldProceed: true
@@ -398,20 +401,16 @@ jQuery(function ($) {
 
                                     window.location.href = url.toString();
                                 } else {
-                                    console.log("placeledyerOrder !== success")
-                                    console.table(data)
-                                    // lco_wc.failOrder();
                                     throw 'Result failed';
                                 }
                             } catch (err) {
-                                console.log("placeledyerOrder CATCH")
-                                console.table(data)
-                                console.table(err)
+                                console.log("placeledyerOrder CATCH");
+                                console.table(data);
+                                console.table(err);
 
                                 if (data.messages) {
                                     lco_wc.logToFile('Checkout error | ' + data.messages);
                                     lco_wc.failOrder(data.messages);
-
                                 } else {
                                     lco_wc.logToFile('Checkout error | No message' + err);
                                     lco_wc.failOrder();
@@ -424,7 +423,7 @@ jQuery(function ($) {
                             } catch (e) {
                                 lco_wc.logToFile('AJAX error | Failed to parse error message.');
                             }
-                            lco_wc.failOrder('Internal Server Error')
+                            lco_wc.failOrder('Internal Server Error');
                         }
                     });
                 } else {
@@ -440,33 +439,20 @@ jQuery(function ($) {
         init: function () {
             $(document).ready(lco_wc.documentReady);
 
-            //lco_wc.bodyEl.on( 'update_checkout', lco_wc.triggerBillingText );
-            //lco_wc.bodyEl.on('update_ledyer_order', lco_wc.lcoSuspend());
-            //lco_wc.bodyEl.on('updated_ledyer_order', lco_wc.lcoResume());
-
             if (0 < $('form.checkout #terms').length) {
                 $('form.checkout #terms').prop('checked', true);
             }
 
-            //lco_wc.bodyEl.on( 'change', 'input[type="text"]', lco_wc.triggerBillingText );
-            //lco_wc.bodyEl.on( 'update_lco_text_fields', lco_wc.lcoSuspend );
-            //lco_wc.bodyEl.on( 'updated_lco_text_fields', lco_wc.lcoResume );
-            //lco_wc.bodyEl.on( 'updated_checkout', function( data ) {  console.log(data); } );
             lco_wc.bodyEl.on('update_checkout', lco_wc.lcoSuspend);
             lco_wc.bodyEl.on('updated_checkout', lco_wc.lcoResume);
-            //lco_wc.bodyEl.on( 'updated_checkout',  lco_wc.updateLedyerOrder );
-
-
-            //lco_wc.bodyEl.on( 'updated_checkout', lco_wc.maybeDisplayShippingPrice );
             lco_wc.bodyEl.on('change', 'input.qty', lco_wc.updateCart);
             lco_wc.bodyEl.on('change', 'input[name="payment_method"]', lco_wc.maybeChangeToLco);
             lco_wc.bodyEl.on('click', lco_wc.selectAnotherSelector, lco_wc.changeFromLco);
 
-
             $(document).on('ledyerCheckoutOrderComplete', function (event) {
                 lco_wc.logToFile('ledyerCheckoutOrderComplete from Ledyer triggered');
-                console.log("ORDER COMPLTE", { "lco_wc.isValidating": lco_wc.isValidating })
 
+                console.log("LCO ORDER COMPLETE RECEIVED", { "lco_wc.isValidating": lco_wc.isValidating })
 
                 if (!lco_params.pay_for_order) {
                     lco_wc.placeLedyerOrder(false, lco_wc.isValidating);
@@ -479,11 +465,11 @@ jQuery(function ($) {
                     lco_wc.placeLedyerOrder(true);
                 }
             });
+
             $(document).on('ledyerCheckoutWaitingForClientValidation', function (event) {
                 lco_wc.logToFile('ledyerCheckoutWaitingForClientValidation from Ledyer triggered');
 
-                console.log("MERCHANT IS CALLING CLIENT VALIDATION API!")
-
+                console.log("LCO: Ledyer checkout waiting for client validation received");
 
                 lco_wc.isValidating = true;
 
