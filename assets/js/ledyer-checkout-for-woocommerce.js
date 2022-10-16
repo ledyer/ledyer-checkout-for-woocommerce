@@ -65,7 +65,10 @@ jQuery(function ($) {
          * Resumes the LCO Iframe
          */
         lcoResume: function () {
+            var isBlocked = $('form.checkout').find('.blockUI');
+
             if (window.ledyer) {
+                //console.log( $('form.checkout').find( '.blockUI' ) );
                 window.ledyer.api.resume();
                 console.log('resume');
             }
