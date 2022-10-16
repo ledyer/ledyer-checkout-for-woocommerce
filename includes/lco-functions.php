@@ -32,13 +32,13 @@ function lco_create_or_update_order() {
 		$data              = \Ledyer\Requests\Helpers\Woocommerce_Bridge::get_updated_cart_data();
 		$ledyer_order      = ledyer()->api->update_order_session( $ledyer_order_id, $data );
 
-		if ( ! $ledyer_order || ( is_object( $ledyer_order ) && 'WP_Error' === get_class( $ledyer_order ) ) || $ledyer_order['orderId'] !== $ledyer_order_id || $ledyer_order['sessionId'] !== $ledyer_session_id ) {
+		if ( ! $ledyer_order || ( is_object( $ledyer_order ) && is_wp_error( $ledyer_order ) ) || $ledyer_order['orderId'] !== $ledyer_order_id || $ledyer_order['sessionId'] !== $ledyer_session_id ) {
 			// If update order failed try to create new order.
 			$data         = \Ledyer\Requests\Helpers\Woocommerce_Bridge::get_cart_data();
 			$ledyer_order = ledyer()->api->create_order_session( $data );
-			if ( ! $ledyer_order || ( is_object( $ledyer_order ) && 'WP_Error' === get_class( $ledyer_order ) ) ) {
+			if ( ! $ledyer_order || ( is_object( $ledyer_order ) && is_wp_error( $ledyer_order ) ) ) {
 				// If failed then bail.
-				if( is_object( $ledyer_order ) && 'WP_Error' === get_class( $ledyer_order ) ) {
+				if( is_object( $ledyer_order ) && is_wp_error( $ledyer_order ) ) {
 					$errors = $ledyer_order->errors;
 				} else {
 					$errors = $ledyer_order;
@@ -76,8 +76,8 @@ function lco_create_or_update_order() {
 		$data         = \Ledyer\Requests\Helpers\Woocommerce_Bridge::get_cart_data();
 		$ledyer_order = ledyer()->api->create_order_session( $data );
 
-		if ( ! $ledyer_order || ( is_object( $ledyer_order ) && 'WP_Error' === get_class( $ledyer_order ) ) ) {
-			if( is_object( $ledyer_order ) && 'WP_Error' === get_class( $ledyer_order ) ) {
+		if ( ! $ledyer_order || ( is_object( $ledyer_order ) && is_wp_error( $ledyer_order ) ) ) {
+			if( is_object( $ledyer_order ) && is_wp_error( $ledyer_order ) ) {
 				$errors = $ledyer_order->errors;
 			} else {
 				$errors = $ledyer_order;
