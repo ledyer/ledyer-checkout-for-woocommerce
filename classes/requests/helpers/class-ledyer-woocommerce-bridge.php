@@ -91,9 +91,8 @@ class Woocommerce_Bridge {
 		if( $full ) {
 			self::$ledyer_settings = array(
 				'security' => array(
-					'level' => intval( ledyer()->get_setting('security_level') )
-					// ,
-					// 'requireClientValidation'
+					'level' => intval( ledyer()->get_setting('security_level') ),
+					'requireClientValidation'  => true,
 				),
 				'customer' => array(
 					'showNameFields' => 'yes' === ledyer()->get_setting('customer_show_name_fields'),

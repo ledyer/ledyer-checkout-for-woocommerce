@@ -57,7 +57,6 @@ jQuery(function ($) {
         lcoSuspend: function () {
             if (window.ledyer) {
                 window.ledyer.api.suspend();
-                console.log('suspend');
             }
         },
 
@@ -65,12 +64,8 @@ jQuery(function ($) {
          * Resumes the LCO Iframe
          */
         lcoResume: function () {
-            var isBlocked = $('form.checkout').find('.blockUI');
-
             if (window.ledyer) {
-                //console.log( $('form.checkout').find( '.blockUI' ) );
                 window.ledyer.api.resume();
-                console.log('resume');
             }
         },
 
@@ -210,7 +205,6 @@ jQuery(function ($) {
          * Gets the Ledyer order and starts the order submission
          */
         getLedyerOrder: function () {
-            console.log('getLedyerOrder');
             lco_wc.preventPaymentMethodChange = true;
             $('.woocommerce-checkout-review-order-table').block({
                 message: null,
@@ -234,10 +228,9 @@ jQuery(function ($) {
                     if (0 < $('form.checkout #terms').length) {
                         $('form.checkout #terms').prop('checked', true);
                     }
-                    console.log('success');
                 },
                 error: function (data) {
-                    console.log('error');
+
                 },
                 complete: function (data) {
                 }
@@ -327,13 +320,12 @@ jQuery(function ($) {
          * Fails the Ledyer order.
          * @param {string} error_message
          */
-        failOrder: function (error_message = "TODO: default error message here") {
-            console.log("LCO FAIL ORDER", { error_message })
-
+        failOrder: function (error_message = "Ett oväntat fel uppstod") {
             window.ledyer.api.clientValidation({
-                shouldProceed: false, message: {
-                    title: "Something went wrong", // TODO: translate?
-                    body: error_message // TODO: what format is this?
+                shouldProceed: false,
+                message: {
+                    title: "Ett oväntat fel uppstod",
+                    body: error_message
                 }
             })
 
@@ -379,6 +371,8 @@ jQuery(function ($) {
                         data: $('form.checkout').serialize(),
                         dataType: 'json',
                         success: function (data) {
+                            // data is an object with the following properties:
+                            // { result: "success" | "failure"; refresh: "boolean", reload: boolean, messages: string; }
                             try {
                                 if ('success' === data.result) {
                                     lco_wc.logToFile('Successfully placed order.');
@@ -390,13 +384,11 @@ jQuery(function ($) {
                                         url.searchParams.append('lco_pending', 'no');
                                     }
 
-                                    console.log("LCO placeLedyerOrder SUCCESS", { should_validate });
-
                                     if (should_validate) {
                                         window.ledyer.api.clientValidation({
                                             shouldProceed: true
                                         })
-                                        // Ledyer will respond with a new event when order is complet
+                                        // Ledyer will respond with a new event when order is complete
                                         // So don't redirect just yet
                                         lco_wc.isValidating = false;
                                         return;
@@ -407,10 +399,6 @@ jQuery(function ($) {
                                     throw 'Result failed';
                                 }
                             } catch (err) {
-                                console.log("placeledyerOrder CATCH");
-                                console.table(data);
-                                console.table(err);
-
                                 if (data.messages) {
                                     lco_wc.logToFile('Checkout error | ' + data.messages);
                                     lco_wc.failOrder(data.messages);
@@ -426,12 +414,12 @@ jQuery(function ($) {
                             } catch (e) {
                                 lco_wc.logToFile('AJAX error | Failed to parse error message.');
                             }
-                            lco_wc.failOrder('Internal Server Error');
+                            lco_wc.failOrder();
                         }
                     });
                 } else {
                     lco_wc.logToFile('Failed to get the order from Ledyer.');
-                    lco_wc.failOrder('Failed to get the order from Ledyer.');
+                    lco_wc.failOrder('Kunde inte hämta orderdata.');
                 }
             });
         },
@@ -455,8 +443,6 @@ jQuery(function ($) {
             $(document).on('ledyerCheckoutOrderComplete', function (event) {
                 lco_wc.logToFile('ledyerCheckoutOrderComplete from Ledyer triggered');
 
-                console.log("LCO ORDER COMPLETE RECEIVED", { "lco_wc.isValidating": lco_wc.isValidating })
-
                 if (!lco_params.pay_for_order) {
                     lco_wc.placeLedyerOrder(false, lco_wc.isValidating);
                 }
@@ -471,8 +457,6 @@ jQuery(function ($) {
 
             $(document).on('ledyerCheckoutWaitingForClientValidation', function (event) {
                 lco_wc.logToFile('ledyerCheckoutWaitingForClientValidation from Ledyer triggered');
-
-                console.log("LCO: Ledyer checkout waiting for client validation received");
 
                 lco_wc.isValidating = true;
 
