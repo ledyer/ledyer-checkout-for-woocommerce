@@ -320,11 +320,11 @@ jQuery(function ($) {
          * Fails the Ledyer order.
          * @param {string} error_message
          */
-        failOrder: function (error_message = "Ett oväntat fel uppstod") {
+        failOrder: function (error_message = "Kunde inte slutföra ordern. Var god försök igen. Om problemet kvarstår, vänligen kontakta kundsupport.") {
             window.ledyer.api.clientValidation({
                 shouldProceed: false,
                 message: {
-                    title: "Ett oväntat fel uppstod",
+                    title: null, // Use default title in Ledyer checkout
                     body: error_message
                 }
             })
@@ -401,7 +401,7 @@ jQuery(function ($) {
                             } catch (err) {
                                 if (data.messages) {
                                     lco_wc.logToFile('Checkout error | ' + data.messages);
-                                    lco_wc.failOrder(data.messages);
+                                    lco_wc.failOrder("Vänligen kontrollera att alla uppgifter är korrekt ifyllda.");
                                 } else {
                                     lco_wc.logToFile('Checkout error | No message' + err);
                                     lco_wc.failOrder();
@@ -419,7 +419,7 @@ jQuery(function ($) {
                     });
                 } else {
                     lco_wc.logToFile('Failed to get the order from Ledyer.');
-                    lco_wc.failOrder('Kunde inte hämta orderdata.');
+                    lco_wc.failOrder();
                 }
             });
         },
