@@ -320,7 +320,7 @@ jQuery(function ($) {
          * Fails the Ledyer order.
          * @param {string} error_message
          */
-        failOrder: function (error_message = "Kunde inte slutföra ordern. Var god försök igen. Om problemet kvarstår, vänligen kontakta kundsupport.") {
+        failOrder: function (error_message = "Kunde inte slutföra ordern. Var god försök igen. Om problemet kvarstår, vänligen kontakta kundsupport.", alert = null) {
             window.ledyer.api.clientValidation({
                 shouldProceed: false,
                 message: {
@@ -336,14 +336,15 @@ jQuery(function ($) {
             // Update the checkout and reenable the form.
             $('body').trigger('update_checkout');
 
-            const error_div = `<div class="woocommerce-error">${error_message}</div>`;
+            const alert_message = alert ?? error_message;
+            const error_div = `<div class="woocommerce-error">${alert_message}</div>`;
 
             // Print error messages, and trigger checkout_error, and scroll to notices.
             $('.woocommerce-NoticeGroup-checkout, .woocommerce-error, .woocommerce-message').remove();
             $(className).prepend(`<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout"> ${error_div} </div>`);
             $(className).removeClass('processing').unblock();
             $(className).find('.input-text, select, input:checkbox').trigger('validate').blur();
-            $(document.body).trigger('checkout_error', [error_message]);
+            $(document.body).trigger('checkout_error', [alert_message]);
             $('html, body').animate({
                 scrollTop: ($(className).offset().top - 100)
             }, 1000);
