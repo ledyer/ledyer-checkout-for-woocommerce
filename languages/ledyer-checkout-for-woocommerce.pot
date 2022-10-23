@@ -31,152 +31,128 @@ msgstr ""
 msgid "Maksimer"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:27
+#: classes/class-ledyer-lco-fields.php:28
 msgid "Enable/Disable"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:28
+#: classes/class-ledyer-lco-fields.php:29
 msgid "Enable Ledyer Checkout"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:34
+#: classes/class-ledyer-lco-fields.php:35
 msgid "Title"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:36
+#: classes/class-ledyer-lco-fields.php:37
 msgid "Payment method title."
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:41
+#: classes/class-ledyer-lco-fields.php:42
 msgid "Description"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:43
+#: classes/class-ledyer-lco-fields.php:44
 msgid "Payment method description."
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:48
+#: classes/class-ledyer-lco-fields.php:49
 msgid "Other payment method button text"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:50
+#: classes/class-ledyer-lco-fields.php:51
 msgid "Customize the <em>Select another payment method</em> button text that is displayed in checkout if using other payment methods than Ledyer Checkout. Leave blank to use the default (and translatable) text."
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:58
+#: classes/class-ledyer-lco-fields.php:59
 msgid "Test mode"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:59
+#: classes/class-ledyer-lco-fields.php:60
 msgid "Enable Test Mode"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:61
+#: classes/class-ledyer-lco-fields.php:62
 msgid "Place the payment gateway in test mode using test API keys."
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:66
+#: classes/class-ledyer-lco-fields.php:67
 msgid "Logging"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:67
+#: classes/class-ledyer-lco-fields.php:68
 msgid "Log debug messages"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:69
+#: classes/class-ledyer-lco-fields.php:70
 msgid "Save debug messages to the WooCommerce System Status log."
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:79
+#: classes/class-ledyer-lco-fields.php:75
 msgid "Production Ledyer API Username"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:81
-#: classes/class-ledyer-lco-fields.php:101
-#: classes/class-ledyer-lco-fields.php:111
-#: classes/class-ledyer-lco-fields.php:131
+#: classes/class-ledyer-lco-fields.php:77
+#: classes/class-ledyer-lco-fields.php:97
+#: classes/class-ledyer-lco-fields.php:107
+#: classes/class-ledyer-lco-fields.php:127
 msgid "Use API username and API password you downloaded in the Ledyer Merchant Portal. Don’t use your email address."
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:89
-#: classes/class-ledyer-lco-fields.php:119
+#: classes/class-ledyer-lco-fields.php:85
+#: classes/class-ledyer-lco-fields.php:115
 msgid "Production Ledyer Store Id"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:91
-#: classes/class-ledyer-lco-fields.php:121
+#: classes/class-ledyer-lco-fields.php:87
+#: classes/class-ledyer-lco-fields.php:117
 msgid "Optional. If you have multiple stores set in Ledyer account. Paste corresponding store ID found in Ledyer Merchant Portal."
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:99
+#: classes/class-ledyer-lco-fields.php:95
 msgid "Production Ledyer API Password"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:109
+#: classes/class-ledyer-lco-fields.php:105
 msgid "Sandbox Ledyer API Username"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:129
+#: classes/class-ledyer-lco-fields.php:125
 msgid "Sandbox Ledyer API Password"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:140
+#: classes/class-ledyer-lco-fields.php:146
 msgid "Checkout settings"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:144
+#: classes/class-ledyer-lco-fields.php:150
 msgid "Allow shipping address"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:145
+#: classes/class-ledyer-lco-fields.php:151
 msgid "Allow customer to enter different shipping address."
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:147
+#: classes/class-ledyer-lco-fields.php:153
 msgid "If checked, the customer will be able to enter different shipping address in checkout iframe."
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:152
+#: classes/class-ledyer-lco-fields.php:158
 msgid "Show name fields"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:155
+#: classes/class-ledyer-lco-fields.php:161
 msgid "If checked, name fields will be shown in iframe."
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:160
+#: classes/class-ledyer-lco-fields.php:166
 msgid "Strong Customer Authentication"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:163
-msgid "No SCA"
-msgstr ""
-
-#: classes/class-ledyer-lco-fields.php:164
-msgid "Requires SCA if shipping address is not registered"
-msgstr ""
-
-#: classes/class-ledyer-lco-fields.php:165
-msgid "Requires SCA if shipping address is different from billing address"
-msgstr ""
-
-#: classes/class-ledyer-lco-fields.php:166
-msgid "Requires SCA from any signatory"
-msgstr ""
-
-#: classes/class-ledyer-lco-fields.php:167
-msgid "Requires SCA from one valid combination of signatories"
-msgstr ""
-
-#: classes/class-ledyer-lco-fields.php:169
-msgid "Select SCA level."
-msgstr ""
-
-#: classes/class-ledyer-lco-fields.php:174
+#: classes/class-ledyer-lco-fields.php:190
 msgid "Privacy Policy URL"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:177
+#: classes/class-ledyer-lco-fields.php:193
 msgid "Merchant privacy policy that will be visible and linked in the checkout."
 msgstr ""
 
@@ -188,30 +164,30 @@ msgstr ""
 msgid "Merchant terms that will be visible and linked in the checkout."
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:191
+#: classes/class-ledyer-lco-fields.php:199
 msgid "Iframe Settings"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:195
+#: classes/class-ledyer-lco-fields.php:203
 msgid "Iframe padding"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:198
+#: classes/class-ledyer-lco-fields.php:206
 msgid "Ledyer checkout comes with a wrapping padding of 12px by default."
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:203
+#: classes/class-ledyer-lco-fields.php:211
 msgid "Checkout button color"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:205
+#: classes/class-ledyer-lco-fields.php:213
 msgid "Enter a color hex value to change the background color for the buy button, depending on the color provided the button text will be set to black or white."
 msgstr ""
 
-#: classes/class-ledyer-lco-gateway.php:20
+#: classes/class-ledyer-lco-gateway.php:23
 msgid "Ledyer Checkout"
 msgstr ""
 
-#: classes/class-ledyer-lco-gateway.php:21
+#: classes/class-ledyer-lco-gateway.php:24
 msgid "The current Ledyer Checkout replaces standard WooCommerce checkout page."
 msgstr ""
