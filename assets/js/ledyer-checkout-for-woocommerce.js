@@ -19,6 +19,7 @@ jQuery(function ($) {
         // Form fields.
         shippingUpdated: false,
         blocked: false,
+        isValidating: false,
 
         preventPaymentMethodChange: false,
 
@@ -56,7 +57,6 @@ jQuery(function ($) {
         lcoSuspend: function () {
             if (window.ledyer) {
                 window.ledyer.api.suspend();
-                console.log('suspend');
             }
         },
 
@@ -64,12 +64,8 @@ jQuery(function ($) {
          * Resumes the LCO Iframe
          */
         lcoResume: function () {
-            var isBlocked = $('form.checkout').find('.blockUI');
-
             if (window.ledyer) {
-                //console.log( $('form.checkout').find( '.blockUI' ) );
                 window.ledyer.api.resume();
-                console.log('resume');
             }
         },
 
@@ -209,7 +205,6 @@ jQuery(function ($) {
          * Gets the Ledyer order and starts the order submission
          */
         getLedyerOrder: function () {
-            console.log('getLedyerOrder');
             lco_wc.preventPaymentMethodChange = true;
             $('.woocommerce-checkout-review-order-table').block({
                 message: null,
@@ -233,10 +228,9 @@ jQuery(function ($) {
                     if (0 < $('form.checkout #terms').length) {
                         $('form.checkout #terms').prop('checked', true);
                     }
-                    console.log('success');
                 },
                 error: function (data) {
-                    console.log('error');
+
                 },
                 complete: function (data) {
                 }
@@ -322,7 +316,46 @@ jQuery(function ($) {
             }
         },
 
-        placeLedyerOrder: function (order_in_sessions = false) {
+        /**
+         * Fails the Ledyer order.
+         * @param {string} error_message
+         */
+        failOrder: function (error_message = "Kunde inte slutföra ordern. Var god försök igen. Om problemet kvarstår, vänligen kontakta kundsupport.", alert = null) {
+            window.ledyer.api.clientValidation({
+                shouldProceed: false,
+                message: {
+                    title: null, // Use default title in Ledyer checkout
+                    body: error_message
+                }
+            })
+
+            lco_wc.isValidating = false;
+
+            const className = lco_params.pay_for_order ? 'div.woocommerce-notices-wrapper' : 'form.checkout';
+
+            // Update the checkout and reenable the form.
+            $('body').trigger('update_checkout');
+
+            const alert_message = alert ?? error_message;
+            const error_div = `<div class="woocommerce-error">${alert_message}</div>`;
+
+            // Print error messages, and trigger checkout_error, and scroll to notices.
+            $('.woocommerce-NoticeGroup-checkout, .woocommerce-error, .woocommerce-message').remove();
+            $(className).prepend(`<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout"> ${error_div} </div>`);
+            $(className).removeClass('processing').unblock();
+            $(className).find('.input-text, select, input:checkbox').trigger('validate').blur();
+            $(document.body).trigger('checkout_error', [alert_message]);
+            $('html, body').animate({
+                scrollTop: ($(className).offset().top - 100)
+            }, 1000);
+        },
+
+        /**
+         * Places the Ledyer order
+         * @param {string} order_in_sessions
+         * @param {string} should_validate
+         */
+        placeLedyerOrder: function (order_in_sessions = false, should_validate = false) {
             lco_wc.blocked = true;
             lco_wc.getLedyerOrder().done(function (response) {
                 if (response.success) {
@@ -339,10 +372,12 @@ jQuery(function ($) {
                         data: $('form.checkout').serialize(),
                         dataType: 'json',
                         success: function (data) {
+                            // data is an object with the following properties:
+                            // { result: "success" | "failure"; refresh: "boolean", reload: boolean, messages: string; }
                             try {
                                 if ('success' === data.result) {
                                     lco_wc.logToFile('Successfully placed order.');
-                                    let url = new URL(data.redirect);
+                                    const url = new URL(data.redirect);
 
                                     if (order_in_sessions) {
                                         url.searchParams.append('lco_pending', 'yes');
@@ -350,17 +385,27 @@ jQuery(function ($) {
                                         url.searchParams.append('lco_pending', 'no');
                                     }
 
+                                    if (should_validate) {
+                                        window.ledyer.api.clientValidation({
+                                            shouldProceed: true
+                                        })
+                                        // Ledyer will respond with a new event when order is complete
+                                        // So don't redirect just yet
+                                        lco_wc.isValidating = false;
+                                        return;
+                                    }
+
                                     window.location.href = url.toString();
-                                    //callback({ should_proceed: true });
                                 } else {
-                                    //console.log(data, 33);
                                     throw 'Result failed';
                                 }
                             } catch (err) {
                                 if (data.messages) {
                                     lco_wc.logToFile('Checkout error | ' + data.messages);
+                                    lco_wc.failOrder("Vänligen kontrollera att alla uppgifter är korrekt ifyllda.");
                                 } else {
                                     lco_wc.logToFile('Checkout error | No message' + err);
+                                    lco_wc.failOrder();
                                 }
                             }
                         },
@@ -370,10 +415,12 @@ jQuery(function ($) {
                             } catch (e) {
                                 lco_wc.logToFile('AJAX error | Failed to parse error message.');
                             }
+                            lco_wc.failOrder();
                         }
                     });
                 } else {
                     lco_wc.logToFile('Failed to get the order from Ledyer.');
+                    lco_wc.failOrder();
                 }
             });
         },
@@ -384,46 +431,42 @@ jQuery(function ($) {
         init: function () {
             $(document).ready(lco_wc.documentReady);
 
-            //lco_wc.bodyEl.on( 'update_checkout', lco_wc.triggerBillingText );
-            //lco_wc.bodyEl.on('update_ledyer_order', lco_wc.lcoSuspend());
-            //lco_wc.bodyEl.on('updated_ledyer_order', lco_wc.lcoResume());
-
             if (0 < $('form.checkout #terms').length) {
                 $('form.checkout #terms').prop('checked', true);
             }
 
-            //lco_wc.bodyEl.on( 'change', 'input[type="text"]', lco_wc.triggerBillingText );
-            //lco_wc.bodyEl.on( 'update_lco_text_fields', lco_wc.lcoSuspend );
-            //lco_wc.bodyEl.on( 'updated_lco_text_fields', lco_wc.lcoResume );
-            //lco_wc.bodyEl.on( 'updated_checkout', function( data ) {  console.log(data); } );
             lco_wc.bodyEl.on('update_checkout', lco_wc.lcoSuspend);
             lco_wc.bodyEl.on('updated_checkout', lco_wc.lcoResume);
-            //lco_wc.bodyEl.on( 'updated_checkout',  lco_wc.updateLedyerOrder );
-
-
-            //lco_wc.bodyEl.on( 'updated_checkout', lco_wc.maybeDisplayShippingPrice );
             lco_wc.bodyEl.on('change', 'input.qty', lco_wc.updateCart);
             lco_wc.bodyEl.on('change', 'input[name="payment_method"]', lco_wc.maybeChangeToLco);
             lco_wc.bodyEl.on('click', lco_wc.selectAnotherSelector, lco_wc.changeFromLco);
 
-
             $(document).on('ledyerCheckoutOrderComplete', function (event) {
                 lco_wc.logToFile('ledyerCheckoutOrderComplete from Ledyer triggered');
-                if (lco_params.pay_for_order) {
-                    console.log('should_proceed: true');
-                    //callback({ should_proceed: true });
-                } else {
-                    lco_wc.placeLedyerOrder(false);
+
+                if (!lco_params.pay_for_order) {
+                    lco_wc.placeLedyerOrder(false, lco_wc.isValidating);
                 }
             });
 
             $(document).on('ledyerCheckoutOrderPending', function (event) {
                 lco_wc.logToFile('ledyerCheckoutOrderPending from Ledyer triggered');
-                if (lco_params.pay_for_order) {
-                    console.log('should_proceed: true');
-                    //callback({ should_proceed: true });
-                } else {
+                if (!lco_params.pay_for_order) {
                     lco_wc.placeLedyerOrder(true);
+                }
+            });
+
+            $(document).on('ledyerCheckoutWaitingForClientValidation', function (event) {
+                lco_wc.logToFile('ledyerCheckoutWaitingForClientValidation from Ledyer triggered');
+
+                lco_wc.isValidating = true;
+
+                if (lco_params.pay_for_order) {
+                    window.ledyer.api.clientValidation({
+                        shouldProceed: true
+                    })
+                } else {
+                    lco_wc.placeLedyerOrder(false, true);
                 }
             });
         },
