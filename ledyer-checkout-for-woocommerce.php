@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Ledyer Checkout for WooCommerce
- * Plugin URI: https://www.maksimer.com/
+ * Plugin URI: https://github.com/ledyer/ledyer-checkout-for-woocommerce
  * Description: Ledyer Checkout payment gateway for WooCommerce.
  * Author: Maksimer/Ledyer
  * Author URI: https://www.maksimer.com/
