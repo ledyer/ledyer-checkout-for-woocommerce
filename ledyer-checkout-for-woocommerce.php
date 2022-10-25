@@ -3,7 +3,7 @@
  * Plugin Name: Ledyer Checkout for WooCommerce
  * Plugin URI: https://www.maksimer.com/
  * Description: Ledyer Checkout payment gateway for WooCommerce.
- * Author: Maksimer
+ * Author: Maksimer/Ledyer
  * Author URI: https://www.maksimer.com/
  * Version: 1.1.0
  * Text Domain: ledyer-checkout-for-woocommerce
@@ -12,7 +12,7 @@
  * WC requires at least: 3.2.0
  * WC tested up to: 4.7.0
  *
- * Copyright (c) 2017-2020 Maksimer
+ * Copyright (c) 2017-2022 Maksimer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
