@@ -402,7 +402,7 @@ jQuery(function ($) {
                             } catch (err) {
                                 if (data.messages) {
                                     lco_wc.logToFile('Checkout error | ' + data.messages);
-                                    lco_wc.failOrder("Vänligen kontrollera att alla uppgifter är korrekt ifyllda.");
+                                    lco_wc.failOrder("Vänligen kontrollera att alla uppgifter är korrekt ifyllda.", data.messages);
                                 } else {
                                     lco_wc.logToFile('Checkout error | No message' + err);
                                     lco_wc.failOrder();
