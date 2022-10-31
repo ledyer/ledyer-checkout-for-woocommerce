@@ -1,3 +1,6 @@
+## 1.1.2
+* Fix: Sanitize response url query parameters (wp review)
+
 ## 1.1.1
 * Fix: client side validation bugs
 
