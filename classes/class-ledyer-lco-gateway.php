@@ -400,11 +400,11 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$care_of = get_post_meta($order_id, '_billing_care_of', true);
 
 			if( ! empty( $attention_name ) ) {
-				echo '<p><strong>' . __('Billing Attention Name') . ':</strong><br> ' . $attention_name . '</p>';
+				echo '<p><strong>' . __('Billing Attention Name') . ':</strong><br> ' . esc_html($attention_name) . '</p>';
 			}
 
 			if( ! empty( $care_of ) ) {
-				echo '<p><strong>' . __('Billing Care Of') . ':</strong><br> ' . $care_of. '</p>';
+				echo '<p><strong>' . __('Billing Care Of') . ':</strong><br> ' . esc_html($care_of) . '</p>';
 			}
 		}
 		/**
@@ -425,11 +425,11 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$care_of        = get_post_meta( $order_id, '_shipping_care_of', true );
 
 			if ( ! empty( $attention_name ) ) {
-				echo '<p><strong>' . __( 'Shipping Attention Name' ) . ':</strong><br> ' . $attention_name . '</p>';
+				echo '<p><strong>' . __( 'Shipping Attention Name' ) . ':</strong><br> ' . esc_html($attention_name) . '</p>';
 			}
 
 			if ( ! empty( $care_of ) ) {
-				echo '<p><strong>' . __( 'Shipping Care Of' ) . ':</strong><br> ' . $care_of . '</p>';
+				echo '<p><strong>' . __( 'Shipping Care Of' ) . ':</strong><br> ' . esc_html($care_of) . '</p>';
 			}
 		}
 
