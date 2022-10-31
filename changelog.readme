@@ -1,5 +1,7 @@
 ## 1.1.2
 * Fix: Sanitize response url query parameters (wp review)
+* Fix: Escape variables that we print in html markup
+* Stable tag, same as latest version in readme.txt
 
 ## 1.1.1
 * Fix: client side validation bugs
