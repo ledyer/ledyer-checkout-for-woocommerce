@@ -389,7 +389,7 @@ jQuery(function ($) {
                                         // Ledyer will respond with a new event when order is complete
                                         // So don't redirect just yet
                                         lco_wc.isValidating = false;
-                                        lco_wc.redirectUrl = url;
+                                        lco_wc.redirectUrl = url.toString();
                                         return;
                                     }
 
