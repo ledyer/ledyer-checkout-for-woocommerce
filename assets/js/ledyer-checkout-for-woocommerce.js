@@ -31,11 +31,12 @@ jQuery(function ($) {
         shippingEmailExists: false,
         shippingPhoneExists: false,
 
+        redirectUrl: null,
+
         /**
          * Triggers on document ready.
          */
         documentReady: function () {
-            lco_wc.log(lco_params);
             if (0 < lco_wc.paymentMethodEl.length) {
                 lco_wc.paymentMethod = lco_wc.paymentMethodEl.filter(':checked').val();
             } else {
@@ -95,7 +96,6 @@ jQuery(function ($) {
                 success: function (data) { },
                 error: function (data) { },
                 complete: function (data) {
-                    lco_wc.log(data.responseJSON);
                     window.location.href = data.responseJSON.data.redirect;
                 }
             });
@@ -106,7 +106,6 @@ jQuery(function ($) {
          */
         maybeChangeToLco: function () {
             if (!lco_wc.preventPaymentMethodChange) {
-                lco_wc.log($(this).val());
 
                 if ('lco' === $(this).val()) {
                     $('.woocommerce-info').remove();
@@ -130,7 +129,6 @@ jQuery(function ($) {
                         success: function (data) { },
                         error: function (data) { },
                         complete: function (data) {
-                            lco_wc.log(data.responseJSON);
                             window.location.href = data.responseJSON.data.redirect;
                         }
                     });
@@ -245,7 +243,6 @@ jQuery(function ($) {
          * @param {array} data
          */
         setCustomerData: function (data) {
-            lco_wc.log(data);
             if ('billing_address' in data && data.billing_address !== null) {
                 // Billing fields.
                 'billing_first_name' in data.billing_address ? $('#billing_first_name').val(data.billing_address.billing_first_name) : '';
@@ -392,6 +389,7 @@ jQuery(function ($) {
                                         // Ledyer will respond with a new event when order is complete
                                         // So don't redirect just yet
                                         lco_wc.isValidating = false;
+                                        lco_wc.redirectUrl = url;
                                         return;
                                     }
 
@@ -444,6 +442,13 @@ jQuery(function ($) {
             $(document).on('ledyerCheckoutOrderComplete', function (event) {
                 lco_wc.logToFile('ledyerCheckoutOrderComplete from Ledyer triggered');
 
+                if (lco_wc.redirectUrl !== null) {
+                    // This means that placeLedyerOrder was called successfully already
+                    // (Due to an earlier call caused by client validation)
+                    window.location.href = lco_wc.redirectUrl;
+                    return;
+                }
+
                 if (!lco_params.pay_for_order) {
                     lco_wc.placeLedyerOrder(false, lco_wc.isValidating);
                 }
@@ -466,7 +471,7 @@ jQuery(function ($) {
                         shouldProceed: true
                     })
                 } else {
-                    lco_wc.placeLedyerOrder(false, true);
+                    lco_wc.placeLedyerOrder(false, lco_wc.isValidating);
                 }
             });
         },
