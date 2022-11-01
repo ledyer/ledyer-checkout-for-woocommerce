@@ -2,7 +2,7 @@
 # This file is distributed under the same license as the Ledyer Checkout for WooCommerce plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Ledyer Checkout for WooCommerce 1.1.0\n"
+"Project-Id-Version: Ledyer Checkout for WooCommerce 1.1.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/ledyer-checkout-for-woocommerce\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
