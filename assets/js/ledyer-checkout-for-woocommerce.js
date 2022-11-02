@@ -363,6 +363,7 @@ jQuery(function ($) {
                             opacity: 0.6
                         }
                     });
+
                     $.ajax({
                         type: 'POST',
                         url: lco_params.submit_order,
