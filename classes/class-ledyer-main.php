@@ -153,9 +153,7 @@ class Ledyer_Checkout_For_WooCommerce {
 					$order = wc_get_order( $order->ID );
 
 					if( 'com.ledyer.order.create' === $request_body['eventType'] ) {
-						// TODO: if order was on hold or pending and notification is received, set to processing (update_status)
-
-						$order->payment_complete( $order_id );
+						$order->update_status('processing');
 						$response = ledyer()->api->acknowledge_order( $order_id );
 						if( is_wp_error( $response ) ) {
 							\Ledyer\Logger::log( 'Couldn\'t acknowledge order ' . $order_id  );

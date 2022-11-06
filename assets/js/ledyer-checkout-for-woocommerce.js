@@ -390,7 +390,7 @@ jQuery(function ($) {
                                         // Ledyer will respond with a new event when order is complete
                                         // So don't redirect just yet
                                         lco_wc.isValidating = false;
-                                        lco_wc.redirectUrl = url.toString();
+                                        lco_wc.redirectUrl = url;
                                         return;
                                     }
 
@@ -446,7 +446,8 @@ jQuery(function ($) {
                 if (lco_wc.redirectUrl !== null) {
                     // This means that placeLedyerOrder was called successfully already
                     // (Due to an earlier call caused by client validation)
-                    window.location.href = lco_wc.redirectUrl;
+                    lco_wc.redirectUrl.searchParams.append('lco_purchase_complete', 'yes');
+                    window.location.href = lco_wc.redirectUrl.toString();
                     return;
                 }
 

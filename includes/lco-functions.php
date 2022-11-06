@@ -202,7 +202,7 @@ function wc_ledyer_confirm_ledyer_order( $order_id, $ledyer_pending ) {
 			$order->add_order_note( sprintf( __( 'New payment created in Ledyer with Payment ID %1$s. Payment type - %2$s. Awaiting charge.', 'ledyer-checkout-for-woocommerce' ), $payment_id, $request['paymentMethod']['type'] ) );
 
 			if ( ! $isAdvanceInvoice) {
-				$order->payment_complete( $payment_id );
+				$order->update_status('processing');
 			}
 			$response = ledyer()->api->acknowledge_order( $payment_id );
 			if( is_wp_error( $response ) ) {
