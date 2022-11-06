@@ -196,18 +196,8 @@ function wc_ledyer_confirm_ledyer_order( $order_id, $ledyer_pending ) {
 		update_post_meta( $order_id, 'ledyer_payment_method', $request['paymentMethod']['provider'] );
 		update_post_meta( $order_id, '_ledyer_date_paid', gmdate( 'Y-m-d H:i:s' ) );
 
-		$isAdvanceInvoice = $request['paymentMethod']['type'] == 'advanceInvoice';
-
 		if( ! $ledyer_pending ) {
-			$order->add_order_note( sprintf( __( 'New payment created in Ledyer with Payment ID %1$s. Payment type - %2$s. Awaiting charge.', 'ledyer-checkout-for-woocommerce' ), $payment_id, $request['paymentMethod']['type'] ) );
-
-			if ( ! $isAdvanceInvoice) {
-				$order->update_status('processing');
-			}
-			$response = ledyer()->api->acknowledge_order( $payment_id );
-			if( is_wp_error( $response ) ) {
-				\Ledyer\Logger::log( 'Couldn\'t acknowledge order ' . $payment_id  );
-			}
+			$order->add_order_note( sprintf( __( 'New payment created in Ledyer with Payment ID %1$s. Payment type - %2$s. Awaiting capture.', 'ledyer-checkout-for-woocommerce' ), $payment_id, $request['paymentMethod']['type'] ) );
 		} else {
 			$order->update_status('on-hold');
 			$order->add_order_note( sprintf( __( 'New payment created in Ledyer with Payment ID %1$s. Payment type - %2$s. Awaiting signature.', 'ledyer-checkout-for-woocommerce' ), $session_id, $request['paymentMethod']['type'] ) );

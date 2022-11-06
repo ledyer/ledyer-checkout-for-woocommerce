@@ -153,11 +153,15 @@ class Ledyer_Checkout_For_WooCommerce {
 					$order = wc_get_order( $order->ID );
 
 					if( 'com.ledyer.order.create' === $request_body['eventType'] ) {
-						$order->update_status('processing');
+						$order->update_status('pending');
 						$response = ledyer()->api->acknowledge_order( $order_id );
 						if( is_wp_error( $response ) ) {
 							\Ledyer\Logger::log( 'Couldn\'t acknowledge order ' . $order_id  );
 						}
+					}
+
+					if( 'com.ledyer.order.ready_for_capture' === $request_body['eventType'] ) {
+						$order->update_status('processing');
 					}
 
 					switch ( $ledyer_order['status'] ) {
