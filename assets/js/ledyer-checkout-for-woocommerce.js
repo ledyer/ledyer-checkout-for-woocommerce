@@ -394,6 +394,7 @@ jQuery(function ($) {
                                         return;
                                     }
 
+                                    lco_wc.redirectUrl.searchParams.append('lco_purchase_complete', 'yes');
                                     window.location.href = url.toString();
                                 } else {
                                     throw 'Result failed';
