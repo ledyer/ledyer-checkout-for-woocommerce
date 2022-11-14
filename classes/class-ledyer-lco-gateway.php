@@ -372,14 +372,6 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 * @param $order
 		 */
 		public function wc_order_created( $order_id, $posted_data, $order ) {
-			$ledyer_order_id = WC()->session->get( 'lco_wc_order_id' );
-
-			$ledyer_order = ledyer()->api->update_order_reference( $ledyer_order_id, array( 'reference' => strval( $order_id ) ) );
-
-			if ( ! $ledyer_order || ( is_object( $ledyer_order ) && is_wp_error( $ledyer_order ) ) ) {
-				// If failed then bail.
-				return;
-			}
 		}
 
 		/**
