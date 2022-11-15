@@ -164,7 +164,7 @@ class Ledyer_Checkout_For_WooCommerce {
 						$order->update_status('processing');
 					}
 
-					switch ( $ledyer_order['status'] ) {
+					switch ( $ledyer_order['status'][0] ) {
 						case 'fullyCaptured':
 							$order->update_status( 'completed' );
 							$order->add_order_note( sprintf( __( 'Payment Completed in Ledyer with Payment ID %1$s. Payment type - %2$s.', 'ledyer-checkout-for-woocommerce' ), $order_id, $request['paymentMethod']['type'] ) );
@@ -254,17 +254,29 @@ class Ledyer_Checkout_For_WooCommerce {
 	 */
 	public function include_files() {
 		include_once LCO_WC_PLUGIN_PATH . '/includes/lco-functions.php';
-
-		spl_autoload_register(
-			function ( $class ) {
-				if ( strpos( $class, 'Ledyer\\' ) === 0 ) {
-					$class = strtolower( $class );
-					$class = str_replace( [ '\\', '_', 'ledyer/' ], [ '/', '-', '' ], $class );
-					$class = preg_replace( '/(.*\/)?([a-z-]+)$/', '$1/class-ledyer-$2.php', $class );
-					include_once __DIR__ . '/' . $class;
-				}
-			}
-		);
+        include_once LCO_WC_PLUGIN_PATH . '/includes/lco-functions.php';
+        include_once LCO_WC_PLUGIN_PATH . '/classes/class-ledyer-singleton.php';
+        include_once LCO_WC_PLUGIN_PATH . '/classes/class-ledyer-logger.php';
+        include_once LCO_WC_PLUGIN_PATH . '/classes/admin/class-ledyer-meta-box.php';
+        include_once LCO_WC_PLUGIN_PATH . '/classes/requests/class-ledyer-request.php';
+        include_once LCO_WC_PLUGIN_PATH . '/classes/requests/order/class-ledyer-request-order.php';
+        include_once LCO_WC_PLUGIN_PATH . '/classes/requests/order/session/class-ledyer-create-order.php';
+        include_once LCO_WC_PLUGIN_PATH . '/classes/requests/order/session/class-ledyer-get-order.php';
+        include_once LCO_WC_PLUGIN_PATH . '/classes/requests/order/session/class-ledyer-update-order.php';
+        include_once LCO_WC_PLUGIN_PATH . '/classes/requests/order/management/class-ledyer-acknowledge-order.php';
+        include_once LCO_WC_PLUGIN_PATH . '/classes/requests/order/management/class-ledyer-get-order.php';
+        include_once LCO_WC_PLUGIN_PATH . '/classes/requests/order/management/class-ledyer-update-order-reference.php';
+        include_once LCO_WC_PLUGIN_PATH . '/classes/requests/helpers/class-ledyer-cart.php';
+        include_once LCO_WC_PLUGIN_PATH . '/classes/requests/helpers/class-ledyer-woocommerce-bridge.php';
+        include_once LCO_WC_PLUGIN_PATH . '/classes/class-ledyer-ajax.php';
+        include_once LCO_WC_PLUGIN_PATH . '/classes/class-ledyer-api.php';
+        include_once LCO_WC_PLUGIN_PATH . '/classes/class-ledyer-checkout.php';
+        include_once LCO_WC_PLUGIN_PATH . '/classes/class-ledyer-confirmation.php';
+        include_once LCO_WC_PLUGIN_PATH . '/classes/class-ledyer-credentials.php';
+        include_once LCO_WC_PLUGIN_PATH . '/classes/class-ledyer-fields.php';
+        include_once LCO_WC_PLUGIN_PATH . '/classes/class-ledyer-lco-gateway.php';
+        include_once LCO_WC_PLUGIN_PATH . '/classes/class-ledyer-merchant-urls.php';
+        include_once LCO_WC_PLUGIN_PATH . '/classes/class-ledyer-templates.php';
 	}
 
 	/**
