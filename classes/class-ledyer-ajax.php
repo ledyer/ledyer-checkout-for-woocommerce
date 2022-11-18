@@ -60,8 +60,11 @@ class AJAX extends \WC_AJAX {
 
 		$values = array();
 		if ( isset( $_POST['checkout'] ) ) {
-			parse_str( wp_unslash( $_POST['checkout'] ), $values );// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$response = sanitize_url(wp_unslash( $_POST['checkout'] ));
+			parse_str( html_entity_decode($response), $values );
+			$values=filter_var_array($values, FILTER_SANITIZE_ENCODED);
 		}
+
 		$cart = $values['cart'];
 
 		foreach ( $cart as $cart_key => $cart_value ) {
