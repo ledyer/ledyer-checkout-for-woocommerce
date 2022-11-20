@@ -20,7 +20,8 @@ abstract class Request_Order extends Request {
 	 * Set request url for all Request_Order child classes
 	 */
 	protected function set_request_url() {
-		$this->request_url  = parent::is_test() ? 'https://api.sandbox.ledyer.com/' : 'https://api.live.ledyer.com/';
+		// $this->request_url  = parent::is_test() ? 'https://api.sandbox.ledyer.com/' : 'https://api.live.ledyer.com/';
+		$this->request_url  = parent::is_test() ? 'https://api.dev.ledyer.com/' : 'https://api.live.ledyer.com/';
 		$this->set_url();
 	}
 	/*

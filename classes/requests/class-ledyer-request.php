@@ -76,7 +76,8 @@ abstract class Request {
 
 		$client_credentials = ledyer()->credentials->get_credentials_from_session();
 
-		$api_auth_base = $this->is_test() ? 'https://auth.sandbox.ledyer.com/' : 'https://auth.live.ledyer.com/';
+		// $api_auth_base = $this->is_test() ? 'https://auth.sandbox.ledyer.com/' : 'https://auth.live.ledyer.com/';
+		$api_auth_base = $this->is_test() ? 'https://auth.dev.ledyer.com/' : 'https://auth.live.ledyer.com/';
 
 		$client = new \WP_Http();
 
