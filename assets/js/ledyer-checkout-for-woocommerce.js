@@ -394,7 +394,6 @@ jQuery(function ($) {
                                         return;
                                     }
 
-                                    lco_wc.redirectUrl.searchParams.append('lco_purchase_complete', 'yes');
                                     window.location.href = url.toString();
                                 } else {
                                     throw 'Result failed';
@@ -447,7 +446,6 @@ jQuery(function ($) {
                 if (lco_wc.redirectUrl !== null) {
                     // This means that placeLedyerOrder was called successfully already
                     // (Due to an earlier call caused by client validation)
-                    lco_wc.redirectUrl.searchParams.append('lco_purchase_complete', 'yes');
                     window.location.href = lco_wc.redirectUrl.toString();
                     return;
                 }
