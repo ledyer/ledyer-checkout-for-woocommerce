@@ -9,7 +9,6 @@
     "WordPress"
   ],
   "dependencies": {
-    "cypress": "^8.4.1",
     "smoothscroll-polyfill": "^0.4.4"
   },
   "devDependencies": {
