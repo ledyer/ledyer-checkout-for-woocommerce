@@ -1,3 +1,6 @@
+## 1.1.4
+* Fix: Notifications handling and basic order management
+
 ## 1.1.3
 * Fix: Sanitize response url query parameters (wp review)
 * Fix: Escape variables that we print in html markup

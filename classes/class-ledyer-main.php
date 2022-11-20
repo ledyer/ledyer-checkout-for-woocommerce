@@ -51,7 +51,7 @@ class Ledyer_Checkout_For_WooCommerce {
 	 */
 	public $checkout;
 
-	const VERSION = '1.1.3';
+	const VERSION = '1.1.4';
 	const SLUG = 'ledyer-checkout-for-woocommerce';
 	const SETTINGS = 'ledyer_checkout_for_woocommerce_settings';
 
@@ -146,36 +146,46 @@ class Ledyer_Checkout_For_WooCommerce {
 			return $response;
 		}
 
-		if ( $orders->have_posts() && in_array( $request_body['eventType'], array('com.ledyer.order.ready_for_capture', 'com.ledyer.order.create') ) ) {
+		if ( $orders->have_posts() && in_array( $request_body['eventType'], array(
+			'com.ledyer.order.ready_for_capture', 'com.ledyer.order.create', 'com.ledyer.order.full_capture', 'com.ledyer.order.cancel', 'com.ledyer.order.full_refund'
+			) ) ) {
 			foreach ( $orders->posts as $order ) {
 				if ( 'revision' !== $order->post_status ) {
 
 					$order = wc_get_order( $order->ID );
 
-					if( 'com.ledyer.order.create' === $request_body['eventType'] ) {
-						$order->update_status('pending');
-						$response = ledyer()->api->acknowledge_order( $order_id );
-						if( is_wp_error( $response ) ) {
-							\Ledyer\Logger::log( 'Couldn\'t acknowledge order ' . $order_id  );
-						}
-					}
-
-					if( 'com.ledyer.order.ready_for_capture' === $request_body['eventType'] ) {
-						$order->update_status('processing');
-					}
-
-					switch ( $ledyer_order['status'][0] ) {
-						case 'fullyCaptured':
+					switch ( $request_body['eventType'] ) {
+						case 'com.ledyer.order.create':
+							$order->update_status('pending');
+							$response = ledyer()->api->acknowledge_order( $order_id );
+							if( is_wp_error( $response ) ) {
+								\Ledyer\Logger::log( 'Couldn\'t acknowledge order ' . $order_id  );
+							} else {
+								$order->add_order_note( sprintf( __( 'Payment acknowledged in Ledyer.', 'ledyer-checkout-for-woocommerce' ) ) );
+							}
+							
+							$ledyer_update_order = ledyer()->api->update_order_reference( $order_id, array( 'reference' => strval( $order->ID ) ) );
+							if ( is_wp_error( $ledyer_update_order ) ) {
+								\Ledyer\Logger::log( 'Couldn\'t set merchant reference ' . $order->ID  );
+							} else {
+								$order->add_order_note( sprintf( __( 'Merchant reference set in Ledyer.', 'ledyer-checkout-for-woocommerce' ) ) );
+							}
+							break;
+						case 'com.ledyer.order.ready_for_capture':
+							$order->update_status('processing');
+							$order->add_order_note( sprintf( __( 'Payment ready for capture in Ledyer.', 'ledyer-checkout-for-woocommerce' ) ) );
+							break;
+						case 'com.ledyer.order.full_capture':
 							$order->update_status( 'completed' );
-							$order->add_order_note( sprintf( __( 'Payment Completed in Ledyer with Payment ID %1$s. Payment type - %2$s.', 'ledyer-checkout-for-woocommerce' ), $order_id, $request['paymentMethod']['type'] ) );
+							$order->add_order_note( sprintf( __( 'Payment completed in Ledyer.', 'ledyer-checkout-for-woocommerce' ) ) );
 							break;
-						case 'cancelled':
-							$order->update_status( 'canceled' );
-							$order->add_order_note( sprintf( __( 'Payment Canceled in Ledyer with Payment ID %1$s. Payment type - %2$s.', 'ledyer-checkout-for-woocommerce' ), $order_id, $request['paymentMethod']['type'] ) );
+						case 'com.ledyer.order.cancel':
+							$order->update_status( 'cancelled' );
+							$order->add_order_note( sprintf( __( 'Payment cancelled in Ledyer.', 'ledyer-checkout-for-woocommerce' ) ) );
 							break;
-						case 'fullyRefunded':
+						case 'com.ledyer.order.full_refund':
 							$order->update_status( 'refunded' );
-							$order->add_order_note( sprintf( __( 'Payment Fully Refunded in Ledyer with Payment ID %1$s. Payment type - %2$s.', 'ledyer-checkout-for-woocommerce' ), $order_id, $request['paymentMethod']['type'] ) );
+							$order->add_order_note( sprintf( __( 'Payment fully refunded in Ledyer.', 'ledyer-checkout-for-woocommerce' ) ) );
 							break;
 					}
 				}
