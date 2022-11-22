@@ -198,7 +198,7 @@ function wc_ledyer_confirm_ledyer_order( $order_id, $ledyer_pending ) {
 			$order->add_order_note( sprintf( __( 'New payment created in Ledyer with Payment ID %1$s. Payment type - %2$s. Awaiting capture.', 'ledyer-checkout-for-woocommerce' ), $payment_id, $request['paymentMethod']['type'] ) );
 		} else {
 			$order->update_status('on-hold');
-			$order->add_order_note( sprintf( __( 'New payment created in Ledyer with Payment ID %1$s. Payment type - %2$s. Awaiting signature.', 'ledyer-checkout-for-woocommerce' ), $session_id, $request['paymentMethod']['type'] ) );
+			$order->add_order_note( sprintf( __( 'New pending payment created in Ledyer with Payment ID %1$s. Payment type - %2$s. Awaiting signature.', 'ledyer-checkout-for-woocommerce' ), $session_id, $request['paymentMethod']['type'] ) );
         }
 
 	} else {
