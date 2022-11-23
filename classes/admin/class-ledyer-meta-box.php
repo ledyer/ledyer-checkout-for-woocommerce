@@ -58,7 +58,7 @@ class Meta_Box {
 			$ledyer_order = ledyer()->api->get_order( get_post_meta( $order_id, '_wc_ledyer_order_id', true ) );
 
 			if ( is_wp_error( $ledyer_order ) ) {
-				$this->print_error_content( __( 'Failed to retrieve the order from Ledyer.', 'ledyer-checkout-for-woocommerce' ) );
+				$this->print_error_content( __( 'Failed to retrieve the order from Ledyer. The customer may not have been able to complete the checkout flow', 'ledyer-checkout-for-woocommerce' ) );
 				return;
 			}
 		}

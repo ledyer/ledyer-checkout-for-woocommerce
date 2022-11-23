@@ -374,7 +374,7 @@ jQuery(function ($) {
                             // { result: "success" | "failure"; refresh: "boolean", reload: boolean, messages: string; }
                             try {
                                 if ('success' === data.result) {
-                                    lco_wc.logToFile('Successfully placed order.');
+                                    lco_wc.logToFile('Successfully validated order in WooCommerce.');
                                     const url = new URL(data.redirect);
 
                                     if (order_in_sessions) {
@@ -393,7 +393,6 @@ jQuery(function ($) {
                                         lco_wc.redirectUrl = url;
                                         return;
                                     }
-
                                     lco_wc.redirectUrl.searchParams.append('lco_purchase_complete', 'yes');
                                     window.location.href = url.toString();
                                 } else {
@@ -445,6 +444,7 @@ jQuery(function ($) {
                 lco_wc.logToFile('ledyerCheckoutOrderComplete from Ledyer triggered');
 
                 if (lco_wc.redirectUrl !== null) {
+                    lco_wc.logToFile('Successfully placed order in Ledyer.');
                     // This means that placeLedyerOrder was called successfully already
                     // (Due to an earlier call caused by client validation)
                     lco_wc.redirectUrl.searchParams.append('lco_purchase_complete', 'yes');

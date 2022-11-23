@@ -158,6 +158,11 @@ class Ledyer_Checkout_For_WooCommerce {
 						if( is_wp_error( $response ) ) {
 							\Ledyer\Logger::log( 'Couldn\'t acknowledge order ' . $order_id  );
 						}
+						
+						$ledyer_update_order = ledyer()->api->update_order_reference( $order_id, array( 'reference' => strval( $order->ID ) ) );
+						if ( is_wp_error( $ledyer_update_order ) ) {
+							\Ledyer\Logger::log( 'Couldn\'t set merchant reference ' . $order->ID  );
+						}
 					}
 
 					if( 'com.ledyer.order.ready_for_capture' === $request_body['eventType'] ) {

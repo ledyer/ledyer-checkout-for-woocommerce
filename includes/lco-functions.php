@@ -190,8 +190,6 @@ function wc_ledyer_confirm_ledyer_order( $order_id, $ledyer_pending ) {
 
 		do_action( 'ledyer_process_payment', $order_id, $request );
 
-		$ledyer_order = ledyer()->api->update_order_reference( $payment_id, array( 'reference' => strval( $order_id ) ) );
-
 		update_post_meta( $order_id, 'ledyerpayment_type', $request['paymentMethod']['type'] );
 		update_post_meta( $order_id, 'ledyer_payment_method', $request['paymentMethod']['provider'] );
 		update_post_meta( $order_id, '_ledyer_date_paid', gmdate( 'Y-m-d H:i:s' ) );
@@ -200,7 +198,7 @@ function wc_ledyer_confirm_ledyer_order( $order_id, $ledyer_pending ) {
 			$order->add_order_note( sprintf( __( 'New payment created in Ledyer with Payment ID %1$s. Payment type - %2$s. Awaiting capture.', 'ledyer-checkout-for-woocommerce' ), $payment_id, $request['paymentMethod']['type'] ) );
 		} else {
 			$order->update_status('on-hold');
-			$order->add_order_note( sprintf( __( 'New payment created in Ledyer with Payment ID %1$s. Payment type - %2$s. Awaiting signature.', 'ledyer-checkout-for-woocommerce' ), $session_id, $request['paymentMethod']['type'] ) );
+			$order->add_order_note( sprintf( __( 'New pending payment created in Ledyer with Payment ID %1$s. Payment type - %2$s. Awaiting signature.', 'ledyer-checkout-for-woocommerce' ), $session_id, $request['paymentMethod']['type'] ) );
         }
 
 	} else {
