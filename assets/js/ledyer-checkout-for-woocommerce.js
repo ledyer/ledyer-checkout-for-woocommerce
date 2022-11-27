@@ -349,10 +349,9 @@ jQuery(function ($) {
 
         /**
          * Places the Ledyer order
-         * @param {string} order_in_sessions
          * @param {string} should_validate
          */
-        placeLedyerOrder: function (order_in_sessions = false, should_validate = false) {
+        placeLedyerOrder: function (should_validate = false) {
             lco_wc.blocked = true;
             lco_wc.getLedyerOrder().done(function (response) {
                 if (response.success) {
@@ -377,12 +376,6 @@ jQuery(function ($) {
                                     lco_wc.logToFile('Successfully placed order.');
                                     const url = new URL(data.redirect);
 
-                                    if (order_in_sessions) {
-                                        url.searchParams.append('lco_pending', 'yes');
-                                    } else {
-                                        url.searchParams.append('lco_pending', 'no');
-                                    }
-
                                     if (should_validate) {
                                         window.ledyer.api.clientValidation({
                                             shouldProceed: true
@@ -394,7 +387,6 @@ jQuery(function ($) {
                                         return;
                                     }
 
-                                    lco_wc.redirectUrl.searchParams.append('lco_purchase_complete', 'yes');
                                     window.location.href = url.toString();
                                 } else {
                                     throw 'Result failed';
@@ -443,24 +435,15 @@ jQuery(function ($) {
 
             $(document).on('ledyerCheckoutOrderComplete', function (event) {
                 lco_wc.logToFile('ledyerCheckoutOrderComplete from Ledyer triggered');
-
-                if (lco_wc.redirectUrl !== null) {
-                    // This means that placeLedyerOrder was called successfully already
-                    // (Due to an earlier call caused by client validation)
-                    lco_wc.redirectUrl.searchParams.append('lco_purchase_complete', 'yes');
-                    window.location.href = lco_wc.redirectUrl.toString();
-                    return;
-                }
-
                 if (!lco_params.pay_for_order) {
-                    lco_wc.placeLedyerOrder(false, lco_wc.isValidating);
+                    lco_wc.placeLedyerOrder(lco_wc.isValidating);
                 }
             });
 
             $(document).on('ledyerCheckoutOrderPending', function (event) {
                 lco_wc.logToFile('ledyerCheckoutOrderPending from Ledyer triggered');
                 if (!lco_params.pay_for_order) {
-                    lco_wc.placeLedyerOrder(true);
+                    lco_wc.placeLedyerOrder();
                 }
             });
 
@@ -474,7 +457,7 @@ jQuery(function ($) {
                         shouldProceed: true
                     })
                 } else {
-                    lco_wc.placeLedyerOrder(false, lco_wc.isValidating);
+                    lco_wc.placeLedyerOrder(lco_wc.isValidating);
                 }
             });
         },

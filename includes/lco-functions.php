@@ -167,8 +167,13 @@ function lco_wc_show_another_gateway_button() {
  *
  * @return void
  */
-function wc_ledyer_confirm_ledyer_order( $order_id, $ledyer_pending ) {
-	$order         = wc_get_order( $order_id );
+function wc_ledyer_confirm_ledyer_order( $order_id ) {
+	$order = wc_get_order( $order_id );
+	// If the order is already completed or on-hold, return.
+	if ( !empty($order->get_date_paid()) || $order->has_status(array('on-hold')) ) {
+		return;
+	}
+
 	$payment_id    = get_post_meta( $order_id, '_wc_ledyer_order_id', true );
 	$session_id    = get_post_meta( $order_id, '_wc_ledyer_session_id', true );
 
@@ -180,57 +185,68 @@ function wc_ledyer_confirm_ledyer_order( $order_id, $ledyer_pending ) {
 		$session_id = WC()->session->get( 'lco_wc_session_id' );
     }
 
-	if( ! $ledyer_pending ) {
-		$request = ledyer()->api->get_order( $payment_id );
-	} else {
-		$request = ledyer()->api->get_order_session($payment_id);
+	
+	$pending = false;
+	
+	$ledyer_order = ledyer()->api->get_order( $payment_id );
+	if ( is_wp_error($ledyer_order) ) {
+		$errcode = $ledyer_order->get_error_code();
+		if ( $errcode === 404 ) {
+			$pending = true;
+		} else {
+			return;
+		}
 	}
 
-	if ( isset( $request['orderAmount'] ) || isset( $request['id'] ) ) {
-
-		do_action( 'ledyer_process_payment', $order_id, $request );
-
-		update_post_meta( $order_id, 'ledyerpayment_type', $request['paymentMethod']['type'] );
-		update_post_meta( $order_id, 'ledyer_payment_method', $request['paymentMethod']['provider'] );
-		update_post_meta( $order_id, '_ledyer_date_paid', gmdate( 'Y-m-d H:i:s' ) );
-
-		if( ! $ledyer_pending ) {
-			$order->add_order_note( sprintf( __( 'New payment created in Ledyer with Payment ID %1$s. Payment type - %2$s.', 'ledyer-checkout-for-woocommerce' ), $payment_id, $request['paymentMethod']['type'] ) );
-
-			$ledyer_order_status = $ledyer_order['status'] ?? [];
-			$ledyer_order_events = $ledyer_order['events'] ?? [];
-			$ledyer_order_event_types = array_column($ledyer_order_events, 'type');
-	
-			$awaitingPayment = in_array(LedyerStatus::uncaptured, $ledyer_order_status) && 
-				!in_array(LedyerEventType::readyForCapture, $ledyer_order_event_types);
-			$paymentComplete = in_array(LedyerStatus::uncaptured, $ledyer_order_status) && 
-				in_array(LedyerEventType::readyForCapture, $ledyer_order_event_types);
-	
-			if ($awaitingPayment && !$order->has_status(array('on-hold'))) {
-				$order->update_status('on-hold', 'Awaiting payment.');
-			} else if ($paymentComplete) {
-				$order->payment_complete($ledyer_order_id);
-			}
-	
-			$response = ledyer()->api->acknowledge_order( $ledyer_order_id );
-			if( is_wp_error( $response ) ) {
-				\Ledyer\Logger::log( 'Couldn\'t acknowledge order ' . $ledyer_order_id  );
-			}
-			$ledyer_update_order = ledyer()->api->update_order_reference( $ledyer_order_id, array( 'reference' => strval( $order->ID ) ) );
-			if ( is_wp_error( $ledyer_update_order ) ) {
-				\Ledyer\Logger::log( 'Couldn\'t set merchant reference ' . $order->ID  );
-			}
+	if ( $pending ) {
+		$ledyer_session = ledyer()->api->get_order_session($payment_id);
+		if ( is_wp_error($ledyer_session) ) {
+			\Ledyer\Logger::log( 'Could not get ledyer session ' . $payment_id  );
+			return;
+		}
+		if ($ledyer_session['state'] === 'pendingSca') {
+			update_post_meta( $order_id, 'ledyerpayment_type', $ledyer_session['paymentMethod']['type'] );
+			update_post_meta( $order_id, 'ledyer_payment_method', $ledyer_session['paymentMethod']['provider'] );
+			$note = sprintf( __( 'New session created in Ledyer with Payment ID %1$s. Payment type - %2$s. Awaiting signature.', 
+				'ledyer-checkout-for-woocommerce' ), $session_id, $ledyer_session['paymentMethod']['type'] );
+			$order->update_status('on-hold', $note);
 		} else {
-			$order->update_status('on-hold');
-			$order->add_order_note( sprintf( __( 'New payment created in Ledyer with Payment ID %1$s. Payment type - %2$s. Awaiting signature.', 'ledyer-checkout-for-woocommerce' ), $session_id, $request['paymentMethod']['type'] ) );
+			\Ledyer\Logger::log( 'Unknown ledyer pending state ' . $payment_id );
+			return;
+		}
+	} else {
+		do_action( 'ledyer_process_payment', $order_id, $ledyer_order );
+		update_post_meta( $order_id, 'ledyerpayment_type', $ledyer_order['paymentMethod']['type'] );
+		update_post_meta( $order_id, 'ledyer_payment_method', $ledyer_order['paymentMethod']['provider'] );
+		update_post_meta( $order_id, '_ledyer_date_paid', gmdate( 'Y-m-d H:i:s' ) );
+		$order->add_order_note( sprintf( __( 'New payment created in Ledyer with Payment ID %1$s. Payment type - %2$s.', 
+			'ledyer-checkout-for-woocommerce' ), $payment_id, $ledyer_order['paymentMethod']['type'] ) );
+
+		$ledyer_order_status = $ledyer_order['status'] ?? [];
+		$ledyer_order_events = $ledyer_order['events'] ?? [];
+		$ledyer_order_event_types = array_column($ledyer_order_events, 'type');
+
+		$awaitingPayment = in_array(LedyerStatus::uncaptured, $ledyer_order_status) && 
+			!in_array(LedyerEventType::readyForCapture, $ledyer_order_event_types);
+		$paymentComplete = in_array(LedyerStatus::uncaptured, $ledyer_order_status) && 
+			in_array(LedyerEventType::readyForCapture, $ledyer_order_event_types);
+
+		if ($awaitingPayment && !$order->has_status(array('on-hold'))) {
+			$order->update_status('on-hold', 'Awaiting payment.');
+		} else if ($paymentComplete) {
+			$order->payment_complete($payment_id);
 		}
 
-	} else {
-		// Purchase not finalized in Ledyer.
-		// If this is a redirect checkout flow let's redirect the customer to cart page.
-		wp_safe_redirect( html_entity_decode( $order->get_cancel_order_url() ) );
-		exit;
+		$response = ledyer()->api->acknowledge_order( $payment_id );
+		if( is_wp_error( $response ) ) {
+			\Ledyer\Logger::log( 'Couldn\'t acknowledge order ' . $payment_id  );
+		}
+		$ledyer_update_order = ledyer()->api->update_order_reference( $payment_id, array( 'reference' => strval( $order->ID ) ) );
+		if ( is_wp_error( $ledyer_update_order ) ) {
+			\Ledyer\Logger::log( 'Couldn\'t set merchant reference ' . $order->ID  );
+		}
 	}
+
 }
 
 
