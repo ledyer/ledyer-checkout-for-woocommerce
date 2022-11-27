@@ -62,7 +62,7 @@ class Ledyer_Checkout_For_WooCommerce {
 		add_action( 'rest_api_init', function () {
 			register_rest_route( 'ledyer/v1', '/notifications/', array(
 				'methods'             => 'POST',
-				'callback'            => [ $this, 'update_order_status' ],
+				'callback'            => [ $this, 'handle_notification' ],
 				'permission_callback' => '__return_true'
 			) );
 		} );
@@ -77,154 +77,107 @@ class Ledyer_Checkout_For_WooCommerce {
 			1,
 		);
 
+		add_action( 'schedule_process_notification', array( $this, 'process_notification' ), 10, 1 );
+
 	}
 
 	/**
-	 * Handles Order management from notifications endpoint
+	 * Handles notification callbacks
 	 * @param $request
 	 *
 	 * @return \WP_REST_Response
 	 */
-	public function update_order_status( $request ) {
-		$request_body = $request->get_body();
+	public function handle_notification( $request ) {
+		$request_body = json_decode( $request->get_body());
+		$response = new \WP_REST_Response();
 
-
-		if( ! $this->is_json( $request_body ) ) {
+		if (json_last_error() !== JSON_ERROR_NONE) {
 			Logger::log( 'Request body isn\'t valid JSON string.' );
-
-			$data = array(
-				'message'         => 'Request body isn\'t valid JSON string.',
-				'json' => $request_body,
-			);
-
-			$response = new \WP_REST_Response( $data );
-			$response->set_status( 404 );
-
+			$response->set_status( 400 );
 			return $response;
 		}
 
-		$request_body = json_decode( $request_body, true );
+		$ledyer_event_type = $request_body->{'eventType'};
+		$ledyer_order_id = $request_body->{'orderId'};
 
-		if( ! is_array( $request_body ) || empty( $request_body['orderId'] || empty( $request_body['eventType'] ) ) ) {
+		if ($ledyer_event_type === NULL || $ledyer_order_id === NULL) {
 			Logger::log( 'Request body doesn\'t hold orderId and eventType data.' );
-
-			$data = array(
-				'message'         => 'Request body doesn\'t hold orderId and eventType data.',
-				'json' => $request_body,
-			);
-
-			$response = new \WP_REST_Response( $data );
-			$response->set_status( 404 );
-
+			$response->set_status( 400 );
 			return $response;
 		}
+		
+		$scheduleId = as_schedule_single_action(time() + 120, 'schedule_process_notification', array($ledyer_order_id) );
+		Logger::log( 'Enqueued notification: ' . $ledyer_event_type . ", schedule-id:" . $scheduleId );
+		$response->set_status( 200 );
+		return $response;
+	}
 
-		$order_id = $request_body['orderId'];
+	public function process_notification( $ledyer_order_id ) {
+		Logger::log( 'process notification: ' . $ledyer_order_id);
 
-		$args = array(
+		$query_args = array(
 			'post_type'   => 'shop_order',
 			'post_status' => 'any',
 			'meta_key'    => '_wc_ledyer_order_id',
-			'meta_value'  => $order_id,
+			'meta_value'  => $ledyer_order_id,
+			'date_created' => '>' . ( time() - MONTH_IN_SECONDS ),
 		);
 
-		$orders = new \WP_Query( $args );
+		$orders = get_posts( $query_args );
+		$order_id = $orders[0]->ID;
+		$order = wc_get_order( $order_id );
 
-		$ledyer_order = ledyer()->api->get_order( $order_id );
-
-		if ( ! $ledyer_order || ( is_object( $ledyer_order ) && is_wp_error( $ledyer_order ) ) || $ledyer_order['id'] !== $order_id ) {
-			Logger::log( $order_id . ': Could not get Ledyer order.' );
-
-			$data = array(
-				'message'         => $order_id . ': Could not get Ledyer order.',
-				'ledyer_order_id' => $order_id,
-			);
-
-			$response = new \WP_REST_Response( $data );
-			$response->set_status( 404 );
-
-			return $response;
+		if ( !is_object( $order ) ) {
+			Logger::log('Could not find woo order with ledyer id: ' . $ledyer_order_id );
+			return;
 		}
 
-		if ( $orders->have_posts() && in_array( $request_body['eventType'], array(
-			'com.ledyer.order.ready_for_capture', 'com.ledyer.order.create', 'com.ledyer.order.full_capture', 'com.ledyer.order.cancel', 'com.ledyer.order.full_refund'
-			) ) ) {
-			foreach ( $orders->posts as $order ) {
-				if ( 'revision' !== $order->post_status ) {
+		$ledyer_order = ledyer()->api->get_order( $ledyer_order_id );
+		if ( is_wp_error( $ledyer_order ) ) {
+			Logger::log('Could not find ledyer order with ledyer id: ' . $ledyer_order_id);
+			return;
+		}
 
-					$order = wc_get_order( $order->ID );
+		$ledyer_order_status = $ledyer_order['status'] ?? [];
+		$ledyer_order_events = $ledyer_order['events'] ?? [];
+		$ledyer_order_event_types = array_column($ledyer_order_events, 'type');
 
-					switch ( $request_body['eventType'] ) {
-						case 'com.ledyer.order.create':
-							$order->update_status('pending');
-							$response = ledyer()->api->acknowledge_order( $order_id );
-							if( is_wp_error( $response ) ) {
-								\Ledyer\Logger::log( 'Couldn\'t acknowledge order ' . $order_id  );
-							} else {
-								$order->add_order_note( sprintf( __( 'Payment acknowledged in Ledyer.', 'ledyer-checkout-for-woocommerce' ) ) );
-							}
-							
-							$ledyer_update_order = ledyer()->api->update_order_reference( $order_id, array( 'reference' => strval( $order->ID ) ) );
-							if ( is_wp_error( $ledyer_update_order ) ) {
-								\Ledyer\Logger::log( 'Couldn\'t set merchant reference ' . $order->ID  );
-							} else {
-								$order->add_order_note( sprintf( __( 'Merchant reference set in Ledyer.', 'ledyer-checkout-for-woocommerce' ) ) );
-							}
-							break;
-						case 'com.ledyer.order.ready_for_capture':
-							$order->update_status('processing');
-							$order->add_order_note( sprintf( __( 'Payment ready for capture in Ledyer.', 'ledyer-checkout-for-woocommerce' ) ) );
-							break;
-						case 'com.ledyer.order.full_capture':
-							$order->update_status( 'completed' );
-							$order->add_order_note( sprintf( __( 'Payment completed in Ledyer.', 'ledyer-checkout-for-woocommerce' ) ) );
-							break;
-						case 'com.ledyer.order.cancel':
-							$order->update_status( 'cancelled' );
-							$order->add_order_note( sprintf( __( 'Payment cancelled in Ledyer.', 'ledyer-checkout-for-woocommerce' ) ) );
-							break;
-						case 'com.ledyer.order.full_refund':
-							$order->update_status( 'refunded' );
-							$order->add_order_note( sprintf( __( 'Payment fully refunded in Ledyer.', 'ledyer-checkout-for-woocommerce' ) ) );
-							break;
-					}
-				}
+		$awaitingPayment = in_array(\LedyerStatus::uncaptured, $ledyer_order_status) && 
+			!in_array(\LedyerEventType::readyForCapture, $ledyer_order_event_types);
+		$paymentComplete = in_array(\LedyerStatus::uncaptured, $ledyer_order_status) && 
+			in_array(\LedyerEventType::readyForCapture, $ledyer_order_event_types);
+		$completed = in_array(\LedyerStatus::fullyCaptured, $ledyer_order_status) && 
+			!in_array(\LedyerStatus::fullyRefunded, $ledyer_order_status);
+		$refunded = in_array(\LedyerStatus::fullyRefunded, $ledyer_order_status);
+		$cancelled = in_array(\LedyerStatus::cancelled, $ledyer_order_status);
+
+		$ackOrder = false;
+		if ($awaitingPayment && !$order->has_status(array('on-hold'))) {
+			$order->update_status('on-hold', 'Awaiting payment.');
+			$ackOrder = true;
+		} else if ($paymentComplete) {
+			$order->payment_complete($ledyer_order_id);
+			$ackOrder = true;
+		} else if ($completed) {
+			$order->update_status('completed');
+		} else if ($refunded) {
+			$order->update_status('refunded');
+		} else if ($cancelled) {
+			$order->update_status('cancelled');
+		}
+
+		if ($ackOrder) {
+			$response = ledyer()->api->acknowledge_order( $ledyer_order_id );
+			if( is_wp_error( $response ) ) {
+				\Ledyer\Logger::log( 'Couldn\'t acknowledge order ' . $ledyer_order_id  );
+				return;
 			}
-
-			$data = array(
-				'message' => 'successfully updated order status.',
-				'ledyer_order_id' => $order_id,
-			);
-
-			$response = new \WP_REST_Response( $data );
-			$response->set_status( 201 );
-
-			return $response;
-		} else {
-			Logger::log( $order_id . ': Could not find Ledyer order in Woo.' );
-			$data = array(
-				'message' => 'Ledyer order '. $order_id .' doesn\'t exist in Woo.',
-				'ledyer_order_id' => $order_id,
-			);
-
-			$response = new \WP_REST_Response( $data );
-			$response->set_status( 200 );
-
-			return $response;
+			$ledyer_update_order = ledyer()->api->update_order_reference( $ledyer_order_id, array( 'reference' => strval( $order->ID ) ) );
+			if ( is_wp_error( $ledyer_update_order ) ) {
+				\Ledyer\Logger::log( 'Couldn\'t set merchant reference ' . $order->ID  );
+				return;
+			}
 		}
-
-	}
-
-	/**
-	 * Checks if given string is valid JSON string.
-	 * @param $string
-	 *
-	 * @return bool
-	 */
-	public function is_json( $string ) {
-		json_decode( $string );
-
-		return json_last_error() === JSON_ERROR_NONE;
 	}
 
 
@@ -264,7 +217,7 @@ class Ledyer_Checkout_For_WooCommerce {
 	 */
 	public function include_files() {
 		include_once LCO_WC_PLUGIN_PATH . '/includes/lco-functions.php';
-        include_once LCO_WC_PLUGIN_PATH . '/includes/lco-functions.php';
+		include_once LCO_WC_PLUGIN_PATH . '/includes/lco-types.php';
         include_once LCO_WC_PLUGIN_PATH . '/classes/class-ledyer-singleton.php';
         include_once LCO_WC_PLUGIN_PATH . '/classes/class-ledyer-logger.php';
         include_once LCO_WC_PLUGIN_PATH . '/classes/admin/class-ledyer-meta-box.php';
