@@ -190,6 +190,7 @@ function wc_ledyer_confirm_ledyer_order( $order_id, $ledyer_pending ) {
 
 		do_action( 'ledyer_process_payment', $order_id, $request );
 
+		$ledyer_order = ledyer()->api->acknowledge_order( $payment_id );
 		$ledyer_order = ledyer()->api->update_order_reference( $payment_id, array( 'reference' => strval( $order_id ) ) );
 
 		update_post_meta( $order_id, 'ledyerpayment_type', $request['paymentMethod']['type'] );
@@ -197,11 +198,35 @@ function wc_ledyer_confirm_ledyer_order( $order_id, $ledyer_pending ) {
 		update_post_meta( $order_id, '_ledyer_date_paid', gmdate( 'Y-m-d H:i:s' ) );
 
 		if( ! $ledyer_pending ) {
-			$order->add_order_note( sprintf( __( 'New payment created in Ledyer with Payment ID %1$s. Payment type - %2$s. Awaiting capture.', 'ledyer-checkout-for-woocommerce' ), $payment_id, $request['paymentMethod']['type'] ) );
+			$order->add_order_note( sprintf( __( 'New payment created in Ledyer with Payment ID %1$s. Payment type - %2$s.', 'ledyer-checkout-for-woocommerce' ), $payment_id, $request['paymentMethod']['type'] ) );
+
+			$ledyer_order_status = $ledyer_order['status'] ?? [];
+			$ledyer_order_events = $ledyer_order['events'] ?? [];
+			$ledyer_order_event_types = array_column($ledyer_order_events, 'type');
+	
+			$awaitingPayment = in_array(LedyerStatus::uncaptured, $ledyer_order_status) && 
+				!in_array(LedyerEventType::readyForCapture, $ledyer_order_event_types);
+			$paymentComplete = in_array(LedyerStatus::uncaptured, $ledyer_order_status) && 
+				in_array(LedyerEventType::readyForCapture, $ledyer_order_event_types);
+	
+			if ($awaitingPayment && !$order->has_status(array('on-hold'))) {
+				$order->update_status('on-hold', 'Awaiting payment.');
+			} else if ($paymentComplete) {
+				$order->payment_complete($ledyer_order_id);
+			}
+	
+			$response = ledyer()->api->acknowledge_order( $ledyer_order_id );
+			if( is_wp_error( $response ) ) {
+				\Ledyer\Logger::log( 'Couldn\'t acknowledge order ' . $ledyer_order_id  );
+			}
+			$ledyer_update_order = ledyer()->api->update_order_reference( $ledyer_order_id, array( 'reference' => strval( $order->ID ) ) );
+			if ( is_wp_error( $ledyer_update_order ) ) {
+				\Ledyer\Logger::log( 'Couldn\'t set merchant reference ' . $order->ID  );
+			}
 		} else {
 			$order->update_status('on-hold');
 			$order->add_order_note( sprintf( __( 'New payment created in Ledyer with Payment ID %1$s. Payment type - %2$s. Awaiting signature.', 'ledyer-checkout-for-woocommerce' ), $session_id, $request['paymentMethod']['type'] ) );
-        }
+		}
 
 	} else {
 		// Purchase not finalized in Ledyer.
