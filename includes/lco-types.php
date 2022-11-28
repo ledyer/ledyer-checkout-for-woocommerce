@@ -2,6 +2,17 @@
 
 \defined( 'ABSPATH' ) || die();
 
+abstract class LedyerPaymentStatus {
+	const registered 		= "registered";
+	const pendingOrder      = "pendingOrder";
+	const pendingPayment    = "pendingPayment";
+	const paid       		= "paid";
+	const captured   		= "captured";
+	const refunded   		= "refunded";
+	const cancelled  		= "cancelled";
+	const unknown    		= "unknown";
+}
+
 abstract class LedyerStatus {
     const partiallyCaptured = "partiallyCaptured";
 	const fullyCaptured     = "fullyCaptured";

@@ -132,38 +132,37 @@ class Ledyer_Checkout_For_WooCommerce {
 			return;
 		}
 
-		$ledyer_order = ledyer()->api->get_order( $ledyer_order_id );
-		if ( is_wp_error( $ledyer_order ) ) {
-			Logger::log('Could not find ledyer order with ledyer id: ' . $ledyer_order_id);
+		$ledyer_payment_status = ledyer()->api->get_payment_status( $ledyer_order_id );
+		if ( is_wp_error($ledyer_payment_status) ) {
+			\Ledyer\Logger::log( 'Could not get ledyer payment status ' . $ledyer_order_id );
 			return;
 		}
 
-		$ledyer_order_status = $ledyer_order['status'] ?? [];
-		$ledyer_order_events = $ledyer_order['events'] ?? [];
-		$ledyer_order_event_types = array_column($ledyer_order_events, 'type');
-
-		$awaitingPayment = in_array(\LedyerStatus::uncaptured, $ledyer_order_status) && 
-			!in_array(\LedyerEventType::readyForCapture, $ledyer_order_event_types);
-		$paymentComplete = in_array(\LedyerStatus::uncaptured, $ledyer_order_status) && 
-			in_array(\LedyerEventType::readyForCapture, $ledyer_order_event_types);
-		$completed = in_array(\LedyerStatus::fullyCaptured, $ledyer_order_status) && 
-			!in_array(\LedyerStatus::fullyRefunded, $ledyer_order_status);
-		$refunded = in_array(\LedyerStatus::fullyRefunded, $ledyer_order_status);
-		$cancelled = in_array(\LedyerStatus::cancelled, $ledyer_order_status);
-
 		$ackOrder = false;
-		if ($awaitingPayment && !$order->has_status(array('on-hold'))) {
-			$order->update_status('on-hold', 'Awaiting payment.');
-			$ackOrder = true;
-		} else if ($paymentComplete) {
-			$order->payment_complete($ledyer_order_id);
-			$ackOrder = true;
-		} else if ($completed) {
-			$order->update_status('completed');
-		} else if ($refunded) {
-			$order->update_status('refunded');
-		} else if ($cancelled) {
-			$order->update_status('cancelled');
+
+		switch( $ledyer_payment_status['status']) {
+			case \LedyerPaymentStatus::pendingPayment:
+				$note = sprintf( __( 'New payment created in Ledyer with Payment ID %1$s. %2$s', 
+					'ledyer-checkout-for-woocommerce' ), $ledyer_order_id, $ledyer_payment_status['note'] );
+				$order->update_status('on-hold', $note);
+				$ackOrder = true;
+				break;
+			case \LedyerPaymentStatus::paid:
+				$note = sprintf( __( 'New payment created in Ledyer with Payment ID %1$s. %2$s', 
+					'ledyer-checkout-for-woocommerce' ), $ledyer_order_id, $ledyer_payment_status['note'] );
+				$order->add_order_note($note);
+				$order->payment_complete($ledyer_order_id);
+				$ackOrder = true;
+				break;
+			case \LedyerPaymentStatus::captured:
+				$order->update_status('completed');
+				break;
+			case \LedyerPaymentStatus::refunded:
+				$order->update_status('refunded');
+				break;
+			case \LedyerPaymentStatus::cancelled:
+				$order->update_status('cancelled');
+				break;
 		}
 
 		if ($ackOrder) {
@@ -228,6 +227,7 @@ class Ledyer_Checkout_For_WooCommerce {
         include_once LCO_WC_PLUGIN_PATH . '/classes/requests/order/session/class-ledyer-update-order.php';
         include_once LCO_WC_PLUGIN_PATH . '/classes/requests/order/management/class-ledyer-acknowledge-order.php';
         include_once LCO_WC_PLUGIN_PATH . '/classes/requests/order/management/class-ledyer-get-order.php';
+		include_once LCO_WC_PLUGIN_PATH . '/classes/requests/order/management/class-ledyer-get-payment-status.php';
         include_once LCO_WC_PLUGIN_PATH . '/classes/requests/order/management/class-ledyer-update-order-reference.php';
         include_once LCO_WC_PLUGIN_PATH . '/classes/requests/helpers/class-ledyer-cart.php';
         include_once LCO_WC_PLUGIN_PATH . '/classes/requests/helpers/class-ledyer-woocommerce-bridge.php';

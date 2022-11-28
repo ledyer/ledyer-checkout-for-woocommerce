@@ -85,4 +85,13 @@ class API {
 	public function acknowledge_order( $order_id ) {
 		return ( new \Ledyer\Requests\Order\Management\Acknowledge_Order( array( 'orderId' => $order_id, 'data' => array() ) ) )->request();
 	}
+
+	/**
+	 * @param $order_id
+	 *
+	 * @return mixed|\WP_Error
+	 */
+	public function get_payment_status( $order_id ) {
+		return ( new \Ledyer\Requests\Order\Management\Get_Payment_Status( array( 'orderId' => $order_id ) ) )->request();
+	}
 }
