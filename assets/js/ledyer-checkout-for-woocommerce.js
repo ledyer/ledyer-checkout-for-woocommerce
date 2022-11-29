@@ -19,7 +19,6 @@ jQuery(function ($) {
         // Form fields.
         shippingUpdated: false,
         blocked: false,
-        isValidating: false,
 
         preventPaymentMethodChange: false,
 
@@ -30,8 +29,6 @@ jQuery(function ($) {
         ledyerUpdateNeeded: false,
         shippingEmailExists: false,
         shippingPhoneExists: false,
-
-        redirectUrl: null,
 
         /**
          * Triggers on document ready.
@@ -326,8 +323,6 @@ jQuery(function ($) {
                 }
             })
 
-            lco_wc.isValidating = false;
-
             const className = lco_params.pay_for_order ? 'div.woocommerce-notices-wrapper' : 'form.checkout';
 
             // Update the checkout and reenable the form.
@@ -382,8 +377,6 @@ jQuery(function ($) {
                                         })
                                         // Ledyer will respond with a new event when order is complete
                                         // So don't redirect just yet
-                                        lco_wc.isValidating = false;
-                                        lco_wc.redirectUrl = url;
                                         return;
                                     }
 
@@ -436,7 +429,7 @@ jQuery(function ($) {
             $(document).on('ledyerCheckoutOrderComplete', function (event) {
                 lco_wc.logToFile('ledyerCheckoutOrderComplete from Ledyer triggered');
                 if (!lco_params.pay_for_order) {
-                    lco_wc.placeLedyerOrder(lco_wc.isValidating);
+                    lco_wc.placeLedyerOrder();
                 }
             });
 
@@ -450,14 +443,12 @@ jQuery(function ($) {
             $(document).on('ledyerCheckoutWaitingForClientValidation', function (event) {
                 lco_wc.logToFile('ledyerCheckoutWaitingForClientValidation from Ledyer triggered');
 
-                lco_wc.isValidating = true;
-
                 if (lco_params.pay_for_order) {
                     window.ledyer.api.clientValidation({
                         shouldProceed: true
                     })
                 } else {
-                    lco_wc.placeLedyerOrder(lco_wc.isValidating);
+                    lco_wc.placeLedyerOrder(true);
                 }
             });
         },
