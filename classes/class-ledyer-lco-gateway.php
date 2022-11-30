@@ -105,12 +105,27 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				return;
 			}
 
-			$scriptSrc = ledyer()->get_setting( 'testmode' ) ? 'sandbox' : 'live';
+
+			$scriptSrcUrl = 'https://checkout.live.ledyer.com/bootstrap.js';
+
+			if ( ledyer()->get_setting( 'testmode' ) ) {
+				switch (ledyer()->get_setting( 'development_test_environment' )) {
+					case 'local':
+						$scriptSrcUrl = 'http://localhost:1337/bootstrap.iife.js';
+						break;
+					case 'development':
+						$scriptSrcUrl = 'https://checkout.dev.ledyer.com/bootstrap.js';
+						break;
+					default: 
+						$scriptSrcUrl = 'https://checkout.sandbox.ledyer.com/bootstrap.js';
+						break;
+				}
+			}
 
 			//Register iframe script
 			wp_register_script(
 				'lco-iframe',
-				'https://checkout.' . $scriptSrc . '.ledyer.com/bootstrap.js',
+				$scriptSrcUrl,
 				array( 'jquery', 'wc-cart', 'jquery-blockui' ),
 				LCO_WC_VERSION,
 				true
@@ -344,7 +359,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		public function add_data_attributes( $tag, $handle ) {
 			if ( $handle == 'lco-iframe' ) {
 
-				$env              = 'yes' === ledyer()->get_setting( 'testmode' ) ? 'sandbox' : 'production';
+				$env              = 'yes' === ledyer()->get_setting( 'testmode' ) ? 'localhost' : 'production';
 				$buy_button_color = ledyer()->get_setting( 'color_button' );
 				$no_padding       = 'yes' === ledyer()->get_setting( 'iframe_padding' ) ? 'true' : 'false';
 				$lco_order_id     = WC()->session->get( 'lco_wc_session_id' );

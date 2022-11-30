@@ -22,7 +22,7 @@ class Fields {
 	 *
 	 * @return array $settings
 	 */
-	public static function fields() {
+	public static function fields() {			
 		$settings = array(
 			'enabled'                    => array(
 				'title'       => __( 'Enable/Disable', 'ledyer-checkout-for-woocommerce' ),
@@ -216,6 +216,28 @@ class Fields {
 			),
 		);
 
+		$devmode = 'local' === wp_get_environment_type() || 'development' === wp_get_environment_type();
+
+		if ( $devmode ) {
+			$dev_settings = array(
+				'development_section'           => array(
+					'title' => __( 'Development settings', 'ledyer-checkout-for-woocommerce' ),
+					'type'  => 'title',
+				),
+				'development_test_environment'     => array(
+					'title'       => __( 'Test Environment', 'ledyer-checkout-for-woocommerce' ),
+					'type'        => 'select',
+					'options'     => array(
+						'local' => 'local',
+						'development' => 'development',
+						'sandbox' => 'sandbox',
+					),
+					'default'     => 'sandbox',
+					'desc_tip'    => false,
+				),
+			);
+			$settings = array_merge($settings, $dev_settings);
+		}
 
 		return apply_filters( 'lco_wc_gateway_settings', $settings );
 	}
