@@ -359,7 +359,22 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		public function add_data_attributes( $tag, $handle ) {
 			if ( $handle == 'lco-iframe' ) {
 
-				$env              = 'yes' === ledyer()->get_setting( 'testmode' ) ? 'localhost' : 'production';
+				$env = 'production';
+
+				if ( ledyer()->get_setting( 'testmode' ) ) {
+					switch (ledyer()->get_setting( 'development_test_environment' )) {
+						case 'local':
+							$env = 'localhost';
+							break;
+						case 'development':
+							$env = 'dev';
+							break;
+						default: 
+							$env = 'sandbox';
+							break;
+					}
+				}
+
 				$buy_button_color = ledyer()->get_setting( 'color_button' );
 				$no_padding       = 'yes' === ledyer()->get_setting( 'iframe_padding' ) ? 'true' : 'false';
 				$lco_order_id     = WC()->session->get( 'lco_wc_session_id' );
