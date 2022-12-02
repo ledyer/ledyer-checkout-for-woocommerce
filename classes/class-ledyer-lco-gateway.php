@@ -111,6 +111,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			if ( ledyer()->get_setting( 'testmode' ) ) {
 				switch (ledyer()->get_setting( 'development_test_environment' )) {
 					case 'local':
+					case 'local-fe':
 						$scriptSrcUrl = 'http://localhost:1337/bootstrap.iife.js';
 						break;
 					case 'development':
@@ -364,12 +365,13 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				if ( ledyer()->get_setting( 'testmode' ) ) {
 					switch (ledyer()->get_setting( 'development_test_environment' )) {
 						case 'local':
+						case 'local-fe':
 							$env = 'localhost';
 							break;
 						case 'development':
 							$env = 'dev';
 							break;
-						default: 
+						default:
 							$env = 'sandbox';
 							break;
 					}

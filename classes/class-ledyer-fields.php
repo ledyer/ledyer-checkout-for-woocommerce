@@ -228,9 +228,10 @@ class Fields {
 					'title'       => __( 'Test Environment', 'ledyer-checkout-for-woocommerce' ),
 					'type'        => 'select',
 					'options'     => array(
-						'local' => 'local',
-						'development' => 'development',
-						'sandbox' => 'sandbox',
+						'local' => 'Local (FE+BE)',
+						'local-fe' => 'Local (FE)',
+						'development' => 'Development',
+						'sandbox' => 'Sandbox',
 					),
 					'default'     => 'sandbox',
 					'desc_tip'    => false,

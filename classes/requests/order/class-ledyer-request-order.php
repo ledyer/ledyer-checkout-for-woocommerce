@@ -29,6 +29,7 @@ abstract class Request_Order extends Request {
 					$this->request_url = 'http://host.docker.internal:8000/';
 					break;
 				case 'development':
+				case 'local-fe':
 					$this->request_url = 'https://api.dev.ledyer.com/';
 					break;
 				default: 

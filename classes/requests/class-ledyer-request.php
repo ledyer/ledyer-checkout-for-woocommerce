@@ -85,6 +85,7 @@ abstract class Request {
 					$api_auth_base = 'http://host.docker.internal:9001/';
 					break;
 				case 'development':
+				case 'local-fe':
 					$api_auth_base = 'https://auth.dev.ledyer.com/';
 					break;
 				default: 
