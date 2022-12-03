@@ -84,7 +84,8 @@ class Woocommerce_Bridge {
 
 		self::$ledyer_settings = array(
 			'security' => array(
-				'level' => intval( ledyer()->get_setting('security_level') )
+				'level' => intval( ledyer()->get_setting('security_level') ),
+				'requireClientValidation'  => true,
 			),
 		);
 

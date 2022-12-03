@@ -368,7 +368,7 @@ jQuery(function ($) {
                             // { result: "success" | "failure"; refresh: "boolean", reload: boolean, messages: string; }
                             try {
                                 if ('success' === data.result) {
-                                    lco_wc.logToFile('Successfully placed order.');
+                                    lco_wc.logToFile('Successfully validated order in WooCommerce.');
                                     const url = new URL(data.redirect);
 
                                     if (should_validate) {
@@ -379,7 +379,6 @@ jQuery(function ($) {
                                         // So don't redirect just yet
                                         return;
                                     }
-
                                     window.location.href = url.toString();
                                 } else {
                                     throw 'Result failed';
