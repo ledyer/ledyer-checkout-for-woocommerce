@@ -22,7 +22,7 @@ class Fields {
 	 *
 	 * @return array $settings
 	 */
-	public static function fields() {			
+	public static function fields() {
 		$settings = array(
 			'enabled'                    => array(
 				'title'       => __( 'Enable/Disable', 'ledyer-checkout-for-woocommerce' ),
