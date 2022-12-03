@@ -141,26 +141,26 @@ class Ledyer_Checkout_For_WooCommerce {
 		$ackOrder = false;
 
 		switch( $ledyer_payment_status['status']) {
-			case \LedyerPaymentStatus::pendingPayment:
+			case \LedyerPaymentStatus::paymentPending:
 				$note = sprintf( __( 'New payment created in Ledyer with Payment ID %1$s. %2$s', 
 					'ledyer-checkout-for-woocommerce' ), $ledyer_order_id, $ledyer_payment_status['note'] );
 				$order->update_status('on-hold', $note);
 				$ackOrder = true;
 				break;
-			case \LedyerPaymentStatus::paid:
+			case \LedyerPaymentStatus::paymentConfirmed:
 				$note = sprintf( __( 'New payment created in Ledyer with Payment ID %1$s. %2$s', 
 					'ledyer-checkout-for-woocommerce' ), $ledyer_order_id, $ledyer_payment_status['note'] );
 				$order->add_order_note($note);
 				$order->payment_complete($ledyer_order_id);
 				$ackOrder = true;
 				break;
-			case \LedyerPaymentStatus::captured:
+			case \LedyerPaymentStatus::orderCaptured:
 				$order->update_status('completed');
 				break;
-			case \LedyerPaymentStatus::refunded:
+			case \LedyerPaymentStatus::orderRefunded:
 				$order->update_status('refunded');
 				break;
-			case \LedyerPaymentStatus::cancelled:
+			case \LedyerPaymentStatus::orderCancelled:
 				$order->update_status('cancelled');
 				break;
 		}
