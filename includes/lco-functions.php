@@ -223,7 +223,6 @@ function wc_ledyer_confirm_ledyer_order( $order_id ) {
 
 		do_action( 'ledyer_process_payment', $order_id, $ledyer_order );
 
-		//TODO: not sure if we need to set these, not used anywhere?
 		update_post_meta( $order_id, 'ledyerpayment_type', $ledyer_order['paymentMethod']['type'] );
 		update_post_meta( $order_id, 'ledyer_payment_method', $ledyer_order['paymentMethod']['provider'] );
 		update_post_meta( $order_id, '_ledyer_date_paid', gmdate( 'Y-m-d H:i:s' ) );
