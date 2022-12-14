@@ -19,7 +19,6 @@ jQuery(function ($) {
         // Form fields.
         shippingUpdated: false,
         blocked: false,
-        isValidating: false,
 
         preventPaymentMethodChange: false,
 
@@ -30,8 +29,6 @@ jQuery(function ($) {
         ledyerUpdateNeeded: false,
         shippingEmailExists: false,
         shippingPhoneExists: false,
-
-        redirectUrl: null,
 
         /**
          * Triggers on document ready.
@@ -326,8 +323,6 @@ jQuery(function ($) {
                 }
             })
 
-            lco_wc.isValidating = false;
-
             const className = lco_params.pay_for_order ? 'div.woocommerce-notices-wrapper' : 'form.checkout';
 
             // Update the checkout and reenable the form.
@@ -349,10 +344,9 @@ jQuery(function ($) {
 
         /**
          * Places the Ledyer order
-         * @param {string} order_in_sessions
          * @param {string} should_validate
          */
-        placeLedyerOrder: function (order_in_sessions = false, should_validate = false) {
+        placeLedyerOrder: function (should_validate = false) {
             lco_wc.blocked = true;
             lco_wc.getLedyerOrder().done(function (response) {
                 if (response.success) {
@@ -377,23 +371,14 @@ jQuery(function ($) {
                                     lco_wc.logToFile('Successfully validated order in WooCommerce.');
                                     const url = new URL(data.redirect);
 
-                                    if (order_in_sessions) {
-                                        url.searchParams.append('lco_pending', 'yes');
-                                    } else {
-                                        url.searchParams.append('lco_pending', 'no');
-                                    }
-
                                     if (should_validate) {
                                         window.ledyer.api.clientValidation({
                                             shouldProceed: true
                                         })
                                         // Ledyer will respond with a new event when order is complete
                                         // So don't redirect just yet
-                                        lco_wc.isValidating = false;
-                                        lco_wc.redirectUrl = url;
                                         return;
                                     }
-                                    lco_wc.redirectUrl.searchParams.append('lco_purchase_complete', 'yes');
                                     window.location.href = url.toString();
                                 } else {
                                     throw 'Result failed';
@@ -442,39 +427,27 @@ jQuery(function ($) {
 
             $(document).on('ledyerCheckoutOrderComplete', function (event) {
                 lco_wc.logToFile('ledyerCheckoutOrderComplete from Ledyer triggered');
-
-                if (lco_wc.redirectUrl !== null) {
-                    lco_wc.logToFile('Successfully placed order in Ledyer.');
-                    // This means that placeLedyerOrder was called successfully already
-                    // (Due to an earlier call caused by client validation)
-                    lco_wc.redirectUrl.searchParams.append('lco_purchase_complete', 'yes');
-                    window.location.href = lco_wc.redirectUrl.toString();
-                    return;
-                }
-
                 if (!lco_params.pay_for_order) {
-                    lco_wc.placeLedyerOrder(false, lco_wc.isValidating);
+                    lco_wc.placeLedyerOrder();
                 }
             });
 
             $(document).on('ledyerCheckoutOrderPending', function (event) {
                 lco_wc.logToFile('ledyerCheckoutOrderPending from Ledyer triggered');
                 if (!lco_params.pay_for_order) {
-                    lco_wc.placeLedyerOrder(true);
+                    lco_wc.placeLedyerOrder();
                 }
             });
 
             $(document).on('ledyerCheckoutWaitingForClientValidation', function (event) {
                 lco_wc.logToFile('ledyerCheckoutWaitingForClientValidation from Ledyer triggered');
 
-                lco_wc.isValidating = true;
-
                 if (lco_params.pay_for_order) {
                     window.ledyer.api.clientValidation({
                         shouldProceed: true
                     })
                 } else {
-                    lco_wc.placeLedyerOrder(false, lco_wc.isValidating);
+                    lco_wc.placeLedyerOrder(true);
                 }
             });
         },

@@ -167,8 +167,13 @@ function lco_wc_show_another_gateway_button() {
  *
  * @return void
  */
-function wc_ledyer_confirm_ledyer_order( $order_id, $ledyer_pending ) {
-	$order         = wc_get_order( $order_id );
+function wc_ledyer_confirm_ledyer_order( $order_id ) {
+	$order = wc_get_order( $order_id );
+	// If the order is already completed or on-hold, return.
+	if ( !empty($order->get_date_paid()) || $order->has_status(array('on-hold')) ) {
+		return;
+	}
+
 	$payment_id    = get_post_meta( $order_id, '_wc_ledyer_order_id', true );
 	$session_id    = get_post_meta( $order_id, '_wc_ledyer_session_id', true );
 
@@ -180,33 +185,58 @@ function wc_ledyer_confirm_ledyer_order( $order_id, $ledyer_pending ) {
 		$session_id = WC()->session->get( 'lco_wc_session_id' );
     }
 
-	if( ! $ledyer_pending ) {
-		$request = ledyer()->api->get_order( $payment_id );
-	} else {
-		$request = ledyer()->api->get_order_session($payment_id);
+	$ledyer_payment_status = ledyer()->api->get_payment_status( $payment_id );
+	if ( is_wp_error($ledyer_payment_status) ) {
+		\Ledyer\Logger::log( 'Could not get ledyer payment status ' . $payment_id  );
+		return;
 	}
 
-	if ( isset( $request['orderAmount'] ) || isset( $request['id'] ) ) {
+	$ackOrder = false;
 
-		do_action( 'ledyer_process_payment', $order_id, $request );
+	switch( $ledyer_payment_status['status']) {
+		case LedyerPaymentStatus::orderPending:
+			$note = sprintf( __( 'New session created in Ledyer with Payment ID %1$s. %2$s', 
+				'ledyer-checkout-for-woocommerce' ), $payment_id, $ledyer_payment_status['note'] );
+			$order->update_status('on-hold', $note);
+			break;
+		case LedyerPaymentStatus::paymentPending:
+			$note = sprintf( __( 'New payment created in Ledyer with Payment ID %1$s. %2$s', 
+				'ledyer-checkout-for-woocommerce' ), $payment_id, $ledyer_payment_status['note'] );
+			$order->update_status('on-hold', $note);
+			$ackOrder = true;
+			break;
+		case LedyerPaymentStatus::paymentConfirmed:
+			$note = sprintf( __( 'New payment created in Ledyer with Payment ID %1$s. %2$s', 
+				'ledyer-checkout-for-woocommerce' ), $payment_id, $ledyer_payment_status['note'] );
+			$order->add_order_note($note);
+			$order->payment_complete($payment_id);
+			$ackOrder = true;
+			break;
+	}
 
-		update_post_meta( $order_id, 'ledyerpayment_type', $request['paymentMethod']['type'] );
-		update_post_meta( $order_id, 'ledyer_payment_method', $request['paymentMethod']['provider'] );
+	if ($ackOrder) {
+		$ledyer_order = ledyer()->api->get_order( $payment_id );
+		if ( is_wp_error($ledyer_order) ) {
+			\Ledyer\Logger::log( 'Could not get ledyer order ' . $payment_id  );
+			return;
+		}
+
+		do_action( 'ledyer_process_payment', $order_id, $ledyer_order );
+
+		update_post_meta( $order_id, 'ledyerpayment_type', $ledyer_order['paymentMethod']['type'] );
+		update_post_meta( $order_id, 'ledyer_payment_method', $ledyer_order['paymentMethod']['provider'] );
 		update_post_meta( $order_id, '_ledyer_date_paid', gmdate( 'Y-m-d H:i:s' ) );
 
-		if( ! $ledyer_pending ) {
-			$order->add_order_note( sprintf( __( 'New payment created in Ledyer with Payment ID %1$s. Payment type - %2$s. Awaiting capture.', 'ledyer-checkout-for-woocommerce' ), $payment_id, $request['paymentMethod']['type'] ) );
-		} else {
-			$order->update_status('on-hold');
-			$order->add_order_note( sprintf( __( 'New pending payment created in Ledyer with Payment ID %1$s. Payment type - %2$s. Awaiting signature.', 'ledyer-checkout-for-woocommerce' ), $session_id, $request['paymentMethod']['type'] ) );
-        }
-
-	} else {
-		// Purchase not finalized in Ledyer.
-		// If this is a redirect checkout flow let's redirect the customer to cart page.
-		wp_safe_redirect( html_entity_decode( $order->get_cancel_order_url() ) );
-		exit;
+		$response = ledyer()->api->acknowledge_order( $payment_id );
+		if( is_wp_error( $response ) ) {
+			\Ledyer\Logger::log( 'Couldn\'t acknowledge order ' . $payment_id  );
+		}
+		$ledyer_update_order = ledyer()->api->update_order_reference( $payment_id, array( 'reference' => strval( $order->ID ) ) );
+		if ( is_wp_error( $ledyer_update_order ) ) {
+			\Ledyer\Logger::log( 'Couldn\'t set merchant reference ' . $order->ID  );
+		}
 	}
+
 }
 
 

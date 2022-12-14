@@ -82,9 +82,13 @@ class Meta_Box {
 					?>
                     <strong><?php esc_html_e( 'Ledyer Environment: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong><?php echo esc_html( $environment ); ?><br/>
 				<?php } ?>
-                <strong><?php esc_html_e( 'Customer Organization number: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_order['customer']['companyId'] ); ?><br/>
+                <strong><?php esc_html_e( 'Company id: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_order['customer']['companyId'] ); ?><br/>
                 <strong><?php esc_html_e( 'Order id: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_order['id'] ); ?><br/>
                 <strong><?php esc_html_e( 'Ledyer id: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_order['orderReference'] ); ?><br/>
+				<strong><?php esc_html_e( 'Payment method: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_order['paymentMethod']['type'] ); ?><br/>
+				<strong><?php esc_html_e( 'Ledyer status: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( implode(', ', $ledyer_order['status']) ); ?><br/>
+
+
 				<?php if( ! empty( $ledyer_order['customer']['firstName'] ) || ! empty( $ledyer_order['customer']['lastName'] ) ) : ?>
                     <strong><?php esc_html_e( 'Order setter: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_order['customer']['firstName'] . ' ' . $ledyer_order['customer']['lastName'] ); ?><br/>
 				<?php endif; ?>
