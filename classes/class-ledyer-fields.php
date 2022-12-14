@@ -216,6 +216,29 @@ class Fields {
 			),
 		);
 
+		$devmode = 'local' === wp_get_environment_type() || 'development' === wp_get_environment_type();
+
+		if ( $devmode ) {
+			$dev_settings = array(
+				'development_section'           => array(
+					'title' => __( 'Development settings', 'ledyer-checkout-for-woocommerce' ),
+					'type'  => 'title',
+				),
+				'development_test_environment'     => array(
+					'title'       => __( 'Test Environment', 'ledyer-checkout-for-woocommerce' ),
+					'type'        => 'select',
+					'options'     => array(
+						'local' => 'Local (FE+BE)',
+						'local-fe' => 'Local (FE)',
+						'development' => 'Development',
+						'sandbox' => 'Sandbox',
+					),
+					'default'     => 'sandbox',
+					'desc_tip'    => false,
+				),
+			);
+			$settings = array_merge($settings, $dev_settings);
+		}
 
 		return apply_filters( 'lco_wc_gateway_settings', $settings );
 	}

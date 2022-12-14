@@ -76,7 +76,23 @@ abstract class Request {
 
 		$client_credentials = ledyer()->credentials->get_credentials_from_session();
 
-		$api_auth_base = $this->is_test() ? 'https://auth.sandbox.ledyer.com/' : 'https://auth.live.ledyer.com/';
+
+		$api_auth_base = 'https://auth.live.ledyer.com/';
+
+		if ( $this->is_test() ) {
+			switch (ledyer()->get_setting( 'development_test_environment' )) {
+				case 'local':
+					$api_auth_base = 'http://host.docker.internal:9001/';
+					break;
+				case 'development':
+				case 'local-fe':
+					$api_auth_base = 'https://auth.dev.ledyer.com/';
+					break;
+				default: 
+					$api_auth_base = 'https://auth.sandbox.ledyer.com/';
+					break;
+			}
+		}
 
 		$client = new \WP_Http();
 
