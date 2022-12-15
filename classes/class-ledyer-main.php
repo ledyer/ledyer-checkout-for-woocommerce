@@ -142,17 +142,21 @@ class Ledyer_Checkout_For_WooCommerce {
 
 		switch( $ledyer_payment_status['status']) {
 			case \LedyerPaymentStatus::paymentPending:
-				$note = sprintf( __( 'New payment created in Ledyer with Payment ID %1$s. %2$s', 
-					'ledyer-checkout-for-woocommerce' ), $ledyer_order_id, $ledyer_payment_status['note'] );
-				$order->update_status('on-hold', $note);
-				$ackOrder = true;
+				if ( !$order->has_status( array( 'on-hold', 'processing', 'completed' ) ) ) {
+					$note = sprintf( __( 'New payment created in Ledyer with Payment ID %1$s. %2$s', 
+						'ledyer-checkout-for-woocommerce' ), $ledyer_order_id, $ledyer_payment_status['note'] );
+					$order->update_status('on-hold', $note);
+					$ackOrder = true;
+				}
 				break;
 			case \LedyerPaymentStatus::paymentConfirmed:
-				$note = sprintf( __( 'New payment created in Ledyer with Payment ID %1$s. %2$s', 
-					'ledyer-checkout-for-woocommerce' ), $ledyer_order_id, $ledyer_payment_status['note'] );
-				$order->add_order_note($note);
-				$order->payment_complete($ledyer_order_id);
-				$ackOrder = true;
+				if ( !$order->has_status( array( 'processing', 'completed' ) ) ) {
+					$note = sprintf( __( 'New payment created in Ledyer with Payment ID %1$s. %2$s', 
+						'ledyer-checkout-for-woocommerce' ), $ledyer_order_id, $ledyer_payment_status['note'] );
+					$order->add_order_note($note);
+					$order->payment_complete($ledyer_order_id);
+					$ackOrder = true;
+				}
 				break;
 			case \LedyerPaymentStatus::orderCaptured:
 				$order->update_status('completed');
