@@ -1,3 +1,1 @@
-# must be ended with a new line "LF" (Unix) and not "CRLF" (Windows)
-* * * * * curl http://localhost/wp-cron.php?doing_wp_cron > /dev/null 2>&1
-# An empty line is required at the end of this file for a valid cron file.
+* * * * * curl http://wordpress-dev/wp-cron.php?doing_wp_cron > /dev/null 2>&1

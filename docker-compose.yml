@@ -41,6 +41,14 @@ services:
       - "./:/var/www/html/wp-content/plugins/ledyer-checkout-for-woocommerce"
       - wpdata:/var/www/html
 
+  wordpress-cron:
+    depends_on:
+      - wordpress-dev
+    build:
+      context: .
+      dockerfile: Dockerfile-cron
+    restart: on-failure
+
   wordpress-cli:
     depends_on:
       - db
