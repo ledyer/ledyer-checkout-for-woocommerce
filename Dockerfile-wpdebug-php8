@@ -1,4 +1,5 @@
-FROM wordpress:6.0.2-php8.1-apache
+# FROM wordpress:6.0.2-php8.1-apache
+FROM wordpress:latest
 
 RUN apt-get update && apt-get -qq --force-yes install cron
 COPY wpcron.txt /etc/cron.d/wpcron

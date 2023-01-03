@@ -1,4 +1,4 @@
-version: '3.1'
+version: "3.1"
 services:
   db:
     image: mariadb:latest
@@ -9,7 +9,7 @@ services:
       MYSQL_DATABASE: testdb
       MYSQL_USER: wordpress
       MYSQL_PASSWORD: wordpress
-      MYSQL_RANDOM_ROOT_PASSWORD: '1'
+      MYSQL_RANDOM_ROOT_PASSWORD: "1"
     volumes:
       - dbdata:/var/lib/mysql
 
@@ -39,6 +39,7 @@ services:
         define( 'WP_ENVIRONMENT_TYPE', 'local' );
     volumes:
       - "./:/var/www/html/wp-content/plugins/ledyer-checkout-for-woocommerce"
+      - "../ledyer-order-management-for-woocommerce:/var/www/html/wp-content/plugins/ledyer-order-management-for-woocommerce"
       - wpdata:/var/www/html
 
   wordpress-cli:
@@ -73,6 +74,7 @@ services:
       '
     volumes:
       - "./:/var/www/html/wp-content/plugins/ledyer-checkout-for-woocommerce"
+      - "../ledyer-order-management-for-woocommerce:/var/www/html/wp-content/plugins/ledyer-order-management-for-woocommerce"
       - wpdata:/var/www/html
 
 volumes:
