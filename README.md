@@ -15,7 +15,7 @@ docker-compose up --build
 
 This is usually due to missing setup in woocommerce and or invalid api-credentials.
 
-You can add a breakpoint in lco-functions.php -> lco_create_or_update_order and check the data in the $response. Ledyer will tell you what data is invalid or if the request was unauthorized.
+You can add a breakpoint in `lco-functions.php` -> `lco_create_or_update_order` and check the data in the $response. Ledyer will tell you what data is invalid or if the request was unauthorized.
 
 If you are missing data i woocommerce, make sure you have set the following:
 
