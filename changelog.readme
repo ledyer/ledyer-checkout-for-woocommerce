@@ -1,3 +1,6 @@
+## 1.2.2
+* Feature: Listen for refund and pass to order management
+
 ## 1.2.1
 * Fix: prevent multiple notes
 
