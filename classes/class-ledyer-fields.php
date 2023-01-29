@@ -154,6 +154,14 @@ class Fields {
 				'default'     => 'no',
 				'desc_tip'    => true,
 			),
+			'show_shipping_address_contact'   => array(
+				'title'       => __( 'Show custom shipping address contact details', 'ledyer-checkout-for-woocommerce' ),
+				'label'       => __( 'Allow customer to enter a different shipping address order recipient', 'ledyer-checkout-for-woocommerce' ),
+				'type'        => 'checkbox',
+				'description' => __( 'If checked, the customer will be able to enter different shipping address recipient details in the checkout iframe.', 'ledyer-checkout-for-woocommerce' ),
+				'default'     => 'no',
+				'desc_tip'    => true,
+			),
 			'customer_show_name_fields'   => array(
 				'title'       => __( 'Show name fields', 'ledyer-checkout-for-woocommerce' ),
 				'label'       => __( 'Allow customer to enter name', 'ledyer-checkout-for-woocommerce' ),
