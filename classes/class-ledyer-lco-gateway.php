@@ -337,6 +337,20 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		}
 
 		/**
+		 * This plugin doesn't handle order management, but it allows Ledyer Order Management plugin to process refunds
+		 * and then return true or false.
+		 *
+		 * @param int      $order_id WooCommerce order ID.
+		 * @param null|int $amount Refund amount.
+		 * @param string   $reason Reason for refund.
+		 *
+		 * @return bool
+		 */
+		public function process_refund( $order_id, $amount = null, $reason = '' ) {
+			return apply_filters( 'wc_ledyer_checkout_process_refund', false, $order_id, $amount, $reason );
+		}
+
+		/**
 		 * Displays Ledyer Checkout thank you iframe and clears Ledyer order ID value from WC session.
 		 *
 		 * @param int $order_id WooCommerce order ID.
