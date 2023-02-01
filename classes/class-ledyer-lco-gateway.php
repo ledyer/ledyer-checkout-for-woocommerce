@@ -108,7 +108,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 			$scriptSrcUrl = 'https://checkout.live.ledyer.com/bootstrap.js';
 
-			if ( ledyer()->get_setting( 'testmode' ) ) {
+			if ( $this->testmode ) {
 				switch (ledyer()->get_setting( 'development_test_environment' )) {
 					case 'local':
 					case 'local-fe':
@@ -298,7 +298,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 				update_post_meta( $order_id, '_ledyer_company_name', $company_name );
 
-				$environment = ledyer()->get_setting( 'testmode' ) ? 'sandbox' : 'production';
+				$environment = $this->testmode ? 'sandbox' : 'production';
 				update_post_meta( $order_id, '_wc_ledyer_environment', $environment );
 
 				$ledyer_country = wc_get_base_location()['country'];
@@ -337,6 +337,20 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		}
 
 		/**
+		 * This plugin doesn't handle order management, but it allows Ledyer Order Management plugin to process refunds
+		 * and then return true or false.
+		 *
+		 * @param int      $order_id WooCommerce order ID.
+		 * @param null|int $amount Refund amount.
+		 * @param string   $reason Reason for refund.
+		 *
+		 * @return bool
+		 */
+		public function process_refund( $order_id, $amount = null, $reason = '' ) {
+			return apply_filters( 'wc_ledyer_checkout_process_refund', false, $order_id, $amount, $reason );
+		}
+
+		/**
 		 * Displays Ledyer Checkout thank you iframe and clears Ledyer order ID value from WC session.
 		 *
 		 * @param int $order_id WooCommerce order ID.
@@ -362,7 +376,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 				$env = 'production';
 
-				if ( ledyer()->get_setting( 'testmode' ) ) {
+				if ( $this->testmode ) {
 					switch (ledyer()->get_setting( 'development_test_environment' )) {
 						case 'local':
 						case 'local-fe':
