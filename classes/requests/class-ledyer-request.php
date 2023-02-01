@@ -69,9 +69,10 @@ abstract class Request {
 	 * @return mixed|string
 	 */
 	private function token() {
+		$token_name = $this->is_test() ? 'test_ledyer_token' : 'ledyer_token';
 
-		if ( get_transient( 'ledyer_token' ) ) {
-			return get_transient( 'ledyer_token' );
+		if ( get_transient( $token_name ) ) {
+			return get_transient( $token_name );
 		}
 
 		$client_credentials = ledyer()->credentials->get_credentials_from_session();
@@ -110,9 +111,8 @@ abstract class Request {
 		$is_wp_error = is_object( $body ) && false !== stripos( get_class( $body ), 'WP_Error' );
 
 		if ( ! $is_wp_error && isset( $body['access_token'] ) ) {
-			set_transient( 'ledyer_token', $body['access_token'], $body['expires_in'] );
-
-			return get_transient( 'ledyer_token' );
+			set_transient( $token_name, $body['access_token'], $body['expires_in'] );
+			return get_transient( $token_name );
 		}
 
 		return '';
