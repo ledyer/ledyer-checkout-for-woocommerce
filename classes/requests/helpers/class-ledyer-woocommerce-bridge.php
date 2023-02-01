@@ -98,6 +98,7 @@ class Woocommerce_Bridge {
 				'customer' => array(
 					'showNameFields' => 'yes' === ledyer()->get_setting('customer_show_name_fields'),
 					'allowShippingAddress' => 'yes' === ledyer()->get_setting('allow_custom_shipping'),
+					'showShippingAddressContact' => 'yes' === ledyer()->get_setting('show_shipping_address_contact'),
 				),
 				'urls' => array(
 					'terms' => $merchant_urls['terms'],
