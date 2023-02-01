@@ -1,5 +1,5 @@
 ## 1.3.0
-* Feature: Active Refund using Ledyer and listen for refund and pass to order management
+* Feature: Activate Refund using Ledyer and listen for refund and pass to order management
 
 ## 1.2.1
 * Fix: prevent multiple notes
