@@ -66,8 +66,8 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			\add_action( 'woocommerce_thankyou_' . $this->id, array( $this, 'show_thank_you_snippet' ) );
 			\add_action( 'woocommerce_thankyou', 'lco_unset_sessions', 100, 1 );
 
-			\add_action('woocommerce_admin_order_data_after_billing_address', array( $this, 'ledyer_order_billing_fileds' ), 10, 1);
-			\add_action('woocommerce_admin_order_data_after_shipping_address', array( $this, 'ledyer_order_shipping_fileds' ), 10, 1);
+			\add_action('woocommerce_admin_order_data_after_billing_address', array( $this, 'ledyer_order_billing_fields' ), 10, 1);
+			\add_action('woocommerce_admin_order_data_after_shipping_address', array( $this, 'ledyer_order_shipping_fields' ), 10, 1);
 
 			\add_filter('woocommerce_formatted_address_replacements', array( $this, 'change_order_fields' ), 10, 2);
 		}
@@ -304,14 +304,17 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				$ledyer_country = wc_get_base_location()['country'];
 				update_post_meta( $order_id, '_wc_ledyer_country', $ledyer_country );
 
-				// Set shipping phone and email.
-				update_post_meta( $order_id, '_shipping_phone', sanitize_text_field( $ledyer_order['customer']['phone'] ) );
-				update_post_meta( $order_id, '_shipping_email', sanitize_text_field( $ledyer_order['customer']['email'] ) );
-
 				// Set shipping meta
 				if( isset( $ledyer_order['customer']['shippingAddress'] ) ) {
 					update_post_meta( $order_id, '_shipping_attention_name', sanitize_text_field( $ledyer_order['customer']['shippingAddress']['attentionName'] ) );
 					update_post_meta( $order_id, '_shipping_care_of', sanitize_text_field( $ledyer_order['customer']['shippingAddress']['careOf'] ) );
+				}
+				// Set order recipient meta
+				if( isset( $ledyer_order['customer']['shippingAddress']['contact'] ) ) {
+					update_post_meta( $order_id, '_shipping_first_name', sanitize_text_field( $ledyer_order['customer']['shippingAddress']['contact']["firstName"] ) );
+					update_post_meta( $order_id, '_shipping_last_name', sanitize_text_field( $ledyer_order['customer']['shippingAddress']['contact']["lastName"]) );
+					update_post_meta( $order_id, '_shipping_phone', sanitize_text_field( $ledyer_order['customer']['shippingAddress']['contact']["phone"] ) );
+					update_post_meta( $order_id, '_shipping_email', sanitize_text_field( $ledyer_order['customer']['shippingAddress']['contact']["email"]) );
 				}
 
 				// Set billing meta
@@ -426,7 +429,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 *
 		 * @return void
 		 */
-		public function ledyer_order_billing_fileds( $order ) {
+		public function ledyer_order_billing_fields( $order ) {
 
 			if ( 'Automattic\WooCommerce\Admin\Overrides\Order' === get_class( $order ) ) {
 				$order_id = $order->get_id();
@@ -451,7 +454,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 *
 		 * @return void
 		 */
-		public function ledyer_order_shipping_fileds( $order ) {
+		public function ledyer_order_shipping_fields( $order ) {
 
 			if ( 'Automattic\WooCommerce\Admin\Overrides\Order' === get_class( $order ) ) {
 				$order_id = $order->get_id();
@@ -461,6 +464,10 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 			$attention_name = get_post_meta( $order_id, '_shipping_attention_name', true );
 			$care_of        = get_post_meta( $order_id, '_shipping_care_of', true );
+			$first_name     = get_post_meta( $order_id, '_shipping_first_name', true );
+			$last_name      = get_post_meta( $order_id, '_shipping_last_name', true );
+			$phone			= get_post_meta( $order_id, '_shipping_phone', true );
+			$email	      	= get_post_meta( $order_id, '_shipping_email', true );
 
 			if ( ! empty( $attention_name ) ) {
 				echo '<p><strong>' . __( 'Shipping Attention Name' ) . ':</strong><br> ' . esc_html($attention_name) . '</p>';
@@ -468,6 +475,18 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 			if ( ! empty( $care_of ) ) {
 				echo '<p><strong>' . __( 'Shipping Care Of' ) . ':</strong><br> ' . esc_html($care_of) . '</p>';
+			}
+
+			if ( ! empty( $first_name ) && ! empty( $last_name ) ) {
+				echo '<p><strong>' . __( 'Order Recipient Name' ) . ':</strong><br> ' . esc_html($first_name) . ' ' . esc_html($last_name) . '</p>';
+			}
+
+			if ( ! empty( $phone )  ) {
+				echo '<p><strong>' . __( 'Order Recipient Phone' ) . ':</strong><br> ' . esc_html($phone) . '</p>';
+			}
+
+			if ( ! empty( $email ) ) {
+				echo '<p><strong>' . __( 'Order Recipient Email' ) . ':</strong><br> ' . esc_html($email) . '</p>';
 			}
 		}
 

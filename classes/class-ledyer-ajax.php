@@ -186,14 +186,16 @@ class AJAX extends \WC_AJAX {
 
 				switch ( $key ) {
 					case 'billing_first_name':
-					case 'shipping_first_name':
 						$fields['billing_address'][ $key ]  = $ledyer_order['customer']['firstName'];
-						$fields['shipping_address'][ $key ] = $ledyer_order['customer']['firstName'];
+						break;
+					case 'shipping_first_name':
+						$fields['shipping_address'][ $key ] = isset( $ledyer_order['customer']['shippingAddress']['contact'] ) ? $ledyer_order['customer']['shippingAddress']['contact']['firstName'] : '';
 						break;
 					case 'billing_last_name':
-					case 'shipping_last_name':
 						$fields['billing_address'][ $key ]  = $ledyer_order['customer']['lastName'];
-						$fields['shipping_address'][ $key ] = $ledyer_order['customer']['lastName'];
+						break;
+					case 'shipping_last_name':
+						$fields['shipping_address'][ $key ] = isset( $ledyer_order['customer']['shippingAddress']['contact'] ) ? $ledyer_order['customer']['shippingAddress']['contact']['lastName'] : '';
 						break;
 					case 'billing_company':
 						$fields['billing_address'][ $key ] = isset( $ledyer_order['customer']['billingAddress'] ) ? $ledyer_order['customer']['billingAddress']['companyName'] : '';
@@ -230,6 +232,12 @@ class AJAX extends \WC_AJAX {
 						break;
 					case 'billing_email':
 						$fields['billing_address'][ $key ] = $ledyer_order['customer']['email'];
+						break;
+					case 'shipping_phone':
+						$fields['shipping_address'][ $key ] = isset( $ledyer_order['customer']['shippingAddress']['contact'] ) ? $ledyer_order['customer']['shippingAddress']['contact']['phone'] : '';
+						break;
+					case 'shipping_email':
+						$fields['shipping_address'][ $key ] = isset( $ledyer_order['customer']['shippingAddress']['contact'] ) ? $ledyer_order['customer']['shippingAddress']['contact']['email'] : '';
 						break;
 					default:
 						unset( $fields[ $key ] );

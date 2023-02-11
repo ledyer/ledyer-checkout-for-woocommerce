@@ -29,6 +29,8 @@ jQuery(function ($) {
         ledyerUpdateNeeded: false,
         shippingEmailExists: false,
         shippingPhoneExists: false,
+        shippingFirstNameExists: false,
+        shippingLastNameExists: false,
 
         /**
          * Triggers on document ready.
@@ -164,6 +166,12 @@ jQuery(function ($) {
                         if (name === 'shipping_email') {
                             lco_wc.shippingEmailExists = true;
                         }
+                        if (name === 'shipping_first_name') {
+                            lco_wc.shippingFirstNameExists = true;
+                        }
+                        if (name === 'shipping_last_name') {
+                            lco_wc.shippingLastNameExists = true;
+                        }
                         $('p#' + name + '_field').appendTo('#lco-extra-checkout-fields');
                     } else {
                         $('input[name="' + name + '"]').closest('p').appendTo('#lco-extra-checkout-fields');
@@ -272,12 +280,18 @@ jQuery(function ($) {
                 'shipping_country' in data.shipping_address ? $('#shipping_country').val(data.shipping_address.shipping_country.toUpperCase()) : '';
                 'shipping_state' in data.shipping_address ? $('#shipping_state').val(data.shipping_address.shipping_state) : '';
 
-                // extra shipping fields (email, phone).
+                // extra shipping fields (email, phone, name).
                 if (lco_wc.shippingEmailExists === true && $('#shipping_email')) {
                     $('#shipping_email').val((('shipping_email' in data.shipping_address) ? data.shipping_address.shipping_email : ''));
                 }
                 if (lco_wc.shippingPhoneExists === true && $('#shipping_phone')) {
                     $('#shipping_phone').val((('shipping_phone' in data.shipping_address) ? data.shipping_address.shipping_phone : ''));
+                }
+                if (lco_wc.shippingFirstNameExists === true && $('#shipping_first_name')) {
+                    $('#shipping_first_name').val((('shipping_first_name' in data.shipping_address) ? data.shipping_address.shipping_first_name : ''));
+                }
+                if (lco_wc.shippingLastNameExists === true && $('#shipping_last_name')) {
+                    $('#shipping_last_name').val((('shipping_last_name' in data.shipping_address) ? data.shipping_address.shipping_last_name : ''));
                 }
             }
         },

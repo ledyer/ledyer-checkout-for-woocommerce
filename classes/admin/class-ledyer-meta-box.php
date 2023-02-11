@@ -93,10 +93,10 @@ class Meta_Box {
                     <strong><?php esc_html_e( 'Order setter: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_order['customer']['firstName'] . ' ' . $ledyer_order['customer']['lastName'] ); ?><br/>
 				<?php endif; ?>
 				<?php if( $ledyer_order['customer']['reference1'] ) : ?>
-                    <strong><?php esc_html_e( 'Customer referens 1: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_order['customer']['reference1'] ); ?><br/>
+                    <strong><?php esc_html_e( 'Invoice reference (e.g. order number): ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_order['customer']['reference1'] ); ?><br/>
 				<?php endif; ?>
 				<?php if( $ledyer_order['customer']['reference2'] ) : ?>
-                    <strong><?php esc_html_e( 'Customer referens 2: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_order['customer']['reference2'] ); ?><br/>
+                    <strong><?php esc_html_e( 'Optional reference (e.g. cost center): ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_order['customer']['reference2'] ); ?><br/>
 				<?php endif; ?>
 			<?php } ?>
         </div>
