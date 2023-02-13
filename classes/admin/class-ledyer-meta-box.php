@@ -51,28 +51,31 @@ class Meta_Box {
 
 		// False if automatic settings are enabled, true if not. If true then show the option.
 		if ( ! empty( get_post_meta( $order_id, '_transaction_id', true ) ) && ! empty( get_post_meta( $order_id, '_wc_ledyer_order_id', true ) ) ) {
-
-			// TODO: if ledyer_pending or status on-hold: get info from session
-			// Then: print_standard_content but with session info
-			// Below request will fail if no order has been created yet (fetch from get_order_session instead)
 			$ledyer_order = ledyer()->api->get_order( get_post_meta( $order_id, '_wc_ledyer_order_id', true ) );
 
-			if ( is_wp_error( $ledyer_order ) ) {
+			if ( is_wp_error( $ledyer_order ) && 404 === $ledyer_order->get_error_code ()) {
+				$ledyer_session = ledyer()->api->get_order_session( get_post_meta( $order_id, '_wc_ledyer_order_id', true ) );
+				if ( is_wp_error( $ledyer_session ) ) {
+					$this->print_error_content( __( 'Failed to retrieve the session from Ledyer.', 'ledyer-checkout-for-woocommerce' ) );
+					return;
+				}
+				$this->print_session_content( $ledyer_session );
+			} else if ( is_wp_error( $ledyer_order ) ) {
 				$this->print_error_content( __( 'Failed to retrieve the order from Ledyer. The customer may not have been able to complete the checkout flow', 'ledyer-checkout-for-woocommerce' ) );
 				return;
+			} else {
+				$this->print_order_content( $ledyer_order );
 			}
 		}
-		$this->print_standard_content( $ledyer_order );
 	}
 
 	/**
-	 * Prints the standard content for the Metabox
+	 * Prints the standard order content for the Metabox
 	 *
 	 * @param object $ledyer_order The Ledyer order object.
 	 * @return void
 	 */
-	public function print_standard_content( $ledyer_order ) {
-		// Show ledyer order information.
+	private function print_order_content( $ledyer_order ) {
 		?>
 		<div class="lco-meta-box-content">
 			<?php if ( $ledyer_order ) { ?>
@@ -106,10 +109,49 @@ class Meta_Box {
 					<strong><?php esc_html_e( 'Optional reference (e.g. cost center): ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_order['customer']['reference2'] ); ?><br/>
 				<?php endif; ?>
 				<?php if( "forced" === $ledyer_order['authorizeStatus'] ) : ?>
-					<strong><?php esc_html_e( 'Manual review: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <span style="color:#a00;"> adviced</span><br/>
+					<strong><?php esc_html_e( 'Manual review: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <span style="color:#a00;"> advised</span><br/>
 				<?php endif; ?>
 				<?php if( $ledyer_order['riskProfile']['tags'] ) : ?>
 					<strong><?php esc_html_e( 'Risk profile: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( implode(', ', $ledyer_order['riskProfile']['tags']) ); ?><br/>
+				<?php endif; ?>
+			<?php } ?>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Prints the standard session content for the Metabox
+	 *
+	 * @param object $ledyer_session The Ledyer session object.
+	 * @return void
+	 */
+	private function print_session_content( $ledyer_session ) {
+		?>
+		<div class="lco-meta-box-content">
+			<?php if ( $ledyer_session ) { ?>
+				<?php
+				if ( '' !== ledyer()->get_setting('testmode') ) {
+					$environment = 'yes' === ledyer()->get_setting('testmode') ? 'Sandbox' : 'Live';
+					?>
+					<strong><?php esc_html_e( 'Environment: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong><?php echo esc_html( $environment ); ?><br/>
+				<?php } ?>
+				<strong><?php esc_html_e( 'Company ID: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_session['customer']['companyId'] ); ?><br/>
+				<?php if( ! empty( $ledyer_session['customer']['firstName'] ) || ! empty( $ledyer_session['customer']['lastName'] ) ) : ?>
+					<strong><?php esc_html_e( 'Name: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_session['customer']['firstName'] . ' ' . $ledyer_session['customer']['lastName'] ); ?><br/>
+				<?php endif; ?>
+				<strong><?php esc_html_e( 'Payment method: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_session['customer']['paymentMethod']['type'] ); ?><br/>
+				<?php if( "email" === $ledyer_session['customer']['invoiceChannel']['type'] && $ledyer_session['customer']['invoiceChannel']['details'] ) : ?>
+					<strong><?php esc_html_e( 'Invoice copy: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_session['customer']['invoiceChannel']['details'] ); ?><br/>
+				<?php endif; ?>
+				<?php if( "edi" === $ledyer_session['customer']['invoiceChannel']['type'] && $ledyer_session['customer']['invoiceChannel']['details'] ) : ?>
+					<strong><?php esc_html_e( 'GLN: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_session['customer']['invoiceChannel']['details'] ); ?><br/>
+				<?php endif; ?>
+				<strong><?php esc_html_e( 'State: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_session['state'] ); ?><br/>
+				<?php if( $ledyer_session['customer']['reference1'] ) : ?>
+					<strong><?php esc_html_e( 'Invoice reference (e.g. order number): ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_session['customer']['reference1'] ); ?><br/>
+				<?php endif; ?>
+				<?php if( $ledyer_session['customer']['reference2'] ) : ?>
+					<strong><?php esc_html_e( 'Optional reference (e.g. cost center): ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_session['customer']['reference2'] ); ?><br/>
 				<?php endif; ?>
 			<?php } ?>
 		</div>
