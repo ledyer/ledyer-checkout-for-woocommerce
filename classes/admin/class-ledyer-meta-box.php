@@ -74,32 +74,45 @@ class Meta_Box {
 	public function print_standard_content( $ledyer_order ) {
 		// Show ledyer order information.
 		?>
-        <div class="lco-meta-box-content">
+		<div class="lco-meta-box-content">
 			<?php if ( $ledyer_order ) { ?>
 				<?php
 				if ( '' !== ledyer()->get_setting('testmode') ) {
-					$environment = 'yes' === ledyer()->get_setting('testmode') ? 'Sandbox' : 'Production';
+					$environment = 'yes' === ledyer()->get_setting('testmode') ? 'Sandbox' : 'Live';
+					$ledyer_order_url = 'yes' === ledyer()->get_setting('testmode') ? 
+						'https://merchant.sandbox.ledyer.com/orders/' . $ledyer_order['id'] : 
+						'https://merchant.live.ledyer.com/orders/' . $ledyer_order['id'];
 					?>
-                    <strong><?php esc_html_e( 'Ledyer Environment: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong><?php echo esc_html( $environment ); ?><br/>
+					<strong><?php esc_html_e( 'Environment: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong><?php echo esc_html( $environment ); ?><br/>
 				<?php } ?>
-                <strong><?php esc_html_e( 'Company id: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_order['customer']['companyId'] ); ?><br/>
-                <strong><?php esc_html_e( 'Order id: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_order['id'] ); ?><br/>
-                <strong><?php esc_html_e( 'Ledyer id: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_order['orderReference'] ); ?><br/>
-				<strong><?php esc_html_e( 'Payment method: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_order['paymentMethod']['type'] ); ?><br/>
-				<strong><?php esc_html_e( 'Ledyer status: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( implode(', ', $ledyer_order['status']) ); ?><br/>
-
-
+				<strong><?php esc_html_e( 'Company: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_order['customer']['companyName'] ); ?><br/>
+				<strong><?php esc_html_e( 'Company ID: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_order['customer']['companyId'] ); ?><br/>
 				<?php if( ! empty( $ledyer_order['customer']['firstName'] ) || ! empty( $ledyer_order['customer']['lastName'] ) ) : ?>
-                    <strong><?php esc_html_e( 'Order setter: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_order['customer']['firstName'] . ' ' . $ledyer_order['customer']['lastName'] ); ?><br/>
+					<strong><?php esc_html_e( 'Name: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_order['customer']['firstName'] . ' ' . $ledyer_order['customer']['lastName'] ); ?><br/>
 				<?php endif; ?>
+				<strong><?php esc_html_e( 'Ledyer ID: ', 'ledyer-checkout-for-woocommerce' ); ?></strong> <a href="<?php echo esc_url( $ledyer_order_url ); ?>" target="_blank"><?php echo esc_html( $ledyer_order['orderReference'] ); ?></a><br/>
+				<strong><?php esc_html_e( 'Payment method: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_order['paymentMethod']['type'] ); ?><br/>
+				<?php if( "email" === $ledyer_order['customer']['invoiceChannel']['type'] && $ledyer_order['customer']['invoiceChannel']['details'] ) : ?>
+					<strong><?php esc_html_e( 'Invoice copy: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_order['customer']['invoiceChannel']['details'] ); ?><br/>
+				<?php endif; ?>
+				<?php if( "edi" === $ledyer_order['customer']['invoiceChannel']['type'] && $ledyer_order['customer']['invoiceChannel']['details'] ) : ?>
+					<strong><?php esc_html_e( 'GLN: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_order['customer']['invoiceChannel']['details'] ); ?><br/>
+				<?php endif; ?>
+				<strong><?php esc_html_e( 'Status: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( implode(', ', $ledyer_order['status']) ); ?><br/>
 				<?php if( $ledyer_order['customer']['reference1'] ) : ?>
-                    <strong><?php esc_html_e( 'Invoice reference (e.g. order number): ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_order['customer']['reference1'] ); ?><br/>
+					<strong><?php esc_html_e( 'Invoice reference (e.g. order number): ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_order['customer']['reference1'] ); ?><br/>
 				<?php endif; ?>
 				<?php if( $ledyer_order['customer']['reference2'] ) : ?>
-                    <strong><?php esc_html_e( 'Optional reference (e.g. cost center): ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_order['customer']['reference2'] ); ?><br/>
+					<strong><?php esc_html_e( 'Optional reference (e.g. cost center): ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_order['customer']['reference2'] ); ?><br/>
+				<?php endif; ?>
+				<?php if( "forced" === $ledyer_order['authorizeStatus'] ) : ?>
+					<strong><?php esc_html_e( 'Manual review: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <span style="color:#a00;"> adviced</span><br/>
+				<?php endif; ?>
+				<?php if( $ledyer_order['riskProfile']['tags'] ) : ?>
+					<strong><?php esc_html_e( 'Risk profile: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( implode(', ', $ledyer_order['riskProfile']['tags']) ); ?><br/>
 				<?php endif; ?>
 			<?php } ?>
-        </div>
+		</div>
 		<?php
 	}
 
