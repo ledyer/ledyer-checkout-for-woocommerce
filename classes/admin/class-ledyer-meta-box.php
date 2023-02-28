@@ -114,6 +114,7 @@ class Meta_Box {
 				<?php if( $ledyer_order['riskProfile']['tags'] ) : ?>
 					<strong><?php esc_html_e( 'Risk profile: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( implode(', ', $ledyer_order['riskProfile']['tags']) ); ?><br/>
 				<?php endif; ?>
+				<strong><?php esc_html_e( 'Updated: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( sprintf( __( '%1$s at %2$s', 'woocommerce' ), date_i18n( wc_date_format(), strtotime($ledyer_order['updatedAt']) ), date_i18n( wc_time_format(), strtotime($ledyer_order['updatedAt']) ) ) ); ?><br/>
 			<?php } ?>
 		</div>
 		<?php
