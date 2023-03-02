@@ -64,8 +64,6 @@ class Cart {
 		$this->process_coupons();
 		$this->process_fees();
 		$this->process_customer();
-
-		//$this->adjust_order_lines();
 	}
 
 	/**
@@ -94,15 +92,20 @@ class Cart {
 	}
 
 	/**
-	 * Gets order amount for Ledyer API.
-	 * Order amount calculated from cart items
+	 * Gets order total amount eligible for tax for Ledyer API 
+	 * Note that this excludes multipurpose vouchers/giftcards. 
+	 * Use get_order_amount for regular total amount
 	 *
 	 * @return int
 	 */
-	public function get_order_lines_total_amount() {
+	public function get_order_taxable_amount() {
 		$total_amount = 0;
 		foreach ( $this->order_lines as $order_line ) {
-			$total_amount += $order_line['totalAmount'];
+			$lineTotal = $order_line['totalAmount'];
+			$multiPurposeVoucher = 'giftCard' === $order_line['type'] && $order_line['vat'] == 0 && $lineTotal < 0;
+			if ( !$multiPurposeVoucher ) {
+				$total_amount += $lineTotal;
+			}
 		}
 
 		return round( $total_amount );
@@ -118,12 +121,8 @@ class Cart {
 	public function get_order_tax_amount( $order_lines ) {
 		$total_tax_amount = 0;
 		foreach ( $order_lines as $order_line ) {
-			// Add all order lines but exclude gift cards.
-			if ( 'gift_card' !== $order_line['type'] ) {
-				$total_tax_amount += intval( $order_line['totalVatAmount'] );
-			}
+			$total_tax_amount += intval( $order_line['totalVatAmount'] );
 		}
-
 		return round( $total_tax_amount );
 	}
 	/**
@@ -134,8 +133,8 @@ class Cart {
 	 * @return int
 	 */
 	public function get_order_amount_ex_tax( $order_lines ) {
+		$total_amount     = $this->get_order_taxable_amount();
 		$total_tax_amount = $this->get_order_tax_amount( $order_lines );
-		$total_amount     = $this->get_order_lines_total_amount();
 
 		return round( $total_amount - $total_tax_amount );
 	}
@@ -278,24 +277,6 @@ class Cart {
 					);
 					$this->order_lines[] = $discount;
 				}
-
-				// Standard cart, product, percentage discounts and gift cards end up here
-				// Discount coupons are created as a separate line item only for reference that a discount has been applied to product items
-				// The real discount will have been calculated and applied on each individual existing product order lines as unitDiscountAmount
-				if ( 'smart_coupon' !== $coupon->get_discount_type() ) {
-					$discount            = array(
-						'type'               => 'giftCard',
-						'reference'          => $coupon_reference,
-						'description'        => $coupon_description . ': ' . $coupon_reference,
-						'quantity'           => 1,
-						'unitPrice'          => $coupon_amount,
-						'unitDiscountAmount' => 0,
-						'vat'                => 0,
-						'totalAmount'        => $coupon_amount,
-						'totalVatAmount'     => 0,
-					);
-					$this->order_lines[] = $discount;
-				}
 			}
 		}
 
@@ -363,13 +344,13 @@ class Cart {
 			foreach ( $pw_gift_cards['gift_cards'] as $code => $value ) {
 				$coupon_amount       = $value * 100 * - 1;
 				$label               = esc_html__( 'Gift card', 'pw-woocommerce-gift-cards' ) . ' ' . $code;
-				$giftcard_sku        = apply_filters( 'lco_pw_gift_card_sku', esc_html__( 'giftcard', 'ledyer-checkout-for-woocommerce' ), $code );
+				$gift_card_sku       = apply_filters( 'lco_pw_gift_card_sku', esc_html__( 'giftcard', 'ledyer-checkout-for-woocommerce' ), $code );
 				$gift_card           = array(
 					'type'                  => 'giftCard',
-					'reference'             => $giftcard_sku,
+					'reference'             => $gift_card_sku,
 					'description'	        => $label,
 					'quantity'              => 1,
-					'unitDiscountAmount'    => $coupon_amount,
+					'unitPrice'             => $coupon_amount,
 					'vat'              		=> 0,
 					'totalAmount'          	=> $coupon_amount,
 					'unitDiscountAmount' 	=> 0,
@@ -416,36 +397,6 @@ class Cart {
 				$this->order_lines[] = $fee_item;
 			}
 		}
-	}
-
-	/**
-	 * Adjust order lines if there is a mismatch with cart total.
-	 *
-	 * @return array
-	 */
-	public function adjust_order_lines() {
-		$amount_to_adjust = $this->get_order_amount() - $this->get_order_lines_total_amount( $this->order_lines );
-
-		// If the amount to adjust is zero, return.
-		if ( 0 === intval( round( $amount_to_adjust * 100 ) ) ) {
-			return $this->order_lines;
-		}
-
-		$adjust_item = array(
-			'type'               => 'surcharge',
-			'reference'          => 'added-surcharge',
-			'description'        => apply_filters( 'lco_wc_surcharge_name', __( 'Surcharge', 'ledyer-checkout-for-woocommerce' ) ),
-			'quantity'           => 1,
-			'unitPrice'          => $amount_to_adjust,
-			'unitDiscountAmount' => 0,
-			'vat'                => 0,
-			'totalAmount'        => $amount_to_adjust,
-			'totalVatAmount'     => 0,
-		);
-
-		$this->order_lines[] = $adjust_item;
-
-		return $this->order_lines;
 	}
 
 	// Helpers.
