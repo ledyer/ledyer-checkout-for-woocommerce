@@ -241,9 +241,9 @@ function wc_ledyer_confirm_ledyer_order( $order_id ) {
 		if( is_wp_error( $response ) ) {
 			\Ledyer\Logger::log( 'Couldn\'t acknowledge order ' . $payment_id  );
 		}
-		$ledyer_update_order = ledyer()->api->update_order_reference( $payment_id, array( 'reference' => strval( $order->ID ) ) );
+		$ledyer_update_order = ledyer()->api->update_order_reference( $payment_id, array( 'reference' => $order->get_order_number() ) );
 		if ( is_wp_error( $ledyer_update_order ) ) {
-			\Ledyer\Logger::log( 'Couldn\'t set merchant reference ' . $order->ID  );
+			\Ledyer\Logger::log( 'Couldn\'t set merchant reference ' . $order->get_order_number()  );
 		}
 	}
 

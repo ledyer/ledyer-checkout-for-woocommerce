@@ -384,13 +384,15 @@ jQuery(function ($) {
                                 if ('success' === data.result) {
                                     lco_wc.logToFile('Successfully validated order in WooCommerce.');
                                     const url = new URL(data.redirect);
+                                    sessionStorage.setItem('ledyerWooRedirectUrl', url);
 
                                     if (should_validate) {
                                         window.ledyer.api.clientValidation({
                                             shouldProceed: true
                                         })
                                         // Ledyer will respond with a new event when order is complete
-                                        // So don't redirect just yet
+                                        // So don't redirect just yet, 
+                                        // eventually redirection will happen in ledyerCheckoutOrderComplete 
                                         return;
                                     }
                                     window.location.href = url.toString();
@@ -442,7 +444,14 @@ jQuery(function ($) {
             $(document).on('ledyerCheckoutOrderComplete', function (event) {
                 lco_wc.logToFile('ledyerCheckoutOrderComplete from Ledyer triggered');
                 if (!lco_params.pay_for_order) {
-                    lco_wc.placeLedyerOrder();
+                    const redirectUrl = sessionStorage.getItem( 'ledyerWooRedirectUrl' );
+                    if (redirectUrl) {
+                        // This means that placeLedyerOrder was called successfully already
+                        // (Due to an earlier call caused by client validation)
+                        window.location.href = redirectUrl;
+                    } else {
+                        lco_wc.placeLedyerOrder();
+                    }
                 }
             });
 
