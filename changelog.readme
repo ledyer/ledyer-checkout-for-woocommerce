@@ -1,3 +1,9 @@
+## 1.5.2
+* Fix: Use order number as reference
+* Fix: Added last updated to Ledyer order info
+* Fix: Prevent duplicate orders for some cases
+* Fix: Coupon and giftcard adjustments
+
 ## 1.5.1
 * Fix: Adjusted Ledyer order info box
 
