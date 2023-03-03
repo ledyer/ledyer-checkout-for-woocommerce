@@ -348,13 +348,13 @@ class Cart {
 				$gift_card           = array(
 					'type'                  => 'giftCard',
 					'reference'             => $gift_card_sku,
-					'description'	        => $label,
+					'description'           => $label,
 					'quantity'              => 1,
 					'unitPrice'             => $coupon_amount,
-					'vat'              		=> 0,
-					'totalAmount'          	=> $coupon_amount,
-					'unitDiscountAmount' 	=> 0,
-					'totalVatAmount'      	=> 0,
+					'vat'                   => 0,
+					'totalAmount'           => $coupon_amount,
+					'unitDiscountAmount'    => 0,
+					'totalVatAmount'        => 0,
 				);
 				$this->order_lines[] = $gift_card;
 			}
