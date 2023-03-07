@@ -68,6 +68,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 			\add_action('woocommerce_admin_order_data_after_billing_address', array( $this, 'ledyer_order_billing_fields' ), 10, 1);
 			\add_action('woocommerce_admin_order_data_after_shipping_address', array( $this, 'ledyer_order_shipping_fields' ), 10, 1);
+			\add_action( 'woocommerce_process_shop_order_meta', array( $this, 'ledyer_order_save_custom_fields' ), 10, 1);
 
 			\add_filter('woocommerce_formatted_address_replacements', array( $this, 'change_order_fields' ), 10, 2);
 		}
@@ -440,13 +441,43 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$attention_name = get_post_meta($order_id, '_billing_attention_name', true);
 			$care_of = get_post_meta($order_id, '_billing_care_of', true);
 
-			if( ! empty( $attention_name ) ) {
-				echo '<p><strong>' . __('Billing Attention Name') . ':</strong><br> ' . esc_html($attention_name) . '</p>';
-			}
+			?>
+				<div class="address">
+					<p<?php if( ! $attention_name ) { echo ' class="none_set"'; } ?>>
+						<strong>Attention Name:</strong>
+						<?php echo $attention_name ? esc_html( $attention_name ) : '' ?>
+					</p>
+				</div>
+				<div class="edit_address">
+					<?php
+						woocommerce_wp_text_input( array(
+							'id' => '_billing_attention_name',
+							'label' => 'Attention Name:',
+							'value' => $attention_name,
+							'wrapper_class' => 'form-field-wide'
+						) );
+					?>
+				</div>
+			<?php
 
-			if( ! empty( $care_of ) ) {
-				echo '<p><strong>' . __('Billing Care Of') . ':</strong><br> ' . esc_html($care_of) . '</p>';
-			}
+			?>
+				<div class="address">
+					<p<?php if( ! $care_of ) { echo ' class="none_set"'; } ?>>
+						<strong>Care Of:</strong>
+						<?php echo $care_of ? esc_html( $care_of ) : '' ?>
+					</p>
+				</div>
+				<div class="edit_address">
+					<?php
+						woocommerce_wp_text_input( array(
+							'id' => '_billing_care_of',
+							'label' => 'Care Of:',
+							'value' => $care_of,
+							'wrapper_class' => 'form-field-wide'
+						) );
+					?>
+				</div>
+			<?php
 		}
 		/**
 		 * Add additional shipping fields on Edit Order Screen
@@ -469,26 +500,114 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$phone			= get_post_meta( $order_id, '_shipping_phone', true );
 			$email	      	= get_post_meta( $order_id, '_shipping_email', true );
 
-			if ( ! empty( $attention_name ) ) {
-				echo '<p><strong>' . __( 'Shipping Attention Name' ) . ':</strong><br> ' . esc_html($attention_name) . '</p>';
+			?>
+				<div class="address">
+					<p<?php if( ! $attention_name ) { echo ' class="none_set"'; } ?>>
+						<strong>Attention Name:</strong>
+						<?php echo $attention_name ? esc_html( $attention_name ) : '' ?>
+					</p>
+				</div>
+				<div class="edit_address">
+					<?php
+						woocommerce_wp_text_input( array(
+							'id' => '_shipping_attention_name',
+							'label' => 'Attention Name:',
+							'value' => $attention_name,
+							'wrapper_class' => 'form-field-wide'
+						) );
+					?>
+				</div>
+			<?php
+
+			?>
+				<div class="address">
+					<p<?php if( ! $care_of ) { echo ' class="none_set"'; } ?>>
+						<strong>Care Of:</strong>
+						<?php echo $care_of ? esc_html( $care_of ) : '' ?>
+					</p>
+				</div>
+				<div class="edit_address">
+					<?php
+						woocommerce_wp_text_input( array(
+							'id' => '_shipping_care_of',
+							'label' => 'Care Of:',
+							'value' => $care_of,
+							'wrapper_class' => 'form-field-wide'
+						) );
+					?>
+				</div>
+			<?php
+
+			if( !empty( $first_name ) || !empty( $last_name ) ) {
+				?>
+					<div class="address">
+						<p>
+							<strong>Order Recipient Name:</strong>
+							<?php echo $first_name ? esc_html( $first_name ) : '' ?>
+							<?php echo $last_name ? esc_html( $last_name ) : '' ?>
+						</p>
+					</div>
+				<?php
 			}
 
-			if ( ! empty( $care_of ) ) {
-				echo '<p><strong>' . __( 'Shipping Care Of' ) . ':</strong><br> ' . esc_html($care_of) . '</p>';
+			if( ! empty( $phone ) ) {
+				?>
+					<div class="address">
+						<p>
+							<strong>Order Recipient Phone:</strong>
+							<?php echo $phone ? esc_html( $phone ) : '' ?>
+						</p>
+					</div>
+				<?php
 			}
+			?>
+				<div class="edit_address">
+					<?php
+						woocommerce_wp_text_input( array(
+							'id' => '_shipping_phone',
+							'label' => 'Order Recipient Phone:',
+							'value' => $phone,
+							'wrapper_class' => 'form-field-wide'
+						) );
+					?>
+				</div>
+			<?php
 
-			if ( ! empty( $first_name ) && ! empty( $last_name ) ) {
-				echo '<p><strong>' . __( 'Order Recipient Name' ) . ':</strong><br> ' . esc_html($first_name) . ' ' . esc_html($last_name) . '</p>';
+			if( ! empty( $email ) ) {
+				?>
+					<div class="address">
+						<p>
+							<strong>Order Recipient Email:</strong>
+							<?php echo $email ? esc_html( $email ) : '' ?>
+						</p>
+					</div>
+				<?php
 			}
+			?>
+				<div class="edit_address">
+					<?php
+						woocommerce_wp_text_input( array(
+							'id' => '_shipping_email',
+							'label' => 'Order Recipient Email:',
+							'value' => $email,
+							'wrapper_class' => 'form-field-wide'
+						) );
+					?>
+				</div>
+			<?php
 
-			if ( ! empty( $phone )  ) {
-				echo '<p><strong>' . __( 'Order Recipient Phone' ) . ':</strong><br> ' . esc_html($phone) . '</p>';
-			}
-
-			if ( ! empty( $email ) ) {
-				echo '<p><strong>' . __( 'Order Recipient Email' ) . ':</strong><br> ' . esc_html($email) . '</p>';
-			}
 		}
+
+		public function ledyer_order_save_custom_fields( $order_id ){
+			update_post_meta( $order_id, '_billing_attention_name', sanitize_text_field( $_POST[ '_billing_attention_name' ] ) );
+			update_post_meta( $order_id, '_billing_care_of', sanitize_text_field( $_POST[ '_billing_care_of' ] ) );
+
+			update_post_meta( $order_id, '_shipping_attention_name', sanitize_text_field( $_POST[ '_shipping_attention_name' ] ) );
+			update_post_meta( $order_id, '_shipping_care_of', sanitize_text_field( $_POST[ '_shipping_care_of' ] ) );
+			update_post_meta( $order_id, '_shipping_phone', sanitize_text_field( $_POST[ '_shipping_phone' ] ) );
+			update_post_meta( $order_id, '_shipping_email', sanitize_text_field( $_POST[ '_shipping_email' ] ) );
+		}
+		
 
 		/**
 		 * Hide name fields on Edit Order Screen
