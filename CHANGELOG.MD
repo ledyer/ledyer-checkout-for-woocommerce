@@ -1,3 +1,6 @@
+## 1.6.0
+* Feature: make custom address fields editable
+
 ## 1.5.2
 * Fix: Use order number as reference
 * Fix: Added last updated to Ledyer order info
