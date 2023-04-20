@@ -96,6 +96,7 @@ class Meta_Box {
 				<strong><?php esc_html_e( 'Ledyer ID: ', 'ledyer-checkout-for-woocommerce' ); ?></strong> <a href="<?php echo esc_url( $ledyer_order_url ); ?>" target="_blank"><?php echo esc_html( $ledyer_order['orderReference'] ); ?></a><br/>
 				<strong><?php esc_html_e( 'Payment method: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_order['paymentMethod']['type'] ); ?><br/>
 				<?php if( "email" === $ledyer_order['customer']['invoiceChannel']['type'] && $ledyer_order['customer']['invoiceChannel']['details'] ) : ?>
+					<strong><?php esc_html_e( 'Invoice: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_order['customer']['email']); ?><br/>
 					<strong><?php esc_html_e( 'Invoice copy: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong> <?php echo esc_html( $ledyer_order['customer']['invoiceChannel']['details'] ); ?><br/>
 				<?php endif; ?>
 				<?php if( "edi" === $ledyer_order['customer']['invoiceChannel']['type'] && $ledyer_order['customer']['invoiceChannel']['details'] ) : ?>
