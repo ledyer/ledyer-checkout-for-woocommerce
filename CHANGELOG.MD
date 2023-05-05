@@ -1,3 +1,6 @@
+## 1.6.2
+* Chore: version bump
+
 ## 1.6.1
 * Fix: Added invoice email
 * Fix: Corrected latest WP version
