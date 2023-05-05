@@ -1,3 +1,7 @@
+## 1.6.1
+* Fix: Added invoice email
+* Fix: Corrected latest WP version
+
 ## 1.6.0
 * Feature: make custom address fields editable
 
