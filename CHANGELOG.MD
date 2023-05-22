@@ -1,3 +1,6 @@
+## 1.6.3
+* Fix: Rounding issue
+
 ## 1.6.2
 * Chore: version bump
 
