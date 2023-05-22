@@ -476,8 +476,7 @@ class Cart {
 	 *
 	 */
 	public function get_item_price( $cart_item ) {
-		$item_subtotal = ( $this->subtotal_amount / $this->quantity ) + ( $this->subtotal_tax_amount / $this->quantity );
-
+		$item_subtotal = round( ($this->subtotal_amount + $this->subtotal_tax_amount ) / $this->quantity );
 		return $item_subtotal;
 	}
 
