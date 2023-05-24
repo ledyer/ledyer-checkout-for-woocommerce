@@ -69,8 +69,6 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			\add_action('woocommerce_admin_order_data_after_billing_address', array( $this, 'ledyer_order_billing_fields' ), 10, 1);
 			\add_action('woocommerce_admin_order_data_after_shipping_address', array( $this, 'ledyer_order_shipping_fields' ), 10, 1);
 			\add_action( 'woocommerce_process_shop_order_meta', array( $this, 'ledyer_order_save_custom_fields' ), 10, 1);
-
-			\add_filter('woocommerce_formatted_address_replacements', array( $this, 'change_order_fields' ), 10, 2);
 		}
 
 		/**
@@ -607,22 +605,5 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			update_post_meta( $order_id, '_shipping_phone', sanitize_text_field( $_POST[ '_shipping_phone' ] ) );
 			update_post_meta( $order_id, '_shipping_email', sanitize_text_field( $_POST[ '_shipping_email' ] ) );
 		}
-		
-
-		/**
-		 * Hide name fields on Edit Order Screen
-		 * @param $fields
-		 * @param $args
-		 *
-		 * @return mixed
-		 */
-		public function change_order_fields( $fields, $args ) {
-			if( is_admin() && ! wp_doing_ajax() ) {
-				//Hide billing and shipping Name
-				$fields['{name}'] = '';
-			}
-			return $fields;
-		}
-
 	}
 }
