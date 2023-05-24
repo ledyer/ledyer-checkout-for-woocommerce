@@ -1,3 +1,7 @@
+## 1.6.4
+* Fix: Discount rounding issue
+* Fix: Show billing and shipping name
+
 ## 1.6.3
 * Fix: Rounding issue
 
