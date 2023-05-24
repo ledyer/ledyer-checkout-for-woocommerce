@@ -162,7 +162,7 @@ class Cart {
 					'description'        => $this->get_item_name( $cart_item ),
 					'quantity'           => $this->get_item_quantity( $cart_item ),
 					'unitPrice'          => $this->get_item_price( $cart_item ),
-					'unitDiscountAmount' => $this->get_item_discount_amount( $cart_item, $product ) / $this->get_item_quantity( $cart_item ),
+					'unitDiscountAmount' => round($this->get_item_discount_amount( $cart_item, $product ) / $this->get_item_quantity( $cart_item )),
 					'vat'                => $this->get_item_tax_rate( $cart_item, $product ),
 					'totalAmount'        => $this->get_item_total_amount( $cart_item, $product ),
 					'totalVatAmount'     => $this->get_item_tax_amount( $cart_item, $product ),
