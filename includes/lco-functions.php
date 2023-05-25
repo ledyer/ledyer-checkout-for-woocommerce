@@ -194,6 +194,36 @@ function wc_ledyer_confirm_ledyer_order( $order_id ) {
 		\Ledyer\Logger::log( 'Could not get ledyer payment status ' . $payment_id  );
 		return;
 	}
+	
+	$ledyer_payment_method = $ledyer_payment_status['paymentMethod'];
+	if ( !empty($ledyer_payment_method) ) {
+
+		$ledyer_payment_provider = sanitize_text_field( $ledyer_payment_method['provider']);
+		$ledyer_payment_type = sanitize_text_field( $ledyer_payment_method['type']);
+
+		update_post_meta( $order_id, 'ledyer_payment_type', $ledyer_payment_type );
+		update_post_meta( $order_id, 'ledyer_payment_method', $ledyer_payment_provider );
+
+		switch ( $ledyer_payment_type ) {
+			case 'invoice':
+				$method_title = __( 'Invoice', 'ledyer-checkout-for-woocommerce' );
+				break;
+			case 'advanceInvoice':
+				$method_title = __( 'Advance Invoice', 'ledyer-checkout-for-woocommerce' );
+				break;
+			case 'card':
+				$method_title = __( 'Card', 'ledyer-checkout-for-woocommerce' );
+				break;
+			case 'bankTransfer':
+				$method_title = __( 'Direct Debit', 'ledyer-checkout-for-woocommerce' );
+				break;
+			case 'partPayment':
+				$method_title = __( 'Part Payment', 'ledyer-checkout-for-woocommerce' );
+				break;
+		}
+		$order->set_payment_method_title( sprintf( '%s (Ledyer)', $method_title ) );
+		$order->save();	
+	}
 
 	$ackOrder = false;
 
@@ -231,10 +261,7 @@ function wc_ledyer_confirm_ledyer_order( $order_id ) {
 			return;
 		}
 
-		do_action( 'ledyer_process_payment', $order_id, $ledyer_order );
-
-		update_post_meta( $order_id, 'ledyerpayment_type', $ledyer_order['paymentMethod']['type'] );
-		update_post_meta( $order_id, 'ledyer_payment_method', $ledyer_order['paymentMethod']['provider'] );
+		do_action( 'ledyer_process_payment', $order_id, $ledyer_order );		
 		update_post_meta( $order_id, '_ledyer_date_paid', gmdate( 'Y-m-d H:i:s' ) );
 
 		$response = ledyer()->api->acknowledge_order( $payment_id );
