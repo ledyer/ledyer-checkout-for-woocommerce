@@ -1,3 +1,6 @@
+## 1.6.5
+* Fix: Change to use exclusive vat mode
+
 ## 1.6.4
 * Fix: Discount rounding issue
 * Fix: Show billing and shipping name
