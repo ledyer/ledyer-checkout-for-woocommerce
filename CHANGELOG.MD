@@ -1,4 +1,5 @@
 ## 1.6.5
+* Fix: Payment method titles
 * Fix: Change to use exclusive vat mode
 
 ## 1.6.4
