@@ -161,8 +161,6 @@ class Cart {
 					'reference'          => $this->get_item_reference( $product ),
 					'description'        => $this->get_item_name( $cart_item ),
 					'quantity'           => $this->get_item_quantity( $cart_item ),
-					'unitPrice'          => $this->get_item_price( $cart_item ),
-					'unitDiscountAmount' => round($this->get_item_discount_amount( $cart_item, $product ) / $this->get_item_quantity( $cart_item )),
 					'vat'                => $this->get_item_tax_rate( $cart_item, $product ),
 					'totalAmount'        => $this->get_item_total_amount( $cart_item, $product ),
 					'totalVatAmount'     => $this->get_item_tax_amount( $cart_item, $product ),
@@ -217,15 +215,12 @@ class Cart {
 	 * Process WooCommerce shipping to Ledyer Payments order lines.
 	 */
 	public function process_shipping() {
-		//var_dump(WC()->session->get( 'chosen_shipping_methods' ));
 		if ( WC()->shipping->get_packages() && ! empty( WC()->session->get( 'chosen_shipping_methods' ) ) ) {
 			$shipping            = array(
 				'type'               => 'shippingFee',
 				'reference'          => $this->get_shipping_reference(),
 				'description'        => $this->get_shipping_name(),
 				'quantity'           => 1,
-				'unitPrice'          => $this->get_shipping_amount(),
-				'unitDiscountAmount' => 0,
 				'vat'                => $this->get_shipping_tax_rate(),
 				'totalAmount'        => $this->get_shipping_amount(),
 				'totalVatAmount'     => $this->get_shipping_tax_amount(),
@@ -269,8 +264,6 @@ class Cart {
 						'reference'          => $coupon_reference,
 						'description'        => $coupon_description,
 						'quantity'           => 1,
-						'unitPrice'          => 0,
-						'unitDiscountAmount' => $coupon_discount_amount,
 						'vat'                => 2500,
 						'totalAmount'        => $coupon_amount,
 						'totalVatAmount'     => - self::format_number( $coupon_tax_amount ),
@@ -303,10 +296,8 @@ class Cart {
 					'description'           => __( 'Gift card', 'ledyer-checkout-for-woocommerce' ),
 					'quantity'              => 1,
 					'vat'             		=> 0,
-					'unitDiscountAmount' 	=> 0,
-					'totalVatAmount'  	    => 0,
-					'unitPrice'            	=> $gift_card_amount,
 					'totalAmount'          	=> $gift_card_amount,
+					'totalVatAmount'  	    => 0,
 				);
 
 				$this->order_lines[] = $gift_card;
@@ -328,10 +319,8 @@ class Cart {
 					'reference'             => $giftcard_sku,
 					'description'          	=> $label,
 					'quantity'              => 1,
-					'unitPrice'	            => $coupon_amount,
 					'vat'	     	        => 0,
 					'totalAmount'        	=> $coupon_amount,
-					'unitDiscountAmount' 	=> 0,
 					'totalVatAmount'      	=> 0,
 				);
 				$this->order_lines[] = $gift_card;
@@ -350,10 +339,8 @@ class Cart {
 					'reference'             => $gift_card_sku,
 					'description'           => $label,
 					'quantity'              => 1,
-					'unitPrice'             => $coupon_amount,
 					'vat'                   => 0,
 					'totalAmount'           => $coupon_amount,
-					'unitDiscountAmount'    => 0,
 					'totalVatAmount'        => 0,
 				);
 				$this->order_lines[] = $gift_card;
@@ -388,8 +375,6 @@ class Cart {
 					'reference'          => substr( $fee->id, 0, 64 ),
 					'description'        => $fee->name,
 					'quantity'           => 1,
-					'unitPrice'          => $fee_amount,
-					'unitDiscountAmount' => 0,
 					'vat'                => $fee_tax_rate,
 					'totalAmount'        => $fee_amount,
 					'totalVatAmount'     => $fee_tax_amount,
@@ -465,20 +450,6 @@ class Cart {
 		return round( $item_tax_rate );
 	}
 
-	/**
-	 * Get cart item price.
-	 *
-	 * @param array $cart_item Cart item.
-	 *
-	 * @return integer $item_price Cart item price.
-	 * @since  1.0.0
-	 * @access public
-	 *
-	 */
-	public function get_item_price( $cart_item ) {
-		$item_subtotal = round( ($this->subtotal_amount + $this->subtotal_tax_amount ) / $this->quantity );
-		return $item_subtotal;
-	}
 
 	/**
 	 * Get cart item quantity.
@@ -514,31 +485,6 @@ class Cart {
 		}
 
 		return substr( (string) $item_reference, 0, 64 );
-	}
-
-	/**
-	 * Get cart item discount.
-	 *
-	 * @param array $cart_item Cart item.
-	 * @param WC_Product $product WooCommerce product.
-	 *
-	 * @return integer $item_discount_amount Cart item discount.
-	 * @since  1.0.0
-	 * @access public
-	 *
-	 */
-	public function get_item_discount_amount( $cart_item, $product ) {
-
-		$order_line_max_amount = $this->subtotal_amount + $this->subtotal_tax_amount;
-		$order_line_amount     = $this->total_amount + $this->total_tax_amount;
-
-		if ( $order_line_amount < $order_line_max_amount ) {
-			$item_discount_amount = $order_line_max_amount - $order_line_amount;
-		} else {
-			$item_discount_amount = 0;
-		}
-
-		return round( $item_discount_amount );
 	}
 
 	/**
