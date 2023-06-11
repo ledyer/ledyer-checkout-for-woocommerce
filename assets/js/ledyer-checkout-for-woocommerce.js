@@ -372,6 +372,8 @@ jQuery(function ($) {
                         }
                     });
 
+                    sessionStorage.removeItem('ledyerWooRedirectUrl');
+
                     $.ajax({
                         type: 'POST',
                         url: lco_params.submit_order,
@@ -382,7 +384,7 @@ jQuery(function ($) {
                             // { result: "success" | "failure"; refresh: "boolean", reload: boolean, messages: string; }
                             try {
                                 if ('success' === data.result) {
-                                    lco_wc.logToFile('Successfully validated order in WooCommerce.');
+                                    lco_wc.logToFile('Successfully created order in WooCommerce.');
                                     const url = new URL(data.redirect);
                                     sessionStorage.setItem('ledyerWooRedirectUrl', url);
 
@@ -449,8 +451,6 @@ jQuery(function ($) {
                         // This means that placeLedyerOrder was called successfully already
                         // (Due to an earlier call caused by client validation)
                         window.location.href = redirectUrl;
-                    } else {
-                        lco_wc.placeLedyerOrder();
                     }
                 }
             });
