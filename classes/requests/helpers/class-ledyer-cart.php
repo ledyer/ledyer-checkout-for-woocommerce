@@ -188,16 +188,7 @@ class Cart {
 
 			$this->customer = array(
 				'country'  => $customer->get_billing_country(),
-				'currency' => get_woocommerce_currency(),
-				'customer' => array(
-					'companyId'  => null,
-					'firstName'  => $customer->get_billing_first_name(),
-					'lastName'   => $customer->get_billing_last_name(),
-					'email'      => $customer->get_billing_email(),
-					'phone'      => $customer->get_billing_phone(),
-					'reference1' => null,
-					'reference2' => null,
-				)
+				'currency' => get_woocommerce_currency()
 			);
 		}
 	}
