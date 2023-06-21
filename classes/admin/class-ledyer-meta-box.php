@@ -70,6 +70,39 @@ class Meta_Box {
 	}
 
 	/**
+	 * Get test environment display name
+	 * @return string
+	 */
+	protected function get_test_environment_name() {
+		switch (ledyer()->get_setting( 'development_test_environment' )) {
+			case 'local':
+				return "Local";
+			case 'development':
+			case 'local-fe':
+				return "Development";
+			default: 
+				return "Sandbox";
+		}
+	}
+
+
+	/**
+	 * Get ledyer merchant portal test url
+	 * @return string
+	 */
+	protected function get_ledyer_merchant_portal_test_url() {
+		switch (ledyer()->get_setting( 'development_test_environment' )) {
+			case 'local':
+				return 'http://host.docker.internal:2000/orders/';
+			case 'development':
+			case 'local-fe':
+				return 'https://merchant.dev.ledyer.com/orders/';
+			default: 
+				return 'https://merchant.sandbox.ledyer.com/orders/';
+		}
+	}
+
+	/**
 	 * Prints the standard order content for the Metabox
 	 *
 	 * @param object $ledyer_order The Ledyer order object.
@@ -81,9 +114,9 @@ class Meta_Box {
 			<?php if ( $ledyer_order ) { ?>
 				<?php
 				if ( '' !== ledyer()->get_setting('testmode') ) {
-					$environment = 'yes' === ledyer()->get_setting('testmode') ? 'Sandbox' : 'Live';
+					$environment = 'yes' === ledyer()->get_setting('testmode') ? $this->get_test_environment_name() : 'Live';
 					$ledyer_order_url = 'yes' === ledyer()->get_setting('testmode') ? 
-						'https://merchant.sandbox.ledyer.com/orders/' . $ledyer_order['id'] : 
+						$this->get_ledyer_merchant_portal_test_url() . $ledyer_order['id'] : 
 						'https://merchant.live.ledyer.com/orders/' . $ledyer_order['id'];
 					?>
 					<strong><?php esc_html_e( 'Environment: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong><?php echo esc_html( $environment ); ?><br/>
@@ -133,7 +166,7 @@ class Meta_Box {
 			<?php if ( $ledyer_session ) { ?>
 				<?php
 				if ( '' !== ledyer()->get_setting('testmode') ) {
-					$environment = 'yes' === ledyer()->get_setting('testmode') ? 'Sandbox' : 'Live';
+					$environment = 'yes' === ledyer()->get_setting('testmode') ? $this->get_test_environment_name() : 'Live';
 					?>
 					<strong><?php esc_html_e( 'Environment: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong><?php echo esc_html( $environment ); ?><br/>
 				<?php } ?>
