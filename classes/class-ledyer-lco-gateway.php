@@ -68,7 +68,12 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 			\add_action('woocommerce_admin_order_data_after_billing_address', array( $this, 'ledyer_order_billing_fields' ), 10, 1);
 			\add_action('woocommerce_admin_order_data_after_shipping_address', array( $this, 'ledyer_order_shipping_fields' ), 10, 1);
-			\add_action( 'woocommerce_process_shop_order_meta', array( $this, 'ledyer_order_save_custom_fields' ), 10, 1);
+	
+			// Save shipping and billing custom fields
+			\add_action( 'save_post', array( $this, 'ledyer_order_save_custom_fields' ), 10, 2);
+
+			// Validate shipping and billing custom fields
+			\add_action('woocommerce_process_shop_order_meta', array( $this, 'lom_validate_lom_edit_ledyer_order' ), 45, 1);
 		}
 
 		/**
@@ -495,8 +500,8 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$care_of        = get_post_meta( $order_id, '_shipping_care_of', true );
 			$first_name     = get_post_meta( $order_id, '_shipping_first_name', true );
 			$last_name      = get_post_meta( $order_id, '_shipping_last_name', true );
-			$phone			= get_post_meta( $order_id, '_shipping_phone', true );
-			$email	      	= get_post_meta( $order_id, '_shipping_email', true );
+			$phone          = get_post_meta( $order_id, '_shipping_phone', true );
+			$email          = get_post_meta( $order_id, '_shipping_email', true );
 
 			?>
 				<div class="address">
@@ -596,7 +601,23 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 		}
 
-		public function ledyer_order_save_custom_fields( $order_id ){
+		public function ledyer_order_save_custom_fields( $order_id, $post ) {
+			// Only run from within admin
+			if ( !is_admin() ) {
+				return;
+			}
+			// Only run on shop_order post
+			if ( 'shop_order' !== $post->post_type ) {
+				return;
+			}
+			// If this is an autosave, our form has not been submitted, so we don't want to do anything.
+			if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+				return;
+			}
+			// Make sure the user has permission to edit the order
+			if ( ! current_user_can( 'edit_shop_order', $order_id ) && ! current_user_can( 'edit_shop_orders', $order_id ) ) { 
+				return;
+			}
 			update_post_meta( $order_id, '_billing_attention_name', sanitize_text_field( $_POST[ '_billing_attention_name' ] ) );
 			update_post_meta( $order_id, '_billing_care_of', sanitize_text_field( $_POST[ '_billing_care_of' ] ) );
 
@@ -604,6 +625,88 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			update_post_meta( $order_id, '_shipping_care_of', sanitize_text_field( $_POST[ '_shipping_care_of' ] ) );
 			update_post_meta( $order_id, '_shipping_phone', sanitize_text_field( $_POST[ '_shipping_phone' ] ) );
 			update_post_meta( $order_id, '_shipping_email', sanitize_text_field( $_POST[ '_shipping_email' ] ) );
+		}
+
+		/**
+		 * Validate edit Ledyer order.
+		 * @param $order The woo order (must contain changes array)
+		 */
+		public function lom_validate_lom_edit_ledyer_order($order_id) {
+
+			$order = wc_get_order( $order_id );
+
+			if ( ! $this->lom_allow_editing($order) ) {
+				return;
+			}
+				$this->lom_validate_customer_field($order, '_billing_company', 0, 100);
+				$this->lom_validate_customer_field($order, '_billing_address_1', 0, 100);
+				$this->lom_validate_customer_field($order, '_billing_address_2', 0, 100);
+				$this->lom_validate_customer_field($order, '_billing_postcode', 0, 10);
+				$this->lom_validate_customer_field($order, '_billing_city', 0, 50);
+				$this->lom_validate_customer_field($order, '_billing_country', 0, 50);
+				$this->lom_validate_customer_field($order, '_billing_attention_name', 0, 100);
+				$this->lom_validate_customer_field($order, '_billing_care_of', 0, 100);
+
+				$this->lom_validate_customer_field($order, '_shipping_company', 0, 100);
+				$this->lom_validate_customer_field($order, '_shipping_address_1', 0, 100);
+				$this->lom_validate_customer_field($order, '_shipping_address_2', 0, 100);
+				$this->lom_validate_customer_field($order, '_shipping_postcode', 0, 10);
+				$this->lom_validate_customer_field($order, '_shipping_city', 0, 50);
+				$this->lom_validate_customer_field($order, '_shipping_country', 0, 50);
+				$this->lom_validate_customer_field($order, '_shipping_attention_name', 0, 100);
+				$this->lom_validate_customer_field($order, '_shipping_care_of', 0, 100);
+				$this->lom_validate_customer_field($order, '_shipping_first_name', 0, 200);
+				$this->lom_validate_customer_field($order, '_shipping_last_name', 0, 200);
+				$this->lom_validate_customer_field($order, '_shipping_phone', 9, 30);
+				$this->lom_validate_customer_email($order, '_shipping_email');
+		}
+		public function lom_validate_customer_field($order, $fieldName, $min, $max) {
+			$value = sanitize_text_field( $_POST[$fieldName] );
+			$valid = $this->lom_validate_field_length($value, $min, $max);
+			if (!$valid) {
+				$order->add_order_note( 'Ledyer customer data could not be updated. Invalid ' . $fieldName);
+				wp_safe_redirect( wp_get_referer() );
+				exit;
+			}
+		}
+		public function lom_validate_field_length($str, $min, $max) {
+			if (!$str) {
+				return true;
+			}
+			$len = strlen($str);
+			return !($len < $min || $len > $max);
+		}
+		public function lom_validate_customer_email($order, $fieldName) {
+			$value = sanitize_text_field( $_POST[$fieldName] );
+			if (!$value) {
+				return true;
+			}
+			$valid = is_email($value);
+			if (!$valid) {
+				$order->add_order_note( 'Ledyer customer data could not be updated. Invalid ' . $fieldName);
+				wp_safe_redirect( wp_get_referer() );
+				exit;
+			}
+		}
+
+		public function lom_allow_editing($order) {
+			$is_ledyer_order = $this->lom_order_placed_with_ledyer($order->get_payment_method());
+			if (! $is_ledyer_order) {
+				return false;
+			}
+
+			if ( $order->has_status( array( 'completed', 'refunded', 'cancelled' ) ) ) {
+				return false;
+			}
+			
+			return true;
+		}
+
+		public function lom_order_placed_with_ledyer($payment_method) {
+			if ( in_array($payment_method, array('ledyer_payments', 'lco')) ) {
+				return true;
+			}
+			return false;
 		}
 	}
 }
