@@ -601,8 +601,21 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 		}
 
-		public function ledyer_order_save_custom_fields( $order_id, $post ){
+		public function ledyer_order_save_custom_fields( $order_id, $post ) {
+			// Only run from within admin
+			if ( !is_admin() ) {
+				return;
+			}
+			// Only run on shop_order post
 			if ( 'shop_order' !== $post->post_type ) {
+				return;
+			}
+			// If this is an autosave, our form has not been submitted, so we don't want to do anything.
+			if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+				return;
+			}
+			// Make sure the user has permission to edit the order
+			if ( ! current_user_can( 'edit_shop_order', $order_id ) && ! current_user_can( 'edit_shop_orders', $order_id ) ) { 
 				return;
 			}
 			update_post_meta( $order_id, '_billing_attention_name', sanitize_text_field( $_POST[ '_billing_attention_name' ] ) );
