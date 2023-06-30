@@ -1,3 +1,7 @@
+## 1.6.8
+
+* Fix: Revert to woocommerce_process_shop_order_meta hook but give it a higher priority
+
 ## 1.6.7
 
 * Feat: Add validation of order meta data (moved from O.M. plugin)
