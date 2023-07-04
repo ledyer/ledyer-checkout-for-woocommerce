@@ -68,12 +68,11 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 			\add_action('woocommerce_admin_order_data_after_billing_address', array( $this, 'ledyer_order_billing_fields' ), 10, 1);
 			\add_action('woocommerce_admin_order_data_after_shipping_address', array( $this, 'ledyer_order_shipping_fields' ), 10, 1);
-	
-			// Save shipping and billing custom fields
-			\add_action( 'save_post', array( $this, 'ledyer_order_save_custom_fields' ), 10, 2);
 
 			// Validate shipping and billing custom fields
 			\add_action('woocommerce_process_shop_order_meta', array( $this, 'lom_validate_lom_edit_ledyer_order' ), 45, 1);
+			// Save shipping and billing custom fields (higher priority than "lom_validate_lom_edit_ledyer_order" to make sure validation is done first)
+			\add_action( 'woocommerce_process_shop_order_meta', array( $this, 'ledyer_order_save_custom_fields' ), 50, 1);
 		}
 
 		/**
@@ -601,26 +600,9 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 		}
 
-		public function ledyer_order_save_custom_fields( $order_id, $post ) {
-			// Only run from within admin
-			if ( !is_admin() ) {
-				return;
-			}
-			// Only run on shop_order post
-			if ( 'shop_order' !== $post->post_type ) {
-				return;
-			}
-			// If this is an autosave, our form has not been submitted, so we don't want to do anything.
-			if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
-				return;
-			}
-			// Make sure the user has permission to edit the order
-			if ( ! current_user_can( 'edit_shop_order', $order_id ) && ! current_user_can( 'edit_shop_orders', $order_id ) ) { 
-				return;
-			}
+		public function ledyer_order_save_custom_fields( $order_id ) {
 			update_post_meta( $order_id, '_billing_attention_name', sanitize_text_field( $_POST[ '_billing_attention_name' ] ) );
 			update_post_meta( $order_id, '_billing_care_of', sanitize_text_field( $_POST[ '_billing_care_of' ] ) );
-
 			update_post_meta( $order_id, '_shipping_attention_name', sanitize_text_field( $_POST[ '_shipping_attention_name' ] ) );
 			update_post_meta( $order_id, '_shipping_care_of', sanitize_text_field( $_POST[ '_shipping_care_of' ] ) );
 			update_post_meta( $order_id, '_shipping_phone', sanitize_text_field( $_POST[ '_shipping_phone' ] ) );
