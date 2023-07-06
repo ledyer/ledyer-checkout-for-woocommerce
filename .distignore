@@ -1,0 +1,17 @@
+/.github
+/.vscode
+/build
+/node_modules
+.distignore
+.env
+.gitignore
+composer.json
+docker-compose.yml
+Dockerfile-cron
+Dockerfile-wpdebug-php7
+Dockerfile-wpdebug-php8
+package-lock.json
+package.json
+README.md
+webpack.config.js
+wpcron.txt
