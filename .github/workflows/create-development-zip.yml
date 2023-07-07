@@ -1,14 +1,15 @@
-# Builds a zip archive of a relase that can be downloaded and installed in a WordPress test environment.
+# Creates a zip archive of the plugin that can be downloaded and installed for testing in a WordPress dev environment.
 # Files and folders that should be excluded from the build are specified in the .distignore file in the root folder.
-name: Build release zip
+name: Create development plugin zip
 on:
-  push:
-    branches:
-      - beta
+  pull_request:
+    branches: [main]
 jobs:
-  build:
-    name: Build release zip
+  create-development-zip:
+    name: Create development plugin zip archive
     runs-on: ubuntu-latest
+    environment:
+      name: development-1
     steps:
       - name: Checkout
         uses: actions/checkout@v3
