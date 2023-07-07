@@ -1,0 +1,15 @@
+/.github export-ignore
+/.vscode export-ignore
+/build export-ignore
+/node_modules export-ignore
+.distignore export-ignore
+.env export-ignore
+.gitignore export-ignore
+composer.json export-ignore
+docker-compose.yml export-ignore
+Dockerfile-* export-ignore
+package-lock.json export-ignore
+package.json export-ignore
+README.md export-ignore
+webpack.config.js export-ignore
+wpcron.txt export-ignore
