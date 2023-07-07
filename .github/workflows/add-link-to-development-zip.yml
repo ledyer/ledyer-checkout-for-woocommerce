@@ -5,7 +5,7 @@ name: Add link to development zip on pull request
 on:
   workflow_run:
     workflows:
-      - Create development plugin zip
+      - Create development plugin zip archive
     types:
       - completed
 
