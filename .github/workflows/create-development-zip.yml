@@ -2,7 +2,7 @@
 # Files and folders that should be excluded from the build are specified in the .distignore file in the root folder.
 name: Create development plugin zip
 on:
-  pull_request:
+  push:
     branches: [main]
 jobs:
   create-development-zip:
