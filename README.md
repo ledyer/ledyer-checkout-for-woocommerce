@@ -6,6 +6,7 @@ Ledyer checkout plugin for WooCommerce
 Change PHP version in .env or set env variable PHP_VERSION
 
 ```shell
+npm run install
 docker-compose up --build
 ```
 

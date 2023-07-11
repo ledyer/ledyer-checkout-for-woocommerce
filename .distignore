@@ -1,0 +1,16 @@
+/.github
+/.husky
+/.vscode
+/node_modules
+.distignore
+.env
+.gitignore
+commitlint.config.js
+composer.json
+docker-compose.yml
+Dockerfile-*
+package-lock.json
+package.json
+README.md
+webpack.config.js
+wpcron.txt
