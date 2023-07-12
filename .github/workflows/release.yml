@@ -8,6 +8,7 @@ on:
 jobs:
   prerelease:
     runs-on: ubuntu-latest
+    environment: development-1
 
     steps:
       - name: Checkout code
@@ -22,22 +23,35 @@ jobs:
         run: npm ci
 
       - name: Semantic Release
-        run: npx semantic-release --pre-release
+        id: semantic
+        uses: cycjimmy/semantic-release-action@v3
+        with:
+          branches: |
+            [
+              { 
+                name: "main", 
+                prerelease: true 
+              }
+            ]
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Fetch Latest Tag
-        id: fetch_tag
-        run: echo "::set-output name=tag::$(git describe --abbrev=0 --tags)"
 
       - name: Build Plugin Zip
         id: build_zip
         uses: 10up/action-wordpress-plugin-build-zip@stable
 
+      - name: Get the version
+        id: get_version
+        run: |
+          VERSION=$(curl --silent "https://api.github.com/repos/$GITHUB_REPOSITORY/releases/latest" | jq -r .tag_name)
+          echo "::set-output name=VERSION::$VERSION"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Update GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ steps.fetch_tag.outputs.tag }}
+          tag_name: ${{ steps.get_version.outputs.VERSION }}
           files: ${{ steps.build_zip.outputs.zip_path }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
