@@ -49,11 +49,11 @@ jobs:
         id: build_zip
         uses: 10up/action-wordpress-plugin-build-zip@stable
 
-      - name: Download the plugin artifact
+      - name: Download the artifact
         uses: actions/download-artifact@v3
         with:
           name: ${{ github.event.repository.name }}
-          path: zipfile
+          path: ${{ github.workspace }}/zipfile
 
       - name: Re-zip the plugin artifact
         run: |
