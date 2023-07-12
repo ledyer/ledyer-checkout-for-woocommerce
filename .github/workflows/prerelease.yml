@@ -1,5 +1,6 @@
 # Job that makes prereleases on the alpha and beta branches.
 # Excluded files and folders that should not be part of the plugin is defined in .distignore
+# Plugin can be downloaded from the release page on GitHub
 name: Prerelease
 on:
   push:
@@ -7,7 +8,7 @@ on:
       - beta
       - alpha
 jobs:
-  get-next-version:
+  calculate-next-version:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -15,18 +16,20 @@ jobs:
         with:
           node-version: 18
       - run: npm ci
+
+      # Running semantic-release in dry-run mode to calculate the next version, without publishing anything
       - run: npx semantic-release --dry-run
-        id: get-next-version
+        id: calculate-next-version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     outputs:
-      new-release-published: ${{ steps.get-next-version.outputs.new-release-published }}
-      new-release-version: ${{ steps.get-next-version.outputs.new-release-version }}
+      new-release-published: ${{ steps.calculate-next-version.outputs.new-release-published }}
+      new-release-version: ${{ steps.calculate-next-version.outputs.new-release-version }}
 
   prerelease:
     runs-on: ubuntu-latest
-    needs: get-next-version
-    if: needs.get-next-version.outputs.new-release-published == 'true'
+    needs: calculate-next-version
+    if: needs.calculate-next-version.outputs.new-release-published == 'true'
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -45,25 +48,29 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # Creates the plugin zip and excludes the files from .distignore, then uploads it as an artifact (unzipped since github zips it automatically)
       - name: Build plugin zip
         id: build_zip
         uses: 10up/action-wordpress-plugin-build-zip@stable
 
-      - name: Download the artifact
+      # We need to download the plugin artifact to be able to use it in the next steps
+      - name: Download the plugin artifact
         uses: actions/download-artifact@v3
         with:
           name: ${{ github.event.repository.name }}
           path: ${{ github.workspace }}/zipfile
 
+      # Re-zip the plugin artifact to be able to upload it as a release asset
       - name: Re-zip the plugin artifact
         run: |
           cd zipfile
           zip -r ../${{ github.event.repository.name }}.zip .
 
+      # Upload the plugin zip as a release asset
       - name: Update GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ needs.get-next-version.outputs.new-release-version }}
+          tag_name: ${{ needs.calculate-next-version.outputs.new-release-version }}
           files: ./${{ github.event.repository.name }}.zip
           prerelease: true
         env:
