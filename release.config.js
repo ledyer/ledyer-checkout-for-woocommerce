@@ -23,6 +23,7 @@ module.exports = {
         placeholder: "0.0.0-development",
       },
     ],
+    "semantic-release-export-data",
     "@semantic-release/github",
   ],
 };
