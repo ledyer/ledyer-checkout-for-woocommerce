@@ -34,12 +34,13 @@ jobs:
 
       - name: Get the version
         id: get_version
-        run: echo ::set-output name=VERSION::$(echo ${{ steps.semantic.outputs.new_release.published_at }} | jq -r .tag_name)
+        run: |
+          echo "VERSION=${{ steps.semantic.outputs.new_release.version }}" >> $GITHUB_ENV
 
       - name: Update GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ steps.get_version.outputs.VERSION }}
+          tag_name: ${{ env.VERSION }}
           files: ${{ steps.build_zip.outputs.zip_path }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
