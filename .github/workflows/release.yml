@@ -1,87 +1,51 @@
-# One job for pre-releases (towards development-1 environment) and one for full releases (towards wordpress-public-release environment)
+# Job that makes releases on the main branch.
 # Excluded files and folders that should not be part of the plugin is defined in .distignore
-name: Do pre- or full release
-on:
-  push:
-    branches:
-      - main
-jobs:
-  prerelease:
-    runs-on: ubuntu-latest
-    environment: development-1
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+# name: Release to WordPress plugin repository
+# on:
+#   push:
+#     branches:
+#       - main
+# jobs:
+#   release:
+#     runs-on: ubuntu-latest
 
-      - name: Use Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v3
 
-      - name: Install Dependencies
-        run: npm ci
+#       - name: Use Node.js
+#         uses: actions/setup-node@v3
+#         with:
+#           node-version: 18
 
-      - name: Semantic Release
-        id: semantic
-        uses: cycjimmy/semantic-release-action@v3
-        with:
-          branches: |
-            [
-              { 
-                name: "main", 
-                prerelease: true 
-              }
-            ]
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#       - name: Install Dependencies
+#         run: npm ci
 
-      - name: Build Plugin Zip
-        id: build_zip
-        uses: 10up/action-wordpress-plugin-build-zip@stable
+#       - name: Semantic Release - create release
+#         id: semantic
+#         run: npx semantic-release
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Get the version
-        id: get_version
-        run: |
-          VERSION=$(curl --silent "https://api.github.com/repos/$GITHUB_REPOSITORY/releases/latest" | jq -r .tag_name)
-          echo "::set-output name=VERSION::$VERSION"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#       - name: Deploy Plugin to WordPress SVN
+#         uses: 10up/action-wordpress-plugin-deploy@stable
+#         env:
+#           svn_username: ${{ secrets.SVN_USERNAME }}
+#           svn_password: ${{ secrets.SVN_PASSWORD }}
 
-      - name: Update GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ steps.get_version.outputs.VERSION }}
-          files: ${{ steps.build_zip.outputs.zip_path }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-# release:
-#   runs-on: ubuntu-latest
-#   environment: wordpress-public-release
-#   needs: prerelease
+#       - name: Build Plugin Zip
+#         id: build_zip
+#         uses: 10up/action-wordpress-plugin-build-zip@stable
 
-#   steps:
-#    - name: Checkout code
-#      uses: actions/checkout@v2
+#       - name: Get the version
+#         id: get_version
+#         run: echo ::set-output name=VERSION::$(echo ${{ steps.semantic.outputs.new_release.published_at }} | jq -r .tag_name)
 
-#    - name: Use Node.js
-#      uses: actions/setup-node@v2
-#      with:
-#        node-version: 18
-
-#    - name: Install Dependencies
-#      run: npm ci
-
-#    - name: Semantic Release
-#      run: npx semantic-release
-#      env:
-#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-#    - name: Update local repository
-#      uses: actions/checkout@v2
-
-#     - name: Deploy Plugin to WordPress SVN
-#       uses: 10up/action-wordpress-plugin-deploy@stable
-#       env:
-#         svn_username: ${{ secrets.SVN_USERNAME }}
-#         svn_password: ${{ secrets.SVN_PASSWORD }}
+#       - name: Update GitHub Release
+#         uses: softprops/action-gh-release@v1
+#         with:
+#           tag_name: ${{ steps.get_version.outputs.VERSION }}
+#           files: ${{ steps.build_zip.outputs.zip_path }}
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
