@@ -16,11 +16,12 @@
     "@commitlint/config-conventional": "17.6.6",
     "@semantic-release/changelog": "6.0.3",
     "@semantic-release/commit-analyzer": "10.0.1",
-    "@semantic-release/git": "10.0.1",
+    "@semantic-release/github": "9.0.3",
     "@semantic-release/release-notes-generator": "11.0.4",
     "@wordpress/scripts": "^12.6.1",
     "file-loader": "^6.2.0",
     "husky": "8.0.3",
+    "semantic-release-export-data": "1.0.1",
     "semantic-release-plugin-update-version-in-files": "1.1.0",
     "url-loader": "^4.1.1"
   },
