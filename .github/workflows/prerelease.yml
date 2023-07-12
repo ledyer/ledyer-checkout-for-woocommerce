@@ -70,7 +70,7 @@ jobs:
       - name: Update GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ needs.calculate-next-version.outputs.new-release-version }}
+          tag_name: v${{ needs.calculate-next-version.outputs.new-release-version }}
           files: ./${{ github.event.repository.name }}.zip
           prerelease: true
         env:

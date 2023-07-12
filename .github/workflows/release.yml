@@ -25,7 +25,7 @@ jobs:
       new-release-published: ${{ steps.calculate-next-version.outputs.new-release-published }}
       new-release-version: ${{ steps.calculate-next-version.outputs.new-release-version }}
 
-  prerelease:
+  release:
     runs-on: ubuntu-latest
     needs: calculate-next-version
     if: needs.calculate-next-version.outputs.new-release-published == 'true'
@@ -41,7 +41,7 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Semantic Release - create prerelease
+      - name: Semantic Release - create release
         id: semantic
         run: npx semantic-release
         env:
@@ -76,57 +76,7 @@ jobs:
       - name: Update GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ needs.calculate-next-version.outputs.new-release-version }}
+          tag_name: v${{ needs.calculate-next-version.outputs.new-release-version }}
           files: ./${{ github.event.repository.name }}.zip
-          prerelease: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-# name: Release to WordPress plugin repository
-# on:
-#   push:
-#     branches:
-#       - main
-# jobs:
-#   release:
-#     runs-on: ubuntu-latest
-
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v3
-
-#       - name: Use Node.js
-#         uses: actions/setup-node@v3
-#         with:
-#           node-version: 18
-
-#       - name: Install Dependencies
-#         run: npm ci
-
-#       - name: Semantic Release - create release
-#         id: semantic
-#         run: npx semantic-release
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-#       - name: Deploy Plugin to WordPress SVN
-#         uses: 10up/action-wordpress-plugin-deploy@stable
-#         env:
-#           svn_username: ${{ secrets.SVN_USERNAME }}
-#           svn_password: ${{ secrets.SVN_PASSWORD }}
-
-#       - name: Build Plugin Zip
-#         id: build_zip
-#         uses: 10up/action-wordpress-plugin-build-zip@stable
-
-#       - name: Get the version
-#         id: get_version
-#         run: |
-#         echo "VERSION=${{ steps.semantic.outputs.new_release.version }}" >> $GITHUB_ENV
-
-#       - name: Update GitHub Release
-#         uses: softprops/action-gh-release@v1
-#         with:
-#           tag_name: ${{ env.VERSION }}
-#           files: ${{ steps.build_zip.outputs.zip_path }}
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
