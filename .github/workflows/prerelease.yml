@@ -54,5 +54,6 @@ jobs:
         with:
           tag_name: ${{ needs.get-next-version.outputs.new-release-version }}
           files: ${{ steps.build_zip.outputs.zip_path }}
+          prerelease: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
