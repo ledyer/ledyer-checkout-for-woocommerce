@@ -49,18 +49,11 @@ jobs:
         id: build_zip
         uses: 10up/action-wordpress-plugin-build-zip@stable
 
-      - name: Download the zip from the "Build plugin zip" step
-        uses: actions/download-artifact@v3
-        id: download_zip
-        with:
-          name: ${{ github.event.repository.name }}
-          path: zipfile
-
       - name: Update GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ needs.get-next-version.outputs.new-release-version }}
-          files: ${{steps.download_zip.outputs.download-path}}
+          files: zipfile/${{ github.event.repository.name }}.zip
           prerelease: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
