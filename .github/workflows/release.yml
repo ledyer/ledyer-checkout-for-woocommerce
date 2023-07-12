@@ -22,9 +22,13 @@ jobs:
         run: npm ci
 
       - name: Semantic Release
-        run: npx semantic-release
+        run: npx semantic-release --pre-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Fetch Latest Tag
+        id: fetch_tag
+        run: echo "::set-output name=tag::$(git describe --abbrev=0 --tags)"
 
       - name: Build Plugin Zip
         id: build_zip
@@ -33,6 +37,7 @@ jobs:
       - name: Update GitHub Release
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: ${{ steps.fetch_tag.outputs.tag }}
           files: ${{ steps.build_zip.outputs.zip_path }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
