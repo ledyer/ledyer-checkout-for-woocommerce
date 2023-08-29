@@ -1,6 +1,6 @@
 ## 1.6.8
 
-* Fix: Revert to woocommerce_process_shop_order_meta hook but give it a higher priority
+* Fix: Revert to woocommerce_process_shop_order_meta hook but give it a higher priority.
 
 ## 1.6.7
 
