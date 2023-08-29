@@ -1,3 +1,11 @@
+## 1.7.1
+
+* Version fix, last release got 0.0.0-development as release number
+
+## 1.7.0
+
+* CI updates
+
 ## 1.6.8
 
 * Fix: Revert to woocommerce_process_shop_order_meta hook but give it a higher priority.
