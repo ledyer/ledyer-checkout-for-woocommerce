@@ -1,4 +1,9 @@
 module.exports = {
+  branches: [
+    "main",
+    { name: "alpha", prerelease: "alpha" },
+    { name: "beta", prerelease: "beta" },
+  ],
   plugins: [
     ["@semantic-release/commit-analyzer", { preset: "conventionalcommits" }],
     [
@@ -18,6 +23,7 @@ module.exports = {
         placeholder: "0.0.0-development",
       },
     ],
+    "semantic-release-export-data",
     "@semantic-release/github",
   ],
 };

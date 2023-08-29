@@ -1,4 +1,4 @@
-/.github
+/.git*
 /.husky
 /.vscode
 /node_modules
