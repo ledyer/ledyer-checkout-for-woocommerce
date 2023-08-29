@@ -49,10 +49,10 @@ jobs:
 
       # Creates the plugin and excludes the files from .distignore, then deploys it to the WordPress SVN
       - name: Deploy Plugin to WordPress SVN
-          uses: 10up/action-wordpress-plugin-deploy@stable
-          env:
-            svn_username: ${{ secrets.SVN_USERNAME }}
-            svn_password: ${{ secrets.SVN_PASSWORD }}
+        uses: 10up/action-wordpress-plugin-deploy@stable
+        env:
+          svn_username: ${{ secrets.SVN_USERNAME }}
+          svn_password: ${{ secrets.SVN_PASSWORD }}
 
       # Creates the plugin zip and excludes the files from .distignore, then uploads it as an artifact (unzipped since github zips it automatically)
       - name: Build plugin zip
