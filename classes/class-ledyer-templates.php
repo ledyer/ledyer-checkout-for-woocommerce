@@ -149,6 +149,8 @@ class Templates {
 	public function add_wc_form() {
 		?>
 		<div aria-hidden="true" id="lco-wc-form" style="position:absolute; top:-99999px; left:-99999px;">
+			<?php do_action( 'woocommerce_checkout_billing' ); ?>
+			<?php do_action( 'woocommerce_checkout_shipping' ); ?>
 			<div id="lco-nonce-wrapper">
 				<?php
 				if ( version_compare( WOOCOMMERCE_VERSION, '3.4', '<' ) ) {
