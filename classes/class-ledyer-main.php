@@ -351,6 +351,12 @@ class Ledyer_Checkout_For_WooCommerce {
 					$checkout_fields['shipping'][ $key ]['required'] = false;
 				}
 			}
+
+			$fields['billing']['lco_shipping_data'] = array(
+				'type'    => 'hidden',
+				'class'   => array( 'lco_shipping_data' ),
+				'default' => '',
+			);
 		}
 
 		return $checkout_fields;
