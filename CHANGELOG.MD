@@ -1,3 +1,11 @@
+## 1.7.3
+
+* Add element container for extra fields, to deal with Cartflows
+
+## 1.7.2
+
+* Adjustment for Cartflows
+
 ## 1.7.1
 
 * Version fix, last release got 0.0.0-development as release number
