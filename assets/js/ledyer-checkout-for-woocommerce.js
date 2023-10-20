@@ -374,10 +374,17 @@ jQuery(function ($) {
 
                     sessionStorage.removeItem('ledyerWooRedirectUrl');
 
+                    const $inputs = $('form.checkout').find('input, select, textarea');
+                    // remove inputs with empty values
+                    const $inputsWithValue = $inputs.filter(function() {
+                        return $(this).val() !== "";
+                    });
+                    const serializedData = $inputsWithValue.serialize();
+
                     $.ajax({
                         type: 'POST',
                         url: lco_params.submit_order,
-                        data: $('form.checkout').serialize(),
+                        data: serializedData,
                         dataType: 'json',
                         success: function (data) {
                             // data is an object with the following properties:
@@ -393,8 +400,8 @@ jQuery(function ($) {
                                             shouldProceed: true
                                         })
                                         // Ledyer will respond with a new event when order is complete
-                                        // So don't redirect just yet, 
-                                        // eventually redirection will happen in ledyerCheckoutOrderComplete 
+                                        // So don't redirect just yet,
+                                        // eventually redirection will happen in ledyerCheckoutOrderComplete
                                         return;
                                     }
                                     window.location.href = url.toString();
