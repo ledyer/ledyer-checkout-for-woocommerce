@@ -189,7 +189,7 @@ jQuery(function ($) {
                 type: 'POST',
                 url: lco_params.update_cart_url,
                 data: {
-                    checkout: $('form.checkout').serialize(),
+                    checkout: lco_wc.cleanupForm($('form.checkout')),
                     nonce: lco_params.update_cart_nonce
                 },
                 dataType: 'json',
@@ -356,6 +356,17 @@ jQuery(function ($) {
             }, 1000);
         },
 
+        cleanupForm: function (formElement) {
+            const $inputs = formElement.find('input, select, textarea');
+            // remove inputs with empty values
+            const $inputsWithValue = $inputs.filter(function() {
+                return $(this).val() !== "";
+            });
+            const serializedData = $inputsWithValue.serialize();
+
+            return serializedData;
+        },
+
         /**
          * Places the Ledyer order
          * @param {string} should_validate
@@ -374,17 +385,10 @@ jQuery(function ($) {
 
                     sessionStorage.removeItem('ledyerWooRedirectUrl');
 
-                    const $inputs = $('form.checkout').find('input, select, textarea');
-                    // remove inputs with empty values
-                    const $inputsWithValue = $inputs.filter(function() {
-                        return $(this).val() !== "";
-                    });
-                    const serializedData = $inputsWithValue.serialize();
-
                     $.ajax({
                         type: 'POST',
                         url: lco_params.submit_order,
-                        data: serializedData,
+                        data: lco_wc.cleanupForm($('form.checkout')),
                         dataType: 'json',
                         success: function (data) {
                             // data is an object with the following properties:
