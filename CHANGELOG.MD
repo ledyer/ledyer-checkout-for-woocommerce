@@ -1,3 +1,7 @@
+## 1.7.4
+
+* Remove empty fields form fields
+
 ## 1.7.3
 
 * Add element container for extra fields, to deal with Cartflows
