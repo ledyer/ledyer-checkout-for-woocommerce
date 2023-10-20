@@ -165,6 +165,20 @@ function lco_wc_show_another_gateway_button() {
 }
 
 /**
+ * Adds the extra checkout field div to the checkout page.
+ *
+ * @return void
+ */
+function lco_wc_add_extra_checkout_fields() {
+	do_action( 'lco_wc_before_extra_fields' );
+	?>
+	<div id="lco-extra-checkout-fields">
+	</div>
+	<?php
+	do_action( 'lco_wc_after_extra_fields' );
+}
+
+/**
  * Confirm the order in WooCommerce.
  *
  * @param int $order_id Woocommerce order id.

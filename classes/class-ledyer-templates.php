@@ -34,6 +34,7 @@ class Templates {
 		\add_action( 'wp_footer', array( $this, 'check_that_lco_template_has_loaded' ) );
 
 		// Template hooks.
+		add_action( 'lco_wc_after_order_review', 'lco_wc_add_extra_checkout_fields', 10 );
 		add_action( 'lco_wc_after_order_review', 'lco_wc_show_another_gateway_button', 20 );
 		add_action( 'lco_wc_before_snippet', array( $this, 'add_wc_form' ), 10 );
 	}

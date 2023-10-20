@@ -51,7 +51,7 @@ class Ledyer_Checkout_For_WooCommerce {
 	 */
 	public $checkout;
 
-	const VERSION = '0.0.0-development';
+	const VERSION = '1.7.4';
 	const SLUG = 'ledyer-checkout-for-woocommerce';
 	const SETTINGS = 'ledyer_checkout_for_woocommerce_settings';
 
@@ -351,6 +351,12 @@ class Ledyer_Checkout_For_WooCommerce {
 					$checkout_fields['shipping'][ $key ]['required'] = false;
 				}
 			}
+
+			$checkout_fields['billing']['lco_shipping_data'] = array(
+				'type'    => 'hidden',
+				'class'   => array( 'lco_shipping_data' ),
+				'default' => '',
+			);
 		}
 
 		return $checkout_fields;
