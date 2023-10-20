@@ -1,3 +1,7 @@
+## 1.7.5
+
+* Version bump
+
 ## 1.7.4
 
 * Remove empty fields form fields
