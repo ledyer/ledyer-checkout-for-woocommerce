@@ -72,9 +72,9 @@ class Fields {
 				'desc_tip'    => true,
 			),
 			'merchant_id'             => array(
-				'title'             => __( 'Production Ledyer API Username', 'ledyer-checkout-for-woocommerce' ),
+				'title'             => __( 'Production Ledyer client ID', 'ledyer-checkout-for-woocommerce' ),
 				'type'              => 'text',
-				'description'       => __( 'Use API username and API password you downloaded in the Ledyer Merchant Portal. Don’t use your email address.', 'ledyer-checkout-for-woocommerce' ),
+				'description'       => __( 'Generate credentials (client ID and secret) in the Ledyer Merchant Portal under Settings -> API credentials.', 'ledyer-checkout-for-woocommerce' ),
 				'default'           => '',
 				'desc_tip'          => false,
 				'custom_attributes' => array(
@@ -92,9 +92,9 @@ class Fields {
 				),
 			),
 			'shared_secret'           => array(
-				'title'             => __( 'Production Ledyer API Password', 'ledyer-checkout-for-woocommerce' ),
+				'title'             => __( 'Production Ledyer client secret', 'ledyer-checkout-for-woocommerce' ),
 				'type'              => 'password',
-				'description'       => __( 'Use API username and API password you downloaded in the Ledyer Merchant Portal. Don’t use your email address.', 'ledyer-checkout-for-woocommerce' ),
+				'description'       => __( 'Generate credentials (client ID and secret) in the Ledyer Merchant Portal under Settings -> API credentials.', 'ledyer-checkout-for-woocommerce' ),
 				'default'           => '',
 				'desc_tip'          => false,
 				'custom_attributes' => array(
@@ -102,9 +102,9 @@ class Fields {
 				),
 			),
 			'test_merchant_id'        => array(
-				'title'             => __( 'Sandbox Ledyer API Username', 'ledyer-checkout-for-woocommerce' ),
+				'title'             => __( 'Sandbox Ledyer client ID', 'ledyer-checkout-for-woocommerce' ),
 				'type'              => 'text',
-				'description'       => __( 'Use API username and API password you downloaded in the Ledyer Merchant Portal. Don’t use your email address.', 'ledyer-checkout-for-woocommerce' ),
+				'description'       => __( 'Generate credentials (client ID and secret) in the Ledyer Merchant Portal under Settings -> API credentials.', 'ledyer-checkout-for-woocommerce' ),
 				'default'           => '',
 				'desc_tip'          => false,
 				'custom_attributes' => array(
@@ -122,9 +122,9 @@ class Fields {
 				),
 			),
 			'test_shared_secret'      => array(
-				'title'             => __( 'Sandbox Ledyer API Password', 'ledyer-checkout-for-woocommerce' ),
+				'title'             => __( 'Sandbox Ledyer client secret', 'ledyer-checkout-for-woocommerce' ),
 				'type'              => 'password',
-				'description'       => __( 'Use API username and API password you downloaded in the Ledyer Merchant Portal. Don’t use your email address.', 'ledyer-checkout-for-woocommerce' ),
+				'description'       => __( 'Generate credentials (client ID and secret) in the Ledyer Merchant Portal under Settings -> API credentials.', 'ledyer-checkout-for-woocommerce' ),
 				'default'           => '',
 				'desc_tip'          => false,
 				'custom_attributes' => array(
