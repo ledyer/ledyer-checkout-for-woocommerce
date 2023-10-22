@@ -88,14 +88,14 @@ msgid "Save debug messages to the WooCommerce System Status log."
 msgstr ""
 
 #: classes/class-ledyer-lco-fields.php:75
-msgid "Production Ledyer API Username"
+msgid "Production Ledyer client ID"
 msgstr ""
 
 #: classes/class-ledyer-lco-fields.php:77
 #: classes/class-ledyer-lco-fields.php:97
 #: classes/class-ledyer-lco-fields.php:107
 #: classes/class-ledyer-lco-fields.php:127
-msgid "Use API username and API password you downloaded in the Ledyer Merchant Portal. Don’t use your email address."
+msgid "Generate credentials (client ID and secret) in the Ledyer Merchant Portal under Settings -> API credentials."
 msgstr ""
 
 #: classes/class-ledyer-lco-fields.php:85
@@ -109,15 +109,15 @@ msgid "Optional. If you have multiple stores set in Ledyer account. Paste corres
 msgstr ""
 
 #: classes/class-ledyer-lco-fields.php:95
-msgid "Production Ledyer API Password"
+msgid "Production Ledyer client secret"
 msgstr ""
 
 #: classes/class-ledyer-lco-fields.php:105
-msgid "Sandbox Ledyer API Username"
+msgid "Sandbox Ledyer client ID"
 msgstr ""
 
 #: classes/class-ledyer-lco-fields.php:125
-msgid "Sandbox Ledyer API Password"
+msgid "Sandbox Ledyer client secret"
 msgstr ""
 
 #: classes/class-ledyer-lco-fields.php:146
