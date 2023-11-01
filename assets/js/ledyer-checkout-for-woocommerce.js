@@ -137,10 +137,14 @@ jQuery(function ($) {
      * Moves all non standard fields to the extra checkout fields.
      */
     moveExtraCheckoutFields: function () {
+      if (document.querySelectorAll("#order_comments_field").length > 1) {
+        document.querySelector("#order_comments_field").remove();
+      }
+
       // Move order comments.
-      $(".woocommerce-additional-fields")
-        .first()
-        .appendTo("#lco-extra-checkout-fields");
+      $(".woocommerce-additional-fields").appendTo(
+        "#lco-extra-checkout-fields"
+      );
       var form = $(
         'form[name="checkout"] input, form[name="checkout"] select, textarea'
       );
