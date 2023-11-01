@@ -1,3 +1,11 @@
+## 1.7.7
+
+* Strip away when duplicate order notes field
+
+## 1.7.6
+
+* Version bump
+
 ## 1.7.5
 
 * Version bump
