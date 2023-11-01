@@ -1,6 +1,6 @@
 ## 1.7.7
 
-- Only take first order notes field into lco-extra-checkout-fields
+- Strip first order notes field when there are more than one
 
 ## 1.7.6
 
