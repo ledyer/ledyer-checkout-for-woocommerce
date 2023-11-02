@@ -1,3 +1,7 @@
+## 1.7.8
+
+* Version bump, again
+
 ## 1.7.7
 
 * Strip away when duplicate order notes field
