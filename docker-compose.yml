@@ -1,7 +1,7 @@
-version: '3.1'
+version: "3.1"
 services:
   db:
-    image: mariadb:latest
+    image: mariadb:10.4
     restart: on-failure
     ports:
       - 13306:3306
@@ -9,7 +9,7 @@ services:
       MYSQL_DATABASE: testdb
       MYSQL_USER: wordpress
       MYSQL_PASSWORD: wordpress
-      MYSQL_RANDOM_ROOT_PASSWORD: '1'
+      MYSQL_RANDOM_ROOT_PASSWORD: "1"
     volumes:
       - dbdata:/var/lib/mysql
 
@@ -74,7 +74,8 @@ services:
       wp core install --url=http://localhost:8181 --title="Ledyer Checkout" --admin_user=admin --admin_password=password --admin_email=info@example.com --path=/var/www/html --skip-email;
       wp rewrite structure /%postname%/;
       wp plugin install wordpress-importer --activate;
-      wp plugin install woocommerce --activate;
+      wp plugin install wp-rollback --activate;
+      wp plugin install woocommerce --version=8.2.2 --activate;
       wp theme install storefront --activate;
       wp wc tool run install_pages --user=1;
       wp import wp-content/plugins/woocommerce/sample-data/sample_products.xml --authors=create;
