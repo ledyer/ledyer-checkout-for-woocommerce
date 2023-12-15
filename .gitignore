@@ -1,6 +1,9 @@
 # macOS crap
 .DS_Store
 
+# ignore minified output
+build
+
 # ignore everything in the root except the "wp-content" directory.
 !wp-content/
 
