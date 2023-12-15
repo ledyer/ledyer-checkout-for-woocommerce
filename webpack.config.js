@@ -1,4 +1,7 @@
-const WordPressConfig = require( '@wordpress/scripts/config/webpack.config' );
+const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const stylesHandler = MiniCssExtractPlugin.loader;
+
 const path = require( 'path' );
 const glob = require( 'glob' );
 
@@ -23,14 +26,8 @@ const entryObject = ( paths ) => {
     return entries;
 };
 
-/**
- * Extend the default WordPress/Scripts webpack to make entries and output more dynamic.
- * This checks the assts/js and assets/scss folder for any .js* and .scss files and compiles those to separate files
- *
- * Latest @Wordpress/Scripts webpack config: https://github.com/WordPress/gutenberg/blob/master/packages/scripts/config/webpack.config.js
- */
 module.exports = {
-    ...WordPressConfig,
+    ...defaultConfig,
     entry: entryObject( glob.sync( './assets/{css,js}/*.{css,js*}' ) ),
     output: {
         filename: '[name].js',
@@ -38,35 +35,18 @@ module.exports = {
         publicPath: '/content/plugins/ledyer-checkout-for-woocommerce/build/',
     },
     module: {
-        ...WordPressConfig.module,
+        ...defaultConfig.module,
         rules: [
-            ...WordPressConfig.module.rules,
+            ...defaultConfig.module.rules,
             {
-                test: /\.(png|jp(e*)g|gif)$/,
-                use: [
-                    {
-                        loader: 'file-loader',
-                        options: {
-                            name: 'images/[name].[ext]',
-                        },
-                    },
-                ],
-            },
-            {
-                test: /\.(woff|woff2|eot|ttf|otf)$/,
-                use: [
-                    {
-                        loader: 'file-loader',
-                        options: {
-                            name: 'fonts/[name].[ext]', // TODO: if multiple folders inside the fonts folder with the same filename inside the folders. this will override files with the latest compiled file
-                        },
-                    },
-                ],
+                test: /\.css$/i,
+                use: [stylesHandler,'css-loader'],
             },
         ],
     },
     plugins: [
-        ...WordPressConfig.plugins.filter(
+        new MiniCssExtractPlugin(),
+        ...defaultConfig.plugins.filter(
             ( plugin ) => plugin.constructor.name !== 'CleanWebpackPlugin'
         ),
     ],
