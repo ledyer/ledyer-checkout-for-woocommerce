@@ -5,8 +5,8 @@ name: Prerelease
 on:
   push:
     branches:
-      - beta
-      - alpha
+      # - beta
+      # - alpha
 jobs:
   calculate-next-version:
     runs-on: ubuntu-latest
