@@ -1,4 +1,5 @@
 # ledyer-checkout-for-woocommerce
+
 Ledyer checkout plugin for WooCommerce
 
 ## Local dev environment
@@ -20,6 +21,7 @@ You can add a breakpoint in `lco-functions.php` -> `lco_create_or_update_order` 
 
 If you are missing data i woocommerce, make sure you have set the following:
 
-* If you are logged in, your use must be set to country = sweden. User -> Edit profile -> Country/Region -> Sweden
-* Make sure that the Woocommerce shop is configured to target Sweden. Woocommerce -> Settings -> General -> Country/Region -> Sweden
-* Make sure that the Woocommerce shop is configured to use Swedish krona. Woocommerce -> Settings -> General -> Currency -> Swedish krona (kr)
+- If you are logged in, your use must be set to country = sweden. User -> Edit profile -> Country/Region -> Sweden
+- Make sure that the Woocommerce shop is configured to target Sweden. Woocommerce -> Settings -> General -> Country/Region -> Sweden
+- Make sure that the Woocommerce shop is configured to use Swedish krona. Woocommerce -> Settings -> General -> Currency -> Swedish krona (kr)
+- Make sure to enter a terms url in Ledyer checkout plugin settings.

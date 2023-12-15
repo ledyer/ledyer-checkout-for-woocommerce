@@ -19,31 +19,38 @@ $settings = get_option( 'woocommerce_lco_settings' );
 ?>
 
 <form name="checkout" class="checkout woocommerce-checkout">
-	<?php do_action( 'lco_wc_before_wrapper' ); ?>
-	<div id="lco-wrapper">
-		<div id="lco-order-review">
-			<?php do_action( 'lco_wc_before_order_review' ); ?>
-			<?php
-			if ( ! isset( $settings['show_subtotal_detail'] ) || in_array( $settings['show_subtotal_detail'], array( 'woo', 'both' ), true ) ) {
-				woocommerce_order_review();
-				WC()->checkout()->checkout_form_billing();
-				WC()->checkout()->checkout_form_shipping();
-                wc_get_template( 'checkout/terms.php' );
-			}
-			?>
-			<?php do_action( 'lco_wc_after_order_review' ); ?>
-		</div>
+    <?php do_action( 'lco_wc_before_wrapper' ); ?>
 
-		<div id="lco-iframe">
-			<?php do_action( 'lco_wc_before_snippet' ); ?>
-			<?php $ledyer_order = lco_create_or_update_order(); ?>
+    <div id="lco-wrapper">
+        <div id="lco-order-review">
+            <?php
+            do_action( 'lco_wc_before_order_review' );
 
-            <?php if( false === $ledyer_order ) wc_ledyer_cart_redirect(); ?>
+            // Show order review based on settings
+            if ( ! isset( $settings['show_subtotal_detail'] ) || in_array( $settings['show_subtotal_detail'], ['woo', 'both'], true ) ) :
+                woocommerce_order_review();
+            endif;
 
-			<?php do_action( 'lco_wc_after_snippet' ); ?>
-		</div>
-	</div>
-	<?php do_action( 'lco_wc_after_wrapper' ); ?>
+            do_action( 'lco_wc_after_order_review' );
+            ?>
+        </div>
+
+        <div id="lco-iframe">
+            <?php
+            do_action( 'lco_wc_before_snippet' );
+
+            // Create or update the order and handle redirection
+            $ledyer_order = lco_create_or_update_order();
+            if ( false === $ledyer_order ) :
+                wc_ledyer_cart_redirect();
+            endif;
+
+            do_action( 'lco_wc_after_snippet' );
+            ?>
+        </div>
+    </div>
+
+    <?php do_action( 'lco_wc_after_wrapper' ); ?>
 </form>
 
 <?php do_action( 'woocommerce_after_checkout_form', WC()->checkout() ); ?>
