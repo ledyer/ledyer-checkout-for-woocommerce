@@ -175,79 +175,44 @@ class AJAX extends \WC_AJAX {
 	 *
 	 * @return array
 	 */
-	public static function set_customer_data( $ledyer_order ) {
+    public static function set_customer_data( $ledyer_order ) {
+      echo 'kuken';
+      if ( WC()->checkout() && ! empty( WC()->checkout()->checkout_fields ) ) {
+          $billing_address = [];
+          $shipping_address = [];
 
-		if ( WC()->checkout() && ! empty( WC()->checkout()->checkout_fields ) ) {
-			$fields = WC()->checkout()->checkout_fields;
+          // Helper function to safely get nested array values
+          $safe_get = function ($array, $keys, $default = '') {
+              foreach (explode('.', $keys) as $key) {
+                  if (!isset($array[$key])) {
+                      return $default;
+                  }
+                  $array = $array[$key];
+              }
+              return $array;
+          };
 
-			$fields = array_merge( $fields['billing'], $fields['shipping'] );
+          // Populate billing address fields
+          $billing_fields = ['first_name', 'last_name', 'company', 'country', 'address_1', 'postcode', 'city', 'phone', 'email'];
+          foreach ($billing_fields as $field) {
+              $key = 'billing_' . $field;
+              $billing_address[$key] = $safe_get($ledyer_order, 'customer.' . $field);
+          }
 
-			foreach ( $fields as $key => $value ) {
+          // Populate shipping address fields
+          $shipping_fields = ['first_name', 'last_name', 'company', 'country', 'address_1', 'postcode', 'city', 'phone', 'email'];
+          foreach ($shipping_fields as $field) {
+              $key = 'shipping_' . $field;
+              $shipping_address[$key] = $safe_get($ledyer_order, 'customer.shippingAddress.contact.' . $field, $safe_get($ledyer_order, 'customer.shippingAddress.' . $field));
+          }
 
-				switch ( $key ) {
-					case 'billing_first_name':
-						$fields['billing_address'][ $key ]  = $ledyer_order['customer']['firstName'];
-						break;
-					case 'shipping_first_name':
-						$fields['shipping_address'][ $key ] = isset( $ledyer_order['customer']['shippingAddress']['contact'] ) ? $ledyer_order['customer']['shippingAddress']['contact']['firstName'] : '';
-						break;
-					case 'billing_last_name':
-						$fields['billing_address'][ $key ]  = $ledyer_order['customer']['lastName'];
-						break;
-					case 'shipping_last_name':
-						$fields['shipping_address'][ $key ] = isset( $ledyer_order['customer']['shippingAddress']['contact'] ) ? $ledyer_order['customer']['shippingAddress']['contact']['lastName'] : '';
-						break;
-					case 'billing_company':
-						$fields['billing_address'][ $key ] = isset( $ledyer_order['customer']['billingAddress'] ) ? $ledyer_order['customer']['billingAddress']['companyName'] : '';
-						break;
-					case 'shipping_company':
-						$fields['shipping_address'][ $key ] = isset( $ledyer_order['customer']['shippingAddress'] ) ? $ledyer_order['customer']['shippingAddress']['companyName'] : '';
-						break;
-					case 'billing_country':
-						$fields['billing_address'][ $key ] = isset( $ledyer_order['customer']['billingAddress'] ) ? $ledyer_order['customer']['billingAddress']['country'] : '';
-						break;
-					case 'shipping_country':
-						$fields['shipping_address'][ $key ] = isset( $ledyer_order['customer']['shippingAddress'] ) ? $ledyer_order['customer']['shippingAddress']['country'] : '';
-						break;
-					case 'billing_address_1':
-						$fields['billing_address'][ $key ] = isset( $ledyer_order['customer']['billingAddress'] ) ? ( empty( $ledyer_order['customer']['billingAddress']['streetAddress'] ) ? $ledyer_order['customer']['billingAddress']['companyName'] : $ledyer_order['customer']['billingAddress']['streetAddress'] ) : '';
-						break;
-					case 'shipping_address_1':
-						$fields['shipping_address'][ $key ] = isset( $ledyer_order['customer']['shippingAddress'] ) ? ( empty( $ledyer_order['customer']['shippingAddress']['streetAddress'] ) ? $ledyer_order['customer']['shippingAddress']['companyName'] : $ledyer_order['customer']['shippingAddress']['streetAddress'] ) : '';
-						break;
-					case 'billing_postcode':
-						$fields['billing_address'][ $key ] = isset( $ledyer_order['customer']['billingAddress'] ) ? $ledyer_order['customer']['billingAddress']['postalCode'] : '';
-						break;
-					case 'shipping_postcode':
-						$fields['shipping_address'][ $key ] = isset( $ledyer_order['customer']['shippingAddress'] ) ? $ledyer_order['customer']['shippingAddress']['postalCode'] : '';
-						break;
-					case 'billing_city':
-						$fields['billing_address'][ $key ] = isset( $ledyer_order['customer']['billingAddress'] ) ? $ledyer_order['customer']['billingAddress']['city'] : '';
-						break;
-					case 'shipping_city':
-						$fields['shipping_address'][ $key ] = isset( $ledyer_order['customer']['shippingAddress'] ) ? $ledyer_order['customer']['shippingAddress']['city'] : '';
-						break;
-					case 'billing_phone':
-						$fields['billing_address'][ $key ] = $ledyer_order['customer']['phone'];
-						break;
-					case 'billing_email':
-						$fields['billing_address'][ $key ] = $ledyer_order['customer']['email'];
-						break;
-					case 'shipping_phone':
-						$fields['shipping_address'][ $key ] = isset( $ledyer_order['customer']['shippingAddress']['contact'] ) ? $ledyer_order['customer']['shippingAddress']['contact']['phone'] : '';
-						break;
-					case 'shipping_email':
-						$fields['shipping_address'][ $key ] = isset( $ledyer_order['customer']['shippingAddress']['contact'] ) ? $ledyer_order['customer']['shippingAddress']['contact']['email'] : '';
-						break;
-					default:
-						unset( $fields[ $key ] );
-						break;
-				}
-			}
+          // Special handling for address_1 field
+          $billing_address['billing_address_1'] = empty($billing_address['billing_address_1']) ? $billing_address['billing_company'] : $billing_address['billing_address_1'];
+          $shipping_address['shipping_address_1'] = empty($shipping_address['shipping_address_1']) ? $shipping_address['shipping_company'] : $shipping_address['shipping_address_1'];
 
-			return $fields;
-		}
+          return array_merge($billing_address, $shipping_address);
+      }
 
-		return null;
-	}
+      return null;
+  }
 }
