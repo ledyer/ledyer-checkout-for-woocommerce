@@ -27,7 +27,7 @@ class Templates {
 		// Unrequire WooCommerce Shipping State field.
 		\add_filter( 'woocommerce_shipping_fields', array( $this, 'unrequire_wc_shipping_state_field' ) );
 		// Chage admin shipping fields in edit order admin panel
-        \add_filter('woocommerce_admin_shipping_fields', array($this, 'change_admin_shipping_fields'), 10, 1);
+    \add_filter('woocommerce_admin_shipping_fields', array($this, 'change_admin_shipping_fields'), 10, 1);
 	}
 
 	public function actions() {
