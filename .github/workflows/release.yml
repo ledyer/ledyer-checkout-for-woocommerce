@@ -5,7 +5,7 @@ name: Release to WordPress plugin repository
 on:
   push:
     branches:
-      - main
+      # - main pause for now
 jobs:
   calculate-next-version:
     runs-on: ubuntu-latest
