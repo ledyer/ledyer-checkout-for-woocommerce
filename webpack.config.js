@@ -31,7 +31,7 @@ const entryObject = ( paths ) => {
  */
 module.exports = {
     ...WordPressConfig,
-    entry: entryObject( glob.sync( './assets/{scss,js}/*.{scss,js*}' ) ),
+    entry: entryObject( glob.sync( './assets/{css,js}/*.{css,js*}' ) ),
     output: {
         filename: '[name].js',
         path: path.resolve( process.cwd(), 'build' ),
