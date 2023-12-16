@@ -104,10 +104,18 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				return;
 			}
 
+      // Load the Ledyer Checkout for WooCommerce stylesheet.
+			wp_register_style(
+				'lco',
+				plugins_url('build/ledyer-checkout-for-woocommerce.css', LCO_WC_MAIN_FILE),
+				array(),
+				filemtime(plugin_dir_path(LCO_WC_MAIN_FILE) . ('build/ledyer-checkout-for-woocommerce.css'))
+			);
+			wp_enqueue_style('lco');
+
 			if ( ! is_checkout() ) {
 				return;
 			}
-
 
 			$scriptSrcUrl = 'https://checkout.live.ledyer.com/bootstrap.js';
 
@@ -120,7 +128,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					case 'development':
 						$scriptSrcUrl = 'https://checkout.dev.ledyer.com/bootstrap.js';
 						break;
-					default: 
+					default:
 						$scriptSrcUrl = 'https://checkout.sandbox.ledyer.com/bootstrap.js';
 						break;
 				}
@@ -153,13 +161,6 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				array( 'jquery', 'wc-cart', 'jquery-blockui' ),
 				'73823712837218321',
 				true
-			);
-
-			wp_register_style(
-				'lco',
-				plugins_url(  'build/ledyer-checkout-for-woocommerce.css', LCO_WC_MAIN_FILE ),
-				array(),
-				filemtime( plugin_dir_path( LCO_WC_MAIN_FILE ) . ( 'build/ledyer-checkout-for-woocommerce.css' ) )
 			);
 
 			$email_exists = 'no';
@@ -220,18 +221,11 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				'no_shipping_message'           => apply_filters( 'woocommerce_no_shipping_available_html', __( 'There are no shipping options available. Please ensure that your address has been entered correctly, or contact us if you need any help.', 'woocommerce' ) ),
 			);
 
-			if ( version_compare( WC_VERSION, '3.9', '>=' ) ) {
-				$checkout_localize_params['force_update'] = true;
-			}
+			$checkout_localize_params['force_update'] = true;
+
 			wp_localize_script( 'lco', 'lco_params', $checkout_localize_params );
-
 			wp_enqueue_script( 'lco-iframe' );
-
 			wp_enqueue_script( 'lco' );
-
-			if ( ! $pay_for_order ) {
-				wp_enqueue_style( 'lco' );
-			}
 		}
 
 		/**
@@ -680,7 +674,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			if ( $order->has_status( array( 'completed', 'refunded', 'cancelled' ) ) ) {
 				return false;
 			}
-			
+
 			return true;
 		}
 
@@ -692,3 +686,4 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		}
 	}
 }
+
