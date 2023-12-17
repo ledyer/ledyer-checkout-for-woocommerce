@@ -47,14 +47,14 @@ class Meta_Box {
 	 */
 	public function meta_box_content() {
 		$order_id = get_the_ID();
-		$order    = wc_get_order( $order_id );
+		$order = wc_get_order( $order_id );
 
 		// False if automatic settings are enabled, true if not. If true then show the option.
-		if ( ! empty( get_post_meta( $order_id, '_transaction_id', true ) ) && ! empty( get_post_meta( $order_id, '_wc_ledyer_order_id', true ) ) ) {
-			$ledyer_order = ledyer()->api->get_order( get_post_meta( $order_id, '_wc_ledyer_order_id', true ) );
+		if ( ! empty( $order->get_meta( '_transaction_id', true ) ) && ! empty( $order->get_meta( '_wc_ledyer_order_id', true ) ) ) {
+			$ledyer_order = ledyer()->api->get_order( $order->get_meta( '_wc_ledyer_order_id', true ) );
 
 			if ( is_wp_error( $ledyer_order ) && 404 === $ledyer_order->get_error_code ()) {
-				$ledyer_session = ledyer()->api->get_order_session( get_post_meta( $order_id, '_wc_ledyer_order_id', true ) );
+				$ledyer_session = ledyer()->api->get_order_session( $order->get_meta( '_wc_ledyer_order_id', true ) );
 				if ( is_wp_error( $ledyer_session ) ) {
 					$this->print_error_content( __( 'Failed to retrieve the session from Ledyer.', 'ledyer-checkout-for-woocommerce' ) );
 					return;
@@ -80,7 +80,7 @@ class Meta_Box {
 			case 'development':
 			case 'local-fe':
 				return "Development";
-			default: 
+			default:
 				return "Sandbox";
 		}
 	}
@@ -97,7 +97,7 @@ class Meta_Box {
 			case 'development':
 			case 'local-fe':
 				return 'https://merchant.dev.ledyer.com/orders/';
-			default: 
+			default:
 				return 'https://merchant.sandbox.ledyer.com/orders/';
 		}
 	}
@@ -115,8 +115,8 @@ class Meta_Box {
 				<?php
 				if ( '' !== ledyer()->get_setting('testmode') ) {
 					$environment = 'yes' === ledyer()->get_setting('testmode') ? $this->get_test_environment_name() : 'Live';
-					$ledyer_order_url = 'yes' === ledyer()->get_setting('testmode') ? 
-						$this->get_ledyer_merchant_portal_test_url() . $ledyer_order['id'] : 
+					$ledyer_order_url = 'yes' === ledyer()->get_setting('testmode') ?
+						$this->get_ledyer_merchant_portal_test_url() . $ledyer_order['id'] :
 						'https://merchant.live.ledyer.com/orders/' . $ledyer_order['id'];
 					?>
 					<strong><?php esc_html_e( 'Environment: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong><?php echo esc_html( $environment ); ?><br/>

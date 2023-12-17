@@ -46,6 +46,16 @@ require_once __DIR__ . '/classes/class-ledyer-main.php';
 \define( 'LCO_WC_PLUGIN_PATH', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 \define( 'LCO_WC_PLUGIN_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
 
+	// Declare HPOS compatibility.
+  add_action(
+    'before_woocommerce_init',
+    function () {
+      if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+      }
+    }
+  );
+
 function ledyer() {
 	return Ledyer_Checkout_For_WooCommerce::instance();
 }

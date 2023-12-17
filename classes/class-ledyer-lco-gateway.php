@@ -321,7 +321,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				do_action( 'lco_wc_process_payment', $order_id, $ledyer_order );
 
 				// Check that the transaction id got set correctly.
-				if ( get_post_meta( $order_id, '_transaction_id', true ) === $ledyer_order_id ) {
+				if ( $order->get_meta( '_transaction_id', true ) === $ledyer_order_id ) {
 					return true;
 				}
 			}
@@ -396,8 +396,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 						return;
 					}
 					$order_id = wc_get_order_id_by_order_key( $order_key );
-
-					$lco_order_id     = get_post_meta( $order_id, '_wc_ledyer_session_id', true );
+					$lco_order_id  = $order->get_meta( '_wc_ledyer_session_id', true );
 				}
 
 				return str_replace( '<script', '<script data-env="' . $env . '"  data-session-id="' . $lco_order_id . '" data-container-id="lco-iframe" data-buy-button-color="' . $buy_button_color . '" data-no-padding="' . $no_padding . '" ', $tag );
@@ -428,8 +427,8 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				$order_id = $order->id;
 			}
 
-			$attention_name = get_post_meta($order_id, '_billing_attention_name', true);
-			$care_of = get_post_meta($order_id, '_billing_care_of', true);
+			$attention_name = $order->get_meta( '_billing_attention_name', true);
+			$care_of = $order->get_meta( '_billing_care_of', true);
 
 			?>
 				<div class="address">
@@ -483,12 +482,12 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				$order_id = $order->id;
 			}
 
-			$attention_name = get_post_meta( $order_id, '_shipping_attention_name', true );
-			$care_of        = get_post_meta( $order_id, '_shipping_care_of', true );
-			$first_name     = get_post_meta( $order_id, '_shipping_first_name', true );
-			$last_name      = get_post_meta( $order_id, '_shipping_last_name', true );
-			$phone          = get_post_meta( $order_id, '_shipping_phone', true );
-			$email          = get_post_meta( $order_id, '_shipping_email', true );
+			$attention_name = $order->get_meta( '_shipping_attention_name', true );
+			$care_of        = $order->get_meta( '_shipping_care_of', true );
+			$first_name     = $order->get_meta( '_shipping_first_name', true );
+			$last_name      = $order->get_meta( '_shipping_last_name', true );
+			$phone          = $order->get_meta( '_shipping_phone', true );
+			$email          = $order->get_meta( '_shipping_email', true );
 
 			?>
 				<div class="address">

@@ -123,7 +123,7 @@ class Ledyer_Checkout_For_WooCommerce {
 			'date_created' => '>' . ( time() - MONTH_IN_SECONDS ),
 		);
 
-		$orders = get_posts( $query_args );
+		$orders = wc_get_orders( $query_args );
 		$order_id = $orders[0]->ID;
 		$order = wc_get_order( $order_id );
 

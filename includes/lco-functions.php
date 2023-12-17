@@ -192,8 +192,8 @@ function wc_ledyer_confirm_ledyer_order( $order_id ) {
 		return;
 	}
 
-	$payment_id    = get_post_meta( $order_id, '_wc_ledyer_order_id', true );
-	$session_id    = get_post_meta( $order_id, '_wc_ledyer_session_id', true );
+	$payment_id    = $order->get_meta( '_wc_ledyer_order_id', true );
+	$session_id    = $order->get_meta( '_wc_ledyer_session_id', true );
 
 	if ( null === $payment_id ) {
 		$payment_id = WC()->session->get( 'lco_wc_order_id' );
