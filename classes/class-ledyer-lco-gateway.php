@@ -52,13 +52,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$this->testmode = 'yes' === $this->get_option( 'testmode' );
 			$this->logging  = 'yes' === $this->get_option( 'logging' );
 
-			\add_action(
-				'woocommerce_update_options_payment_gateways_' . $this->id,
-				array(
-					$this,
-					'process_admin_options',
-				)
-			);
+			\add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options'));
 			\add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 			\add_filter( 'script_loader_tag', array( $this, 'add_data_attributes' ), 10, 2 );
 
@@ -138,7 +132,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			wp_register_script(
 				'lco-iframe',
 				$scriptSrcUrl,
-				array( 'jquery', 'wc-cart', 'jquery-blockui' ),
+				array(),
 				LCO_WC_VERSION,
 				true
 			);

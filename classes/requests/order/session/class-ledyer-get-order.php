@@ -23,7 +23,7 @@ class Get_Order extends Request_Order {
 	/*
 	 * Set entrypoint
 	 */
-	protected function set_url() {
+	protected function set_url(): void {
 		$this->url = sprintf( 'v1/sessions/%s', $this->arguments['orderId'] );
 
 		parent::get_request_url();
