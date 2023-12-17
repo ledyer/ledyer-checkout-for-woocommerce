@@ -279,39 +279,39 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 				$company_name = ! empty( $customer_billing['companyName'] ) ? $customer_billing['companyName'] : ( ! empty( $customer_shipping['companyName'] ) ? $customer_shipping['companyName'] : '' );
 				// Set WC order transaction ID.
-				update_post_meta( $order_id, '_wc_ledyer_order_id', $ledyer_order['orderId'] );
+				$order->update_meta_data( '_wc_ledyer_order_id', $ledyer_order['orderId'] );
 
-				update_post_meta( $order_id, '_wc_ledyer_session_id', $ledyer_order['id'] );
+				$order->update_meta_data( '_wc_ledyer_session_id', $ledyer_order['id'] );
 
-				update_post_meta( $order_id, '_transaction_id', $ledyer_order['orderId'] );
+				$order->update_meta_data( '_transaction_id', $ledyer_order['orderId'] );
 
-				update_post_meta( $order_id, '_ledyer_company_id', $ledyer_order['customer']['companyId'] );
+				$order->update_meta_data( '_ledyer_company_id', $ledyer_order['customer']['companyId'] );
 
-				update_post_meta( $order_id, '_ledyer_company_name', $company_name );
+				$order->update_meta_data( '_ledyer_company_name', $company_name );
 
 				$environment = $this->testmode ? 'sandbox' : 'production';
-				update_post_meta( $order_id, '_wc_ledyer_environment', $environment );
+				$order->update_meta_data( '_wc_ledyer_environment', $environment );
 
 				$ledyer_country = wc_get_base_location()['country'];
-				update_post_meta( $order_id, '_wc_ledyer_country', $ledyer_country );
+				$order->update_meta_data( '_wc_ledyer_country', $ledyer_country );
 
 				// Set shipping meta
 				if( isset( $ledyer_order['customer']['shippingAddress'] ) ) {
-					update_post_meta( $order_id, '_shipping_attention_name', sanitize_text_field( $ledyer_order['customer']['shippingAddress']['attentionName'] ) );
-					update_post_meta( $order_id, '_shipping_care_of', sanitize_text_field( $ledyer_order['customer']['shippingAddress']['careOf'] ) );
+					$order->update_meta_data( '_shipping_attention_name', sanitize_text_field( $ledyer_order['customer']['shippingAddress']['attentionName'] ) );
+					$order->update_meta_data( '_shipping_care_of', sanitize_text_field( $ledyer_order['customer']['shippingAddress']['careOf'] ) );
 				}
 				// Set order recipient meta
 				if( isset( $ledyer_order['customer']['shippingAddress']['contact'] ) ) {
-					update_post_meta( $order_id, '_shipping_first_name', sanitize_text_field( $ledyer_order['customer']['shippingAddress']['contact']["firstName"] ) );
-					update_post_meta( $order_id, '_shipping_last_name', sanitize_text_field( $ledyer_order['customer']['shippingAddress']['contact']["lastName"]) );
-					update_post_meta( $order_id, '_shipping_phone', sanitize_text_field( $ledyer_order['customer']['shippingAddress']['contact']["phone"] ) );
-					update_post_meta( $order_id, '_shipping_email', sanitize_text_field( $ledyer_order['customer']['shippingAddress']['contact']["email"]) );
+					$order->update_meta_data( '_shipping_first_name', sanitize_text_field( $ledyer_order['customer']['shippingAddress']['contact']["firstName"] ) );
+					$order->update_meta_data( '_shipping_last_name', sanitize_text_field( $ledyer_order['customer']['shippingAddress']['contact']["lastName"]) );
+					$order->update_meta_data( '_shipping_phone', sanitize_text_field( $ledyer_order['customer']['shippingAddress']['contact']["phone"] ) );
+					$order->update_meta_data( '_shipping_email', sanitize_text_field( $ledyer_order['customer']['shippingAddress']['contact']["email"]) );
 				}
 
 				// Set billing meta
 				if( isset( $ledyer_order['customer']['billingAddress'] ) ) {
-					update_post_meta( $order_id, '_billing_attention_name', sanitize_text_field( $ledyer_order['customer']['billingAddress']['attentionName'] ) );
-					update_post_meta( $order_id, '_billing_care_of', sanitize_text_field( $ledyer_order['customer']['billingAddress']['careOf'] ) );
+					$order->update_meta_data( '_billing_attention_name', sanitize_text_field( $ledyer_order['customer']['billingAddress']['attentionName'] ) );
+					$order->update_meta_data( '_billing_care_of', sanitize_text_field( $ledyer_order['customer']['billingAddress']['careOf'] ) );
 				}
 
 
@@ -588,12 +588,12 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		}
 
 		public function ledyer_order_save_custom_fields( $order_id ) {
-			update_post_meta( $order_id, '_billing_attention_name', sanitize_text_field( $_POST[ '_billing_attention_name' ] ) );
-			update_post_meta( $order_id, '_billing_care_of', sanitize_text_field( $_POST[ '_billing_care_of' ] ) );
-			update_post_meta( $order_id, '_shipping_attention_name', sanitize_text_field( $_POST[ '_shipping_attention_name' ] ) );
-			update_post_meta( $order_id, '_shipping_care_of', sanitize_text_field( $_POST[ '_shipping_care_of' ] ) );
-			update_post_meta( $order_id, '_shipping_phone', sanitize_text_field( $_POST[ '_shipping_phone' ] ) );
-			update_post_meta( $order_id, '_shipping_email', sanitize_text_field( $_POST[ '_shipping_email' ] ) );
+			$order->update_meta_data( '_billing_attention_name', sanitize_text_field( $_POST[ '_billing_attention_name' ] ) );
+			$order->update_meta_data( '_billing_care_of', sanitize_text_field( $_POST[ '_billing_care_of' ] ) );
+			$order->update_meta_data( '_shipping_attention_name', sanitize_text_field( $_POST[ '_shipping_attention_name' ] ) );
+			$order->update_meta_data( '_shipping_care_of', sanitize_text_field( $_POST[ '_shipping_care_of' ] ) );
+			$order->update_meta_data( '_shipping_phone', sanitize_text_field( $_POST[ '_shipping_phone' ] ) );
+			$order->update_meta_data( '_shipping_email', sanitize_text_field( $_POST[ '_shipping_email' ] ) );
 		}
 
 		/**

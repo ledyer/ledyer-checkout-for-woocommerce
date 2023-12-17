@@ -215,8 +215,8 @@ function wc_ledyer_confirm_ledyer_order( $order_id ) {
 		$ledyer_payment_provider = sanitize_text_field( $ledyer_payment_method['provider']);
 		$ledyer_payment_type = sanitize_text_field( $ledyer_payment_method['type']);
 
-		update_post_meta( $order_id, 'ledyer_payment_type', $ledyer_payment_type );
-		update_post_meta( $order_id, 'ledyer_payment_method', $ledyer_payment_provider );
+		$order->update_meta_data( 'ledyer_payment_type', $ledyer_payment_type );
+		$order->update_meta_data( 'ledyer_payment_method', $ledyer_payment_provider );
 
 		switch ( $ledyer_payment_type ) {
 			case 'invoice':
@@ -276,7 +276,7 @@ function wc_ledyer_confirm_ledyer_order( $order_id ) {
 		}
 
 		do_action( 'ledyer_process_payment', $order_id, $ledyer_order );
-		update_post_meta( $order_id, '_ledyer_date_paid', gmdate( 'Y-m-d H:i:s' ) );
+		$order->update_meta_data( '_ledyer_date_paid', gmdate( 'Y-m-d H:i:s' ) );
 
 		$response = ledyer()->api->acknowledge_order( $payment_id );
 		if( is_wp_error( $response ) ) {
