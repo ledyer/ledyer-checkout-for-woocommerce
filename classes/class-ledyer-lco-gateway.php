@@ -230,7 +230,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 * @return array
 		 */
 		public function process_payment( $order_id ) {
-			$order                 = wc_get_order( $order_id );
+			$order = wc_get_order( $order_id );
 
 			// Regular purchase.
 			// 1. Process the payment.
@@ -396,6 +396,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 						return;
 					}
 					$order_id = wc_get_order_id_by_order_key( $order_key );
+	        $order = wc_get_order( $order_id );
 					$lco_order_id  = $order->get_meta( '_wc_ledyer_session_id', true );
 				}
 

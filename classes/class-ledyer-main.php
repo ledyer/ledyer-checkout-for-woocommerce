@@ -115,16 +115,20 @@ class Ledyer_Checkout_For_WooCommerce {
 	public function process_notification( $ledyer_order_id ) {
 		Logger::log( 'process notification: ' . $ledyer_order_id);
 
-		$query_args = array(
-			'post_type'   => 'shop_order',
-			'post_status' => 'any',
-			'meta_key'    => '_wc_ledyer_order_id',
-			'meta_value'  => $ledyer_order_id,
-			'date_created' => '>' . ( time() - MONTH_IN_SECONDS ),
-		);
+    $orders = wc_get_orders(
+      array(
+        'meta_query' => array(
+          array(
+            'key' => '_wc_ledyer_order_id',
+            'value' => $ledyer_order_id,
+            'compare' => '=',
+			      'date_created' => '>' . ( time() - MONTH_IN_SECONDS ),
+          )
+        )
+      )
+    );
 
-		$orders = wc_get_orders( $query_args );
-		$order_id = $orders[0]->ID;
+		$order_id = $orders[0]->get_id();
 		$order = wc_get_order( $order_id );
 
 		if ( !is_object( $order ) ) {
