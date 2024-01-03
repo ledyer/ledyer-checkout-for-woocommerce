@@ -122,13 +122,13 @@ class Ledyer_Checkout_For_WooCommerce {
             'key' => '_wc_ledyer_order_id',
             'value' => $ledyer_order_id,
             'compare' => '=',
-			      'date_created' => '>' . ( time() - MONTH_IN_SECONDS ),
           )
-        )
+        ),
+        'date_created' => '>' . ( time() - MONTH_IN_SECONDS )
       )
     );
 
-		$order_id = $orders[0]->get_id();
+    $order_id = isset($orders[0]) ? $orders[0]->get_id() : null;
 		$order = wc_get_order( $order_id );
 
 		if ( !is_object( $order ) ) {

@@ -277,6 +277,7 @@ function wc_ledyer_confirm_ledyer_order( $order_id ) {
 
 		do_action( 'ledyer_process_payment', $order_id, $ledyer_order );
 		$order->update_meta_data( '_ledyer_date_paid', gmdate( 'Y-m-d H:i:s' ) );
+    $order->save();
 
 		$response = ledyer()->api->acknowledge_order( $payment_id );
 		if( is_wp_error( $response ) ) {

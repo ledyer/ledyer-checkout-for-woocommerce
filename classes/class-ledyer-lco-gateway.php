@@ -132,7 +132,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			wp_register_script(
 				'lco-iframe',
 				$scriptSrcUrl,
-				array(),
+				array('jquery', 'wc-cart'),
 				LCO_WC_VERSION,
 				true
 			);
@@ -313,7 +313,6 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					$order->update_meta_data( '_billing_attention_name', sanitize_text_field( $ledyer_order['customer']['billingAddress']['attentionName'] ) );
 					$order->update_meta_data( '_billing_care_of', sanitize_text_field( $ledyer_order['customer']['billingAddress']['careOf'] ) );
 				}
-
 
 				$order->save();
 
@@ -595,6 +594,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$order->update_meta_data( '_shipping_care_of', sanitize_text_field( $_POST[ '_shipping_care_of' ] ) );
 			$order->update_meta_data( '_shipping_phone', sanitize_text_field( $_POST[ '_shipping_phone' ] ) );
 			$order->update_meta_data( '_shipping_email', sanitize_text_field( $_POST[ '_shipping_email' ] ) );
+      $order->save();
 		}
 
 		/**
