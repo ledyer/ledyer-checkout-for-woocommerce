@@ -273,7 +273,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				return false;
 			}
 
-			if ( $order_id && $ledyer_order ) {
+			if ( $order && $ledyer_order ) {
 				$customer_billing = isset( $ledyer_order['customer']['billingAddress'] ) ? $ledyer_order['customer']['billingAddress'] : false;
 				$customer_shipping = isset( $ledyer_order['customer']['shippingAddress'] ) ? $ledyer_order['customer']['shippingAddress'] : false;
 
@@ -588,6 +588,10 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		}
 
 		public function ledyer_order_save_custom_fields( $order_id ) {
+      $order = wc_get_order($order_id);
+      if (!$order) {
+          return;
+      }
 			$order->update_meta_data( '_billing_attention_name', sanitize_text_field( $_POST[ '_billing_attention_name' ] ) );
 			$order->update_meta_data( '_billing_care_of', sanitize_text_field( $_POST[ '_billing_care_of' ] ) );
 			$order->update_meta_data( '_shipping_attention_name', sanitize_text_field( $_POST[ '_shipping_attention_name' ] ) );
