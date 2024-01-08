@@ -8,22 +8,24 @@ namespace Ledyer\Requests\Order\Session;
 
 use Ledyer\Requests\Order\Request_Order;
 
-defined( 'ABSPATH' ) || exit();
+defined("ABSPATH") || exit();
 
 /**
  * Class Create_Order
  *
  * @package Ledyer\Requests\Order\Session
  */
-class Create_Order extends Request_Order {
+class Create_Order extends Request_Order
+{
 	/*
 	 * Request method
 	 */
-	protected $method = 'POST';
+	protected $method = "POST";
 	/*
 	 * Set entrypoint
 	 */
-	protected function set_url() {
-		$this->url = trim('v1/sessions/');
+	protected function set_url()
+	{
+		$this->url = trim("v1/sessions/");
 	}
 }

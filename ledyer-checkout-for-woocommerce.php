@@ -30,33 +30,31 @@
 
 use Ledyer\Ledyer_Checkout_For_WooCommerce;
 
-\defined( 'ABSPATH' ) || die();
+\defined("ABSPATH") || die();
 
-require_once __DIR__ . '/classes/class-ledyer-singleton.php';
-require_once __DIR__ . '/classes/class-ledyer-main.php';
+require_once __DIR__ . "/classes/class-ledyer-singleton.php";
+require_once __DIR__ . "/classes/class-ledyer-main.php";
 
 /**
  * Required minimums and constants
  */
-\define( 'LCO_WC_VERSION', Ledyer_Checkout_For_WooCommerce::VERSION );
-\define( 'LCO_WC_MIN_PHP_VER', '5.6.0' );
-\define( 'LCO_WC_MIN_WC_VER', '3.9.0' );
-\define( 'LCO_WC_MAIN_FILE', __FILE__ );
-\define( 'LCO_WC_PLUGIN_NAME', dirname( plugin_basename( LCO_WC_MAIN_FILE ) ) );
-\define( 'LCO_WC_PLUGIN_PATH', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
-\define( 'LCO_WC_PLUGIN_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
+\define("LCO_WC_VERSION", Ledyer_Checkout_For_WooCommerce::VERSION);
+\define("LCO_WC_MIN_PHP_VER", "5.6.0");
+\define("LCO_WC_MIN_WC_VER", "3.9.0");
+\define("LCO_WC_MAIN_FILE", __FILE__);
+\define("LCO_WC_PLUGIN_NAME", dirname(plugin_basename(LCO_WC_MAIN_FILE)));
+\define("LCO_WC_PLUGIN_PATH", untrailingslashit(plugin_dir_path(__FILE__)));
+\define("LCO_WC_PLUGIN_URL", untrailingslashit(plugin_dir_url(__FILE__)));
 
 // Declare HPOS compatibility.
-add_action(
-  'before_woocommerce_init',
-  function () {
-    if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
-      \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
-    }
-  }
-);
+add_action("before_woocommerce_init", function () {
+	if (class_exists(\Automattic\WooCommerce\Utilities\FeaturesUtil::class)) {
+		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility("custom_order_tables", __FILE__, true);
+	}
+});
 
-function ledyer() {
+function ledyer()
+{
 	return Ledyer_Checkout_For_WooCommerce::instance();
 }
 

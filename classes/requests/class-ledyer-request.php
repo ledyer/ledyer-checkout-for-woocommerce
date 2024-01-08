@@ -9,15 +9,15 @@ namespace Ledyer\Requests;
 use Ledyer\Credentials;
 use Ledyer\Logger;
 
-defined( 'ABSPATH' ) || exit();
+defined("ABSPATH") || exit();
 
 /**
  * Class Request
  *
  * @package Ledyer\Requests
  */
-abstract class Request {
-
+abstract class Request
+{
 	/**
 	 * Request arguments
 	 * @var array|mixed
@@ -32,12 +32,12 @@ abstract class Request {
 	 * Request method
 	 * @var string
 	 */
-	protected $method = 'POST';
+	protected $method = "POST";
 	/**
 	 * Request endpoint
 	 * @var string
 	 */
-	protected $url = '';
+	protected $url = "";
 	/**
 	 * Merchant Bearer token
 	 * @var string
@@ -51,8 +51,9 @@ abstract class Request {
 	/*
 	 * Requests Class constructor.
 	 */
-	public function __construct( $arguments = [] ) {
-		$this->arguments    = $arguments;
+	public function __construct($arguments = [])
+	{
+		$this->arguments = $arguments;
 		$this->access_token = $this->token();
 		$this->set_request_url();
 	}
@@ -68,29 +69,29 @@ abstract class Request {
 	 * Transient 'ledyer_token' expires in 3600s.
 	 * @return mixed|string
 	 */
-	private function token() {
-		$token_name = $this->is_test() ? 'test_ledyer_token' : 'ledyer_token';
+	private function token()
+	{
+		$token_name = $this->is_test() ? "test_ledyer_token" : "ledyer_token";
 
-		if ( get_transient( $token_name ) ) {
-			return get_transient( $token_name );
+		if (get_transient($token_name)) {
+			return get_transient($token_name);
 		}
 
 		$client_credentials = ledyer()->credentials->get_credentials_from_session();
 
+		$api_auth_base = "https://auth.live.ledyer.com/";
 
-		$api_auth_base = 'https://auth.live.ledyer.com/';
-
-		if ( $this->is_test() ) {
-			switch (ledyer()->get_setting( 'development_test_environment' )) {
-				case 'local':
-					$api_auth_base = 'http://host.docker.internal:9001/';
+		if ($this->is_test()) {
+			switch (ledyer()->get_setting("development_test_environment")) {
+				case "local":
+					$api_auth_base = "http://host.docker.internal:9001/";
 					break;
-				case 'development':
-				case 'local-fe':
-					$api_auth_base = 'https://auth.dev.ledyer.com/';
+				case "development":
+				case "local-fe":
+					$api_auth_base = "https://auth.dev.ledyer.com/";
 					break;
-				default: 
-					$api_auth_base = 'https://auth.sandbox.ledyer.com/';
+				default:
+					$api_auth_base = "https://auth.sandbox.ledyer.com/";
 					break;
 			}
 		}
@@ -98,46 +99,49 @@ abstract class Request {
 		$client = new \WP_Http();
 
 		$headers = [
-			'Authorization' => 'Basic ' . base64_encode( $client_credentials['merchant_id'] . ':' . $client_credentials['shared_secret'] ),
+			"Authorization" =>
+				"Basic " . base64_encode($client_credentials["merchant_id"] . ":" . $client_credentials["shared_secret"]),
 		];
 
-		$response = $client->post( $api_auth_base . 'oauth/token?grant_type=client_credentials', [
-			'headers' => $headers,
-			'timeout' => 60
-		] );
+		$response = $client->post($api_auth_base . "oauth/token?grant_type=client_credentials", [
+			"headers" => $headers,
+			"timeout" => 60,
+		]);
 
-		$body = $this->process_response( $response, [ 'grant_type' => 'client_credentials' ], $api_auth_base . 'oauth/token' );
+		$body = $this->process_response($response, ["grant_type" => "client_credentials"], $api_auth_base . "oauth/token");
 
-		$is_wp_error = is_object( $body ) && false !== stripos( get_class( $body ), 'WP_Error' );
+		$is_wp_error = is_object($body) && false !== stripos(get_class($body), "WP_Error");
 
-		if ( ! $is_wp_error && isset( $body['access_token'] ) ) {
-			set_transient( $token_name, $body['access_token'], $body['expires_in'] );
-			return get_transient( $token_name );
+		if (!$is_wp_error && isset($body["access_token"])) {
+			set_transient($token_name, $body["access_token"], $body["expires_in"]);
+			return get_transient($token_name);
 		}
 
-		return '';
+		return "";
 	}
 
 	/**
 	 * Make request.
 	 * @return mixed|\WP_Error
 	 */
-	public function request() {
-		$url  = $this->get_request_url();
+	public function request()
+	{
+		$url = $this->get_request_url();
 		$args = $this->get_request_args();
 
-		$response = wp_remote_request( $url, $args );
+		$response = wp_remote_request($url, $args);
 
-		return $this->process_response( $response, $args, $url );
+		return $this->process_response($response, $args, $url);
 	}
 
 	/**
 	 * Create request url.
 	 * @return string
 	 */
-	protected function get_request_url() {
+	protected function get_request_url()
+	{
 		$base = $this->request_url;
-		$slug = trim( $this->url, '/' );
+		$slug = trim($this->url, "/");
 
 		return $base . $slug;
 	}
@@ -146,15 +150,16 @@ abstract class Request {
 	 * Create request args.
 	 * @return array
 	 */
-	protected function get_request_args() {
+	protected function get_request_args()
+	{
 		$request_args = [
-			'headers' => $this->get_request_headers(),
-			'method'  => $this->method,
-			'timeout' => apply_filters( 'ledyer_request_timeout', 10 ),
+			"headers" => $this->get_request_headers(),
+			"method" => $this->method,
+			"timeout" => apply_filters("ledyer_request_timeout", 10),
 		];
 
-		if ( 'POST' === $this->method && $this->arguments['data'] ) {
-			$request_args['body'] = json_encode( $this->arguments['data'] );
+		if ("POST" === $this->method && $this->arguments["data"]) {
+			$request_args["body"] = json_encode($this->arguments["data"]);
 		}
 
 		return $request_args;
@@ -164,10 +169,11 @@ abstract class Request {
 	 * Create request headers.
 	 * @return array
 	 */
-	protected function get_request_headers() {
+	protected function get_request_headers()
+	{
 		return [
-			'Authorization' => sprintf( 'Bearer %s', $this->token() ),
-			'Content-Type' => 'application/json',
+			"Authorization" => sprintf("Bearer %s", $this->token()),
+			"Content-Type" => "application/json",
 		];
 	}
 
@@ -175,8 +181,9 @@ abstract class Request {
 	 * Check if test env is enabled.
 	 * @return bool
 	 */
-	protected function is_test() {
-		return 'yes' === ledyer()->get_setting( 'testmode' );
+	protected function is_test()
+	{
+		return "yes" === ledyer()->get_setting("testmode");
 	}
 
 	/**
@@ -188,32 +195,40 @@ abstract class Request {
 	 *
 	 * @return mixed|\WP_Error
 	 */
-	protected function process_response( $response, $request_args, $request_url ) {
-		$code = wp_remote_retrieve_response_code( $response );
+	protected function process_response($response, $request_args, $request_url)
+	{
+		$code = wp_remote_retrieve_response_code($response);
 
-		$log = Logger::format_log( '', 'POST', 'Debugger', $request_args, json_decode( wp_remote_retrieve_body( $response ), true ), $code );
+		$log = Logger::format_log(
+			"",
+			"POST",
+			"Debugger",
+			$request_args,
+			json_decode(wp_remote_retrieve_body($response), true),
+			$code
+		);
 
-		Logger::log( $log );
+		Logger::log($log);
 
-		if ( is_wp_error( $response ) ) {
+		if (is_wp_error($response)) {
 			return $response;
 		}
 
-		$response_code = wp_remote_retrieve_response_code( $response );
+		$response_code = wp_remote_retrieve_response_code($response);
 
-		if ( $response_code < 200 || $response_code > 299 ) {
-			$data          = 'URL: ' . $request_url . ' - ' . wp_json_encode( $request_args );
-			$error_message = '';
-			$errors        = json_decode( $response['body'], true );
+		if ($response_code < 200 || $response_code > 299) {
+			$data = "URL: " . $request_url . " - " . wp_json_encode($request_args);
+			$error_message = "";
+			$errors = json_decode($response["body"], true);
 
-			if ( ! empty( $errors ) && ! empty( $errors['errors'] ) ) {
-				foreach ( $errors['errors'] as $error ) {
-					$error_message .= ' ' . $error['message'];
+			if (!empty($errors) && !empty($errors["errors"])) {
+				foreach ($errors["errors"] as $error) {
+					$error_message .= " " . $error["message"];
 				}
 			}
-			$return = new \WP_Error( $response_code, $error_message, $data );
+			$return = new \WP_Error($response_code, $error_message, $data);
 		} else {
-			$return = json_decode( wp_remote_retrieve_body( $response ), true );
+			$return = json_decode(wp_remote_retrieve_body($response), true);
 		}
 
 		return $return;

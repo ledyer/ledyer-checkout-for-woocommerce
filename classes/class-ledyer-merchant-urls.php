@@ -7,15 +7,15 @@
 
 namespace Ledyer;
 
-\defined( 'ABSPATH' ) || die();
+\defined("ABSPATH") || die();
 
 /**
  * Merchant_URLs class.
  *
  * Class that formats gets merchant URLs Ledyer API.
  */
-class Merchant_URLs {
-
+class Merchant_URLs
+{
 	/**
 	 * Gets formatted merchant URLs array.
 	 *
@@ -23,15 +23,16 @@ class Merchant_URLs {
 	 *
 	 * @return array
 	 */
-	public function get_urls( $order_id = null ) {
-		$merchant_urls = array(
-			'terms'        => $this->get_terms_url(),                   // Required.
-			'privacy'      => $this->get_privacy_url(),
-			'checkout'     => $this->get_checkout_url(),                // Required.
-			'confirmation' => $this->get_confirmation_url( $order_id ), // Required.
-		);
+	public function get_urls($order_id = null)
+	{
+		$merchant_urls = [
+			"terms" => $this->get_terms_url(), // Required.
+			"privacy" => $this->get_privacy_url(),
+			"checkout" => $this->get_checkout_url(), // Required.
+			"confirmation" => $this->get_confirmation_url($order_id), // Required.
+		];
 
-		return apply_filters( 'lco_wc_merchant_urls', $merchant_urls );
+		return apply_filters("lco_wc_merchant_urls", $merchant_urls);
 	}
 
 	/**
@@ -41,15 +42,15 @@ class Merchant_URLs {
 	 *
 	 * @return string
 	 */
-	private function get_terms_url() {
+	private function get_terms_url()
+	{
+		$terms_url = get_permalink(wc_get_page_id("terms"));
 
-		$terms_url = get_permalink( wc_get_page_id( 'terms' ) );
-
-		if( ! empty( ledyer()->get_setting('terms_url') ) ) {
-			$terms_url = ledyer()->get_setting('terms_url');
+		if (!empty(ledyer()->get_setting("terms_url"))) {
+			$terms_url = ledyer()->get_setting("terms_url");
 		}
 
-		return apply_filters( 'lco_wc_terms_url', $terms_url );
+		return apply_filters("lco_wc_terms_url", $terms_url);
 	}
 
 	/**
@@ -59,14 +60,15 @@ class Merchant_URLs {
 	 *
 	 * @return string
 	 */
-	private function get_privacy_url() {
+	private function get_privacy_url()
+	{
 		$privacy_url = get_privacy_policy_url();
 
-		if( ! empty( ledyer()->get_setting('privacy_url') ) ) {
-			$privacy_url = ledyer()->get_setting('privacy_url');
+		if (!empty(ledyer()->get_setting("privacy_url"))) {
+			$privacy_url = ledyer()->get_setting("privacy_url");
 		}
 
-		return apply_filters( 'lco_wc_privacy_url', $privacy_url );
+		return apply_filters("lco_wc_privacy_url", $privacy_url);
 	}
 
 	/**
@@ -76,10 +78,11 @@ class Merchant_URLs {
 	 *
 	 * @return string
 	 */
-	private function get_checkout_url() {
+	private function get_checkout_url()
+	{
 		$checkout_url = wc_get_checkout_url();
 
-		return apply_filters( 'lco_wc_checkout_url', $checkout_url );
+		return apply_filters("lco_wc_checkout_url", $checkout_url);
 	}
 
 	/**
@@ -91,37 +94,38 @@ class Merchant_URLs {
 	 *
 	 * @return string
 	 */
-	private function get_confirmation_url( $order_id ) {
-		if ( empty( $order_id ) ) {
+	private function get_confirmation_url($order_id)
+	{
+		if (empty($order_id)) {
 			$confirmation_url = add_query_arg(
-				array(
-					'lco_confirm'  => 'yes',
-				),
+				[
+					"lco_confirm" => "yes",
+				],
 				wc_get_checkout_url()
 			);
 		} else {
-			$order            = wc_get_order( $order_id );
+			$order = wc_get_order($order_id);
 			$confirmation_url = add_query_arg(
-				array(
-					'lco_confirm'  => 'yes',
-				),
+				[
+					"lco_confirm" => "yes",
+				],
 				$order->get_checkout_order_received_url()
 			);
 		}
 
-		return apply_filters( 'lco_wc_confirmation_url', $confirmation_url );
+		return apply_filters("lco_wc_confirmation_url", $confirmation_url);
 	}
-
 
 	/**
 	 * Get session ID.
 	 *
 	 * @return string
 	 */
-	private function get_session_id() {
-		foreach ( $_COOKIE as $key => $value ) {
-			if ( strpos( $key, 'wp_woocommerce_session_' ) !== false ) {
-				$session_id = explode( '||', $value );
+	private function get_session_id()
+	{
+		foreach ($_COOKIE as $key => $value) {
+			if (strpos($key, "wp_woocommerce_session_") !== false) {
+				$session_id = explode("||", $value);
 
 				return $session_id[0];
 			}
