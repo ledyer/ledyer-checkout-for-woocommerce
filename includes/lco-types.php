@@ -1,8 +1,9 @@
 <?php
 
-\defined( 'ABSPATH' ) || die();
+\defined("ABSPATH") || die();
 
-abstract class LedyerPaymentStatus {
+abstract class LedyerPaymentStatus
+{
 	const orderInitiated = "orderInitiated";
 	const orderPending = "orderPending";
 	const paymentPending = "paymentPending";
