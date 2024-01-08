@@ -319,16 +319,6 @@ jQuery(function ($) {
         },
 
         /**
-         * Logs messages to the console.
-         * @param {string} message
-         */
-        log: function (message) {
-            if (lco_params.logging) {
-                console.log(message);
-            }
-        },
-
-        /**
          * Fails the Ledyer order.
          * @param {string} error_message
          */

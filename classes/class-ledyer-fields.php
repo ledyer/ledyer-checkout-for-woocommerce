@@ -56,7 +56,7 @@ class Fields {
 				),
 			),
 			'testmode'                   => array(
-				'title'       => __( 'test mode', 'ledyer-checkout-for-woocommerce' ),
+				'title'       => __( 'Test mode', 'ledyer-checkout-for-woocommerce' ),
 				'label'       => __( 'Enable Test Mode', 'ledyer-checkout-for-woocommerce' ),
 				'type'        => 'checkbox',
 				'description' => __( 'Place the payment gateway in test mode using test API keys.', 'ledyer-checkout-for-woocommerce' ),

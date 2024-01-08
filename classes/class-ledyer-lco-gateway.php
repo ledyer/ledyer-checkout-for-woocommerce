@@ -52,13 +52,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$this->testmode = 'yes' === $this->get_option( 'testmode' );
 			$this->logging  = 'yes' === $this->get_option( 'logging' );
 
-			\add_action(
-				'woocommerce_update_options_payment_gateways_' . $this->id,
-				array(
-					$this,
-					'process_admin_options',
-				)
-			);
+			\add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options'));
 			\add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 			\add_filter( 'script_loader_tag', array( $this, 'add_data_attributes' ), 10, 2 );
 
@@ -138,7 +132,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			wp_register_script(
 				'lco-iframe',
 				$scriptSrcUrl,
-				array( 'jquery', 'wc-cart', 'jquery-blockui' ),
+				array('jquery', 'wc-cart'),
 				LCO_WC_VERSION,
 				true
 			);
@@ -236,7 +230,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 * @return array
 		 */
 		public function process_payment( $order_id ) {
-			$order                 = wc_get_order( $order_id );
+			$order = wc_get_order( $order_id );
 
 			// Regular purchase.
 			// 1. Process the payment.
@@ -279,47 +273,46 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				return false;
 			}
 
-			if ( $order_id && $ledyer_order ) {
+			if ( $order && $ledyer_order ) {
 				$customer_billing = isset( $ledyer_order['customer']['billingAddress'] ) ? $ledyer_order['customer']['billingAddress'] : false;
 				$customer_shipping = isset( $ledyer_order['customer']['shippingAddress'] ) ? $ledyer_order['customer']['shippingAddress'] : false;
 
 				$company_name = ! empty( $customer_billing['companyName'] ) ? $customer_billing['companyName'] : ( ! empty( $customer_shipping['companyName'] ) ? $customer_shipping['companyName'] : '' );
 				// Set WC order transaction ID.
-				update_post_meta( $order_id, '_wc_ledyer_order_id', $ledyer_order['orderId'] );
+				$order->update_meta_data( '_wc_ledyer_order_id', $ledyer_order['orderId'] );
 
-				update_post_meta( $order_id, '_wc_ledyer_session_id', $ledyer_order['id'] );
+				$order->update_meta_data( '_wc_ledyer_session_id', $ledyer_order['id'] );
 
-				update_post_meta( $order_id, '_transaction_id', $ledyer_order['orderId'] );
+				$order->update_meta_data( '_transaction_id', $ledyer_order['orderId'] );
 
-				update_post_meta( $order_id, '_ledyer_company_id', $ledyer_order['customer']['companyId'] );
+				$order->update_meta_data( '_ledyer_company_id', $ledyer_order['customer']['companyId'] );
 
-				update_post_meta( $order_id, '_ledyer_company_name', $company_name );
+				$order->update_meta_data( '_ledyer_company_name', $company_name );
 
 				$environment = $this->testmode ? 'sandbox' : 'production';
-				update_post_meta( $order_id, '_wc_ledyer_environment', $environment );
+				$order->update_meta_data( '_wc_ledyer_environment', $environment );
 
 				$ledyer_country = wc_get_base_location()['country'];
-				update_post_meta( $order_id, '_wc_ledyer_country', $ledyer_country );
+				$order->update_meta_data( '_wc_ledyer_country', $ledyer_country );
 
 				// Set shipping meta
 				if( isset( $ledyer_order['customer']['shippingAddress'] ) ) {
-					update_post_meta( $order_id, '_shipping_attention_name', sanitize_text_field( $ledyer_order['customer']['shippingAddress']['attentionName'] ) );
-					update_post_meta( $order_id, '_shipping_care_of', sanitize_text_field( $ledyer_order['customer']['shippingAddress']['careOf'] ) );
+					$order->update_meta_data( '_shipping_attention_name', sanitize_text_field( $ledyer_order['customer']['shippingAddress']['attentionName'] ) );
+					$order->update_meta_data( '_shipping_care_of', sanitize_text_field( $ledyer_order['customer']['shippingAddress']['careOf'] ) );
 				}
 				// Set order recipient meta
 				if( isset( $ledyer_order['customer']['shippingAddress']['contact'] ) ) {
-					update_post_meta( $order_id, '_shipping_first_name', sanitize_text_field( $ledyer_order['customer']['shippingAddress']['contact']["firstName"] ) );
-					update_post_meta( $order_id, '_shipping_last_name', sanitize_text_field( $ledyer_order['customer']['shippingAddress']['contact']["lastName"]) );
-					update_post_meta( $order_id, '_shipping_phone', sanitize_text_field( $ledyer_order['customer']['shippingAddress']['contact']["phone"] ) );
-					update_post_meta( $order_id, '_shipping_email', sanitize_text_field( $ledyer_order['customer']['shippingAddress']['contact']["email"]) );
+					$order->update_meta_data( '_shipping_first_name', sanitize_text_field( $ledyer_order['customer']['shippingAddress']['contact']["firstName"] ) );
+					$order->update_meta_data( '_shipping_last_name', sanitize_text_field( $ledyer_order['customer']['shippingAddress']['contact']["lastName"]) );
+					$order->update_meta_data( '_shipping_phone', sanitize_text_field( $ledyer_order['customer']['shippingAddress']['contact']["phone"] ) );
+					$order->update_meta_data( '_shipping_email', sanitize_text_field( $ledyer_order['customer']['shippingAddress']['contact']["email"]) );
 				}
 
 				// Set billing meta
 				if( isset( $ledyer_order['customer']['billingAddress'] ) ) {
-					update_post_meta( $order_id, '_billing_attention_name', sanitize_text_field( $ledyer_order['customer']['billingAddress']['attentionName'] ) );
-					update_post_meta( $order_id, '_billing_care_of', sanitize_text_field( $ledyer_order['customer']['billingAddress']['careOf'] ) );
+					$order->update_meta_data( '_billing_attention_name', sanitize_text_field( $ledyer_order['customer']['billingAddress']['attentionName'] ) );
+					$order->update_meta_data( '_billing_care_of', sanitize_text_field( $ledyer_order['customer']['billingAddress']['careOf'] ) );
 				}
-
 
 				$order->save();
 
@@ -327,7 +320,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				do_action( 'lco_wc_process_payment', $order_id, $ledyer_order );
 
 				// Check that the transaction id got set correctly.
-				if ( get_post_meta( $order_id, '_transaction_id', true ) === $ledyer_order_id ) {
+				if ( $order->get_meta( '_transaction_id', true ) === $ledyer_order_id ) {
 					return true;
 				}
 			}
@@ -402,8 +395,8 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 						return;
 					}
 					$order_id = wc_get_order_id_by_order_key( $order_key );
-
-					$lco_order_id     = get_post_meta( $order_id, '_wc_ledyer_session_id', true );
+	        $order = wc_get_order( $order_id );
+					$lco_order_id  = $order->get_meta( '_wc_ledyer_session_id', true );
 				}
 
 				return str_replace( '<script', '<script data-env="' . $env . '"  data-session-id="' . $lco_order_id . '" data-container-id="lco-iframe" data-buy-button-color="' . $buy_button_color . '" data-no-padding="' . $no_padding . '" ', $tag );
@@ -434,8 +427,8 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				$order_id = $order->id;
 			}
 
-			$attention_name = get_post_meta($order_id, '_billing_attention_name', true);
-			$care_of = get_post_meta($order_id, '_billing_care_of', true);
+			$attention_name = $order->get_meta( '_billing_attention_name', true);
+			$care_of = $order->get_meta( '_billing_care_of', true);
 
 			?>
 				<div class="address">
@@ -489,12 +482,12 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				$order_id = $order->id;
 			}
 
-			$attention_name = get_post_meta( $order_id, '_shipping_attention_name', true );
-			$care_of        = get_post_meta( $order_id, '_shipping_care_of', true );
-			$first_name     = get_post_meta( $order_id, '_shipping_first_name', true );
-			$last_name      = get_post_meta( $order_id, '_shipping_last_name', true );
-			$phone          = get_post_meta( $order_id, '_shipping_phone', true );
-			$email          = get_post_meta( $order_id, '_shipping_email', true );
+			$attention_name = $order->get_meta( '_shipping_attention_name', true );
+			$care_of        = $order->get_meta( '_shipping_care_of', true );
+			$first_name     = $order->get_meta( '_shipping_first_name', true );
+			$last_name      = $order->get_meta( '_shipping_last_name', true );
+			$phone          = $order->get_meta( '_shipping_phone', true );
+			$email          = $order->get_meta( '_shipping_email', true );
 
 			?>
 				<div class="address">
@@ -595,12 +588,17 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		}
 
 		public function ledyer_order_save_custom_fields( $order_id ) {
-			update_post_meta( $order_id, '_billing_attention_name', sanitize_text_field( $_POST[ '_billing_attention_name' ] ) );
-			update_post_meta( $order_id, '_billing_care_of', sanitize_text_field( $_POST[ '_billing_care_of' ] ) );
-			update_post_meta( $order_id, '_shipping_attention_name', sanitize_text_field( $_POST[ '_shipping_attention_name' ] ) );
-			update_post_meta( $order_id, '_shipping_care_of', sanitize_text_field( $_POST[ '_shipping_care_of' ] ) );
-			update_post_meta( $order_id, '_shipping_phone', sanitize_text_field( $_POST[ '_shipping_phone' ] ) );
-			update_post_meta( $order_id, '_shipping_email', sanitize_text_field( $_POST[ '_shipping_email' ] ) );
+      $order = wc_get_order($order_id);
+      if (!$order) {
+          return;
+      }
+			$order->update_meta_data( '_billing_attention_name', sanitize_text_field( $_POST[ '_billing_attention_name' ] ) );
+			$order->update_meta_data( '_billing_care_of', sanitize_text_field( $_POST[ '_billing_care_of' ] ) );
+			$order->update_meta_data( '_shipping_attention_name', sanitize_text_field( $_POST[ '_shipping_attention_name' ] ) );
+			$order->update_meta_data( '_shipping_care_of', sanitize_text_field( $_POST[ '_shipping_care_of' ] ) );
+			$order->update_meta_data( '_shipping_phone', sanitize_text_field( $_POST[ '_shipping_phone' ] ) );
+			$order->update_meta_data( '_shipping_email', sanitize_text_field( $_POST[ '_shipping_email' ] ) );
+      $order->save();
 		}
 
 		/**

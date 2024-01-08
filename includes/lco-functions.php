@@ -192,8 +192,8 @@ function wc_ledyer_confirm_ledyer_order( $order_id ) {
 		return;
 	}
 
-	$payment_id    = get_post_meta( $order_id, '_wc_ledyer_order_id', true );
-	$session_id    = get_post_meta( $order_id, '_wc_ledyer_session_id', true );
+	$payment_id    = $order->get_meta( '_wc_ledyer_order_id', true );
+	$session_id    = $order->get_meta( '_wc_ledyer_session_id', true );
 
 	if ( null === $payment_id ) {
 		$payment_id = WC()->session->get( 'lco_wc_order_id' );
@@ -208,15 +208,15 @@ function wc_ledyer_confirm_ledyer_order( $order_id ) {
 		\Ledyer\Logger::log( 'Could not get ledyer payment status ' . $payment_id  );
 		return;
 	}
-	
+
 	$ledyer_payment_method = $ledyer_payment_status['paymentMethod'];
 	if ( !empty($ledyer_payment_method) ) {
 
 		$ledyer_payment_provider = sanitize_text_field( $ledyer_payment_method['provider']);
 		$ledyer_payment_type = sanitize_text_field( $ledyer_payment_method['type']);
 
-		update_post_meta( $order_id, 'ledyer_payment_type', $ledyer_payment_type );
-		update_post_meta( $order_id, 'ledyer_payment_method', $ledyer_payment_provider );
+		$order->update_meta_data( 'ledyer_payment_type', $ledyer_payment_type );
+		$order->update_meta_data( 'ledyer_payment_method', $ledyer_payment_provider );
 
 		switch ( $ledyer_payment_type ) {
 			case 'invoice':
@@ -236,7 +236,7 @@ function wc_ledyer_confirm_ledyer_order( $order_id ) {
 				break;
 		}
 		$order->set_payment_method_title( sprintf( '%s (Ledyer)', $method_title ) );
-		$order->save();	
+		$order->save();
 	}
 
 	$ackOrder = false;
@@ -244,14 +244,14 @@ function wc_ledyer_confirm_ledyer_order( $order_id ) {
 	switch( $ledyer_payment_status['status']) {
 		case LedyerPaymentStatus::orderPending:
 			if ( !$order->has_status( array( 'on-hold', 'processing', 'completed' ) ) ) {
-				$note = sprintf( __( 'New session created in Ledyer with Payment ID %1$s. %2$s', 
+				$note = sprintf( __( 'New session created in Ledyer with Payment ID %1$s. %2$s',
 					'ledyer-checkout-for-woocommerce' ), $payment_id, $ledyer_payment_status['note'] );
 				$order->update_status('on-hold', $note);
 			}
 			break;
 		case LedyerPaymentStatus::paymentPending:
 			if ( !$order->has_status( array( 'on-hold', 'processing', 'completed' ) ) ) {
-				$note = sprintf( __( 'New payment created in Ledyer with Payment ID %1$s. %2$s', 
+				$note = sprintf( __( 'New payment created in Ledyer with Payment ID %1$s. %2$s',
 					'ledyer-checkout-for-woocommerce' ), $payment_id, $ledyer_payment_status['note'] );
 				$order->update_status('on-hold', $note);
 				$ackOrder = true;
@@ -259,7 +259,7 @@ function wc_ledyer_confirm_ledyer_order( $order_id ) {
 			break;
 		case LedyerPaymentStatus::paymentConfirmed:
 			if ( !$order->has_status( array( 'processing', 'completed' ) ) ) {
-				$note = sprintf( __( 'New payment created in Ledyer with Payment ID %1$s. %2$s', 
+				$note = sprintf( __( 'New payment created in Ledyer with Payment ID %1$s. %2$s',
 					'ledyer-checkout-for-woocommerce' ), $payment_id, $ledyer_payment_status['note'] );
 				$order->add_order_note($note);
 				$order->payment_complete($payment_id);
@@ -275,8 +275,9 @@ function wc_ledyer_confirm_ledyer_order( $order_id ) {
 			return;
 		}
 
-		do_action( 'ledyer_process_payment', $order_id, $ledyer_order );		
-		update_post_meta( $order_id, '_ledyer_date_paid', gmdate( 'Y-m-d H:i:s' ) );
+		do_action( 'ledyer_process_payment', $order_id, $ledyer_order );
+		$order->update_meta_data( '_ledyer_date_paid', gmdate( 'Y-m-d H:i:s' ) );
+    $order->save();
 
 		$response = ledyer()->api->acknowledge_order( $payment_id );
 		if( is_wp_error( $response ) ) {
