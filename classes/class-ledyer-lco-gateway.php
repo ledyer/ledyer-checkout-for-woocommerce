@@ -74,11 +74,9 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
     public function on_ledyer_settings_save()
     {
-      if (isset($_POST['woocommerce_lco_development_test_environment'])) {
-        // Clear the transient to ensure fresh data is fetched on the next request
-        delete_transient('ledyer_token');
-        delete_transient('test_ledyer_token');
-      }
+      // Clear the transient to ensure fresh data is fetched on the next request
+      delete_transient('ledyer_token');
+      delete_transient('test_ledyer_token');
     }
 
 		/**
