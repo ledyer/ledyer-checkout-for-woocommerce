@@ -49,7 +49,7 @@ class Templates {
 	 */
 	public function override_template( $template, $template_name ) {
 		if ( is_checkout() ) {
-			$confirm = filter_input( INPUT_GET, 'confirm', FILTER_UNSAFE_RAW );
+			$confirm = filter_input( INPUT_GET, 'confirm', FILTER_SANITIZE_URL);
 			// Don't display LCO template if we have a cart that doesn't needs payment.
 			if ( apply_filters( 'lco_check_if_needs_payment', true ) && ! is_wc_endpoint_url( 'order-pay' ) ) {
 				if ( ! WC()->cart->needs_payment() ) {
