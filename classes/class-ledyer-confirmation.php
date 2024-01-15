@@ -32,8 +32,8 @@ class Confirmation {
 	 * Confirm the order in Woo
 	 */
 	public function confirm_order() {
-		$ledyer_confirm = filter_input( INPUT_GET, 'lco_confirm', FILTER_SANITIZE_STRING );
-		$order_key    = filter_input( INPUT_GET, 'key', FILTER_SANITIZE_STRING );
+		$ledyer_confirm = filter_input( INPUT_GET, 'lco_confirm', FILTER_UNSAFE_RAW);
+		$order_key    = filter_input( INPUT_GET, 'key', FILTER_UNSAFE_RAW);
 
 		if ( empty( $ledyer_confirm ) || empty( $order_key ) ) {
 			return;
