@@ -67,7 +67,17 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			\add_action('woocommerce_process_shop_order_meta', array( $this, 'lom_validate_lom_edit_ledyer_order' ), 45, 1);
 			// Save shipping and billing custom fields (higher priority than "lom_validate_lom_edit_ledyer_order" to make sure validation is done first)
 			\add_action( 'woocommerce_process_shop_order_meta', array( $this, 'ledyer_order_save_custom_fields' ), 50, 1);
-		}
+
+      // Invalidate token cache when settings are updated
+      \add_action('woocommerce_update_options', array($this, 'on_ledyer_settings_save'), 1);
+    }
+
+    public function on_ledyer_settings_save()
+    {
+      // Clear the transient to ensure fresh data is fetched on the next request
+      delete_transient('ledyer_token');
+      delete_transient('test_ledyer_token');
+    }
 
 		/**
 		 * Get gateway icon.
