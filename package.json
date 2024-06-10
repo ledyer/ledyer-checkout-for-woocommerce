@@ -2,7 +2,7 @@
   "name": "ledyer-checkout-for-woocommerce",
   "version": "1.0.0",
   "private": true,
-  "description": "Ledyer Checkout payment gateway for WooCommerce developed Maksimer AS maintained by Ledyer",
+  "description": "Ledyer Checkout payment gateway for WooCommerce",
   "author": "Maksimer AS",
   "license": "GPL-2.0-or-later",
   "keywords": [
@@ -36,4 +36,3 @@
     "url-loader": "4.1.1"
   }
 }
-
