@@ -1,3 +1,7 @@
+## 1.8.0
+
+* Add HPOS compatibility
+
 ## 1.7.8
 
 * Version bump, again

@@ -56,7 +56,7 @@ class Fields {
 				),
 			),
 			'testmode'                   => array(
-				'title'       => __( 'test mode', 'ledyer-checkout-for-woocommerce' ),
+				'title'       => __( 'Test mode', 'ledyer-checkout-for-woocommerce' ),
 				'label'       => __( 'Enable Test Mode', 'ledyer-checkout-for-woocommerce' ),
 				'type'        => 'checkbox',
 				'description' => __( 'Place the payment gateway in test mode using test API keys.', 'ledyer-checkout-for-woocommerce' ),
@@ -155,8 +155,8 @@ class Fields {
 				'desc_tip'    => true,
 			),
 			'show_shipping_address_contact'   => array(
-				'title'       => __( 'Show custom shipping address contact details', 'ledyer-checkout-for-woocommerce' ),
-				'label'       => __( 'Allow customer to enter a different shipping address order recipient', 'ledyer-checkout-for-woocommerce' ),
+				'title'       => __( 'Show custom contact details', 'ledyer-checkout-for-woocommerce' ),
+				'label'       => __( 'Allow customers to enter different contact details for the order recipient', 'ledyer-checkout-for-woocommerce' ),
 				'type'        => 'checkbox',
 				'description' => __( 'If checked, the customer will be able to enter different shipping address recipient details in the checkout iframe.', 'ledyer-checkout-for-woocommerce' ),
 				'default'     => 'no',

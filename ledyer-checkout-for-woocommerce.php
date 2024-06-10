@@ -5,7 +5,7 @@
  * Description: Ledyer Checkout payment gateway for WooCommerce.
  * Author: Maksimer/Ledyer
  * Author URI: https://www.maksimer.com/
- * Version: 1.7.8
+ * Version: 1.8.0
  * Text Domain: ledyer-checkout-for-woocommerce
  * Domain Path: /languages
  *
@@ -45,6 +45,16 @@ require_once __DIR__ . '/classes/class-ledyer-main.php';
 \define( 'LCO_WC_PLUGIN_NAME', dirname( plugin_basename( LCO_WC_MAIN_FILE ) ) );
 \define( 'LCO_WC_PLUGIN_PATH', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 \define( 'LCO_WC_PLUGIN_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
+
+// Declare HPOS compatibility.
+add_action(
+  'before_woocommerce_init',
+  function () {
+    if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+      \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+    }
+  }
+);
 
 function ledyer() {
 	return Ledyer_Checkout_For_WooCommerce::instance();
