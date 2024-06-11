@@ -2,29 +2,12 @@
   "name": "ledyer-checkout-for-woocommerce",
   "version": "1.0.0",
   "private": true,
-  "description": "Ledyer Checkout payment gateway for WooCommerce developed and maintained by Maksimer AS",
+  "description": "Ledyer Checkout payment gateway for WooCommerce",
   "author": "Maksimer AS",
   "license": "GPL-2.0-or-later",
   "keywords": [
     "WordPress"
   ],
-  "dependencies": {
-    "smoothscroll-polyfill": "^0.4.4"
-  },
-  "devDependencies": {
-    "@commitlint/cli": "17.6.6",
-    "@commitlint/config-conventional": "17.6.6",
-    "@semantic-release/changelog": "6.0.3",
-    "@semantic-release/commit-analyzer": "10.0.1",
-    "@semantic-release/github": "9.0.3",
-    "@semantic-release/release-notes-generator": "11.0.4",
-    "@wordpress/scripts": "^12.6.1",
-    "file-loader": "^6.2.0",
-    "husky": "8.0.3",
-    "semantic-release-export-data": "1.0.1",
-    "semantic-release-plugin-update-version-in-files": "1.1.0",
-    "url-loader": "^4.1.1"
-  },
   "scripts": {
     "watch": "wp-scripts start",
     "build": "wp-scripts build",
@@ -33,5 +16,23 @@
     "lint:css": "wp-scripts lint-style",
     "lint:js": "wp-scripts lint-js",
     "check-engines": "wp-scripts check-engines"
+  },
+  "dependencies": {
+    "smoothscroll-polyfill": "0.4.4"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "19.3.0",
+    "@commitlint/config-conventional": "19.2.2",
+    "@semantic-release/changelog": "6.0.3",
+    "@semantic-release/commit-analyzer": "13.0.0",
+    "@semantic-release/github": "10.0.6",
+    "@semantic-release/release-notes-generator": "14.0.0",
+    "@wordpress/scripts": "28.0.0",
+    "file-loader": "6.2.0",
+    "css-loader": "7.1.2",
+    "husky": "9.0.11",
+    "semantic-release-export-data": "1.0.1",
+    "semantic-release-plugin-update-version-in-files": "1.1.0",
+    "url-loader": "4.1.1"
   }
 }

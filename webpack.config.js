@@ -9,18 +9,18 @@ const glob = require( 'glob' );
  * @param {Object} paths
  */
 const entryObject = ( paths ) => {
-    const entries = {};
+	const entries = {};
 
-    paths.forEach( function ( filePath ) {
-        let fileName = filePath.split( '/' ).slice( -1 )[ 0 ];
-        fileName = fileName.replace( /\.[^/.]+$/, '' );
+	paths.forEach( function ( filePath ) {
+		let fileName = filePath.split( '/' ).slice( -1 )[ 0 ];
+		fileName = fileName.replace( /\.[^/.]+$/, '' );
 
-        if ( ! fileName.startsWith( '_' ) ) {
-            entries[ fileName ] = filePath;
-        }
-    } );
+		if ( ! fileName.startsWith( '_' ) ) {
+			entries[ fileName ] = filePath;
+		}
+	} );
 
-    return entries;
+	return entries;
 };
 
 /**
@@ -30,44 +30,44 @@ const entryObject = ( paths ) => {
  * Latest @Wordpress/Scripts webpack config: https://github.com/WordPress/gutenberg/blob/master/packages/scripts/config/webpack.config.js
  */
 module.exports = {
-    ...WordPressConfig,
-    entry: entryObject( glob.sync( './assets/{scss,js}/*.{scss,js*}' ) ),
-    output: {
-        filename: '[name].js',
-        path: path.resolve( process.cwd(), 'build' ),
-        publicPath: '/content/plugins/ledyer-checkout-for-woocommerce/build/',
-    },
-    module: {
-        ...WordPressConfig.module,
-        rules: [
-            ...WordPressConfig.module.rules,
-            {
-                test: /\.(png|jp(e*)g|gif)$/,
-                use: [
-                    {
-                        loader: 'file-loader',
-                        options: {
-                            name: 'images/[name].[ext]',
-                        },
-                    },
-                ],
-            },
-            {
-                test: /\.(woff|woff2|eot|ttf|otf)$/,
-                use: [
-                    {
-                        loader: 'file-loader',
-                        options: {
-                            name: 'fonts/[name].[ext]', // TODO: if multiple folders inside the fonts folder with the same filename inside the folders. this will override files with the latest compiled file
-                        },
-                    },
-                ],
-            },
-        ],
-    },
-    plugins: [
-        ...WordPressConfig.plugins.filter(
-            ( plugin ) => plugin.constructor.name !== 'CleanWebpackPlugin'
-        ),
-    ],
+	...WordPressConfig,
+	entry: entryObject( glob.sync( './assets/{scss,js}/*.{scss,js*}' ) ),
+	output: {
+		filename: '[name].js',
+		path: path.resolve( process.cwd(), 'build' ),
+		publicPath: '/content/plugins/ledyer-checkout-for-woocommerce/build/',
+	},
+	module: {
+		...WordPressConfig.module,
+		rules: [
+			...WordPressConfig.module.rules,
+			{
+				test: /\.(png|jp(e*)g|gif)$/,
+				use: [
+					{
+						loader: 'file-loader',
+						options: {
+							name: 'images/[name].[ext]',
+						},
+					},
+				],
+			},
+			{
+				test: /\.(woff|woff2|eot|ttf|otf)$/,
+				use: [
+					{
+						loader: 'file-loader',
+						options: {
+							name: 'fonts/[name].[ext]', // TODO: if multiple folders inside the fonts folder with the same filename inside the folders. this will override files with the latest compiled file
+						},
+					},
+				],
+			},
+		],
+	},
+	plugins: [
+		...WordPressConfig.plugins.filter(
+			( plugin ) => plugin.constructor.name !== 'CleanWebpackPlugin'
+		),
+	],
 };
