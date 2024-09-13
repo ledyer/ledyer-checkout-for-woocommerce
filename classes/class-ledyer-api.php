@@ -26,6 +26,7 @@ class API {
 	 * @return mixed|\WP_Error
 	 */
 	public function get_order_session( $order_id ) {
+		error_log( $order_id );
 		return ( new Get_Order( array( 'orderId' => $order_id ) ) )->request();
 	}
 
@@ -36,6 +37,16 @@ class API {
 	 */
 	public function create_order_session( $data ) {
 		return ( new Create_Order( compact( 'data' ) ) )->request();
+	}
+
+	/**
+	 * Creates a Ledyer HPP URL.
+	 *
+	 * @param string $session_id The Ledyer Checkout session to use for the HPP request.
+	 * @return mixed
+	 */
+	public function create_ledyer_hpp_url( $session_id ) {
+		return 'https://pos.sandbox.ledyer.com/sessionId?:' . $session_id;
 	}
 
 	/**

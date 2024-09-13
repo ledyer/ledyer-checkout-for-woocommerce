@@ -242,6 +242,28 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		public function process_payment( $order_id ) {
 			$order = wc_get_order( $order_id );
 
+			// HPP Redirect flow.
+			//if ( 'redirect' === ( $this->settings['checkout_flow'] ?? 'embedded' ) ) {
+				$data = \Ledyer\Requests\Helpers\Woocommerce_Bridge::get_cart_data();
+				$ledyer_order = ledyer()->api->create_order_session( $data );
+
+				if ( ! $ledyer_order || ( is_object( $ledyer_order ) && is_wp_error( $ledyer_order ) ) ) {
+					// If failed then bail.
+					if( is_object( $ledyer_order ) && is_wp_error( $ledyer_order ) ) {
+						$errors = $ledyer_order->errors;
+					} else {
+						$errors = $ledyer_order;
+					}
+	
+					\Ledyer\Logger::log( $errors );
+					return false;
+				}
+
+				// Run redirect.
+				return $this->process_redirect_handler( $order_id, $ledyer_order );
+
+			//}
+
 			// Regular purchase.
 			// 1. Process the payment.
 			// 2. Redirect to order received page.
@@ -261,7 +283,6 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					'result' => 'error',
 				);
 			}
-
 		}
 
 		/**
@@ -337,6 +358,45 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 			// Return false if we get here. Something went wrong.
 			return false;
+		}
+
+		/**
+		 * Process the payment for HPP/redirect checkout flow.
+		 *
+		 * @param int   $order_id The WooCommerce order id.
+		 * @param array $ledyer_order The response from payment.
+		 *
+		 * @return array|string[]
+		 */
+		protected function process_redirect_handler( $order_id, $ledyer_order ) {
+			$order = wc_get_order( $order_id );
+
+			$this->process_payment_handler( $order_id );
+
+			// Create a HPP url.
+			$hpp_redirect = ledyer()->api->create_ledyer_hpp_url( $ledyer_order['sessionId'] );
+
+			if ( is_wp_error( $hpp_redirect ) ) {
+				wc_add_notice( 'Failed to create a HPP session with ledyer.', 'error' );
+				return array(
+					'result' => 'error',
+				);
+			}
+
+			// Save ledyer HPP url & Session ID.
+			$order->update_meta_data( '_wc_ledyer_hpp_url', sanitize_text_field( $hpp_redirect ) );
+			$order->update_meta_data( '_wc_ledyer_hpp_session_id', sanitize_key( $ledyer_order['sessionId'] ) );
+			$order->save();
+
+			// All good. Redirect customer to ledyer Hosted payment page.
+			$order->add_order_note( __( 'Customer redirected to Ledyer Hosted Payment Page.', 'ledyer-checkout-for-woocommerce' ) );
+
+			error_log('Success redirecting to Ledyer');
+
+			return array(
+				'result'   => 'success',
+				'redirect' => $hpp_redirect,
+			);
 		}
 
 		/**
