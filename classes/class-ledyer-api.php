@@ -35,7 +35,16 @@ class API {
 	 *
 	 * @return mixed|\WP_Error
 	 */
-	public function create_order_session( $data ) {
+	public function create_order_session( $data, $order_id = false ) {
+
+		if( $order_id ) {
+			$confirmation_url = wc_get_endpoint_url( 'order-received', $order_id, wc_get_checkout_url() );
+
+			if( $confirmation_url ) {
+				$data['settings']['urls']['confirmation'] = $confirmation_url;
+			}
+		}
+
 		return ( new Create_Order( compact( 'data' ) ) )->request();
 	}
 
@@ -46,7 +55,7 @@ class API {
 	 * @return mixed
 	 */
 	public function create_ledyer_hpp_url( $session_id ) {
-		return 'https://pos.sandbox.ledyer.com/sessionId?:' . $session_id;
+		return 'https://pos.sandbox.ledyer.com/?sessionId=' . $session_id;
 	}
 
 	/**

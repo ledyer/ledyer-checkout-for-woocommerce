@@ -245,7 +245,8 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			// HPP Redirect flow.
 			//if ( 'redirect' === ( $this->settings['checkout_flow'] ?? 'embedded' ) ) {
 				$data = \Ledyer\Requests\Helpers\Woocommerce_Bridge::get_cart_data();
-				$ledyer_order = ledyer()->api->create_order_session( $data );
+				$ledyer_order = ledyer()->api->create_order_session( $data, $order_id );
+				lco_create_or_update_order();
 
 				if ( ! $ledyer_order || ( is_object( $ledyer_order ) && is_wp_error( $ledyer_order ) ) ) {
 					// If failed then bail.
@@ -390,8 +391,6 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 			// All good. Redirect customer to ledyer Hosted payment page.
 			$order->add_order_note( __( 'Customer redirected to Ledyer Hosted Payment Page.', 'ledyer-checkout-for-woocommerce' ) );
-
-			error_log('Success redirecting to Ledyer');
 
 			return array(
 				'result'   => 'success',

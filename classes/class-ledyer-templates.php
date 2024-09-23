@@ -21,7 +21,10 @@ class Templates {
 
 	public function filters() {
 		// Override template if Ledyer Checkout page.
-		\add_filter( 'wc_get_template', array( $this, 'override_template' ), 999, 2 );
+		$test = 'redirect';
+		if ( 'redirect' !== $test /*( $this->settings['checkout_flow'] ?? 'embedded' )*/ ) {
+			\add_filter( 'wc_get_template', array( $this, 'override_template' ), 999, 2 );
+		}
 		// Unrequire WooCommerce Billing State field.
 		\add_filter( 'woocommerce_billing_fields', array( $this, 'unrequire_wc_billing_state_field' ) );
 		// Unrequire WooCommerce Shipping State field.
@@ -48,6 +51,7 @@ class Templates {
 	 * @return string
 	 */
 	public function override_template( $template, $template_name ) {
+		
 		if ( is_checkout() ) {
 			$confirm = filter_input( INPUT_GET, 'confirm', FILTER_SANITIZE_URL);
 			// Don't display LCO template if we have a cart that doesn't needs payment.
