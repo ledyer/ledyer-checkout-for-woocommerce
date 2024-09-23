@@ -35,17 +35,12 @@ class API {
 	 * @return mixed|\WP_Error
 	 */
 	public function create_order_session( $data, $order_id = false ) {
-
 		if ( $order_id ) {
 			$order = wc_get_order( $order_id );
-
-			$confirmation_url = $order->get_checkout_order_received_url();
-
-			if ( $confirmation_url ) {
-				$data['settings']['urls']['confirmation'] = $confirmation_url;
+			if ( $order ) {
+				$data['settings']['urls']['confirmation'] = $order->get_checkout_order_received_url();
 			}
 		}
-
 		return ( new Create_Order( compact( 'data' ) ) )->request();
 	}
 
