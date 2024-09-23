@@ -26,7 +26,6 @@ class API {
 	 * @return mixed|\WP_Error
 	 */
 	public function get_order_session( $order_id ) {
-		error_log( $order_id );
 		return ( new Get_Order( array( 'orderId' => $order_id ) ) )->request();
 	}
 
