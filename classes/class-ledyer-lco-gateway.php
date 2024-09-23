@@ -243,8 +243,8 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$order = wc_get_order( $order_id );
 
 			// HPP Redirect flow.
-			//if ( 'redirect' === ( $this->settings['checkout_flow'] ?? 'embedded' ) ) {
-				$data = \Ledyer\Requests\Helpers\Woocommerce_Bridge::get_cart_data();
+			if ( 'redirect' === ( $this->settings['checkout_flow'] ?? 'embedded' ) ) {
+				$data         = \Ledyer\Requests\Helpers\Woocommerce_Bridge::get_cart_data();
 				$ledyer_order = ledyer()->api->create_order_session( $data, $order_id );
 				lco_create_or_update_order();
 
@@ -263,7 +263,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				// Run redirect.
 				return $this->process_redirect_handler( $order_id, $ledyer_order );
 
-			//}
+			}
 
 			// Regular purchase.
 			// 1. Process the payment.
@@ -458,14 +458,14 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				$lco_order_id     = WC()->session->get( 'lco_wc_session_id' );
 
 				if ( is_order_received_page() ) {
-					$order_key    = filter_input( INPUT_GET, 'key', FILTER_SANITIZE_STRING );
+					$order_key = filter_input( INPUT_GET, 'key', FILTER_SANITIZE_STRING );
 
 					if ( empty( $order_key ) ) {
 						return;
 					}
-					$order_id = wc_get_order_id_by_order_key( $order_key );
-	        $order = wc_get_order( $order_id );
-					$lco_order_id  = $order->get_meta( '_wc_ledyer_session_id', true );
+					$order_id     = wc_get_order_id_by_order_key( $order_key );
+					$order        = wc_get_order( $order_id );
+					$lco_order_id = $order->get_meta( '_wc_ledyer_session_id', true );
 				}
 
 				return str_replace( '<script', '<script data-env="' . $env . '"  data-session-id="' . $lco_order_id . '" data-container-id="lco-iframe" data-buy-button-color="' . $buy_button_color . '" data-no-padding="' . $no_padding . '" ', $tag );

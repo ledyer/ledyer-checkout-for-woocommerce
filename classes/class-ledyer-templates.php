@@ -21,8 +21,10 @@ class Templates {
 
 	public function filters() {
 		// Override template if Ledyer Checkout page.
-		$test = 'redirect';
-		if ( 'redirect' !== $test /*( $this->settings['checkout_flow'] ?? 'embedded' )*/ ) {
+
+		$settings = get_option( 'woocommerce_lco_settings' );
+
+		if ( 'redirect' !== ( $settings['checkout_flow'] ?? 'embedded' ) ) {
 			\add_filter( 'wc_get_template', array( $this, 'override_template' ), 999, 2 );
 		}
 		// Unrequire WooCommerce Billing State field.

@@ -37,10 +37,12 @@ class API {
 	 */
 	public function create_order_session( $data, $order_id = false ) {
 
-		if( $order_id ) {
-			$confirmation_url = wc_get_endpoint_url( 'order-received', $order_id, wc_get_checkout_url() );
+		if ( $order_id ) {
+			$order = wc_get_order( $order_id );
 
-			if( $confirmation_url ) {
+			$confirmation_url = $order->get_checkout_order_received_url();
+
+			if ( $confirmation_url ) {
 				$data['settings']['urls']['confirmation'] = $confirmation_url;
 			}
 		}
@@ -103,7 +105,12 @@ class API {
 	 * @return mixed|\WP_Error
 	 */
 	public function acknowledge_order( $order_id ) {
-		return ( new \Ledyer\Requests\Order\Management\Acknowledge_Order( array( 'orderId' => $order_id, 'data' => array() ) ) )->request();
+		return ( new \Ledyer\Requests\Order\Management\Acknowledge_Order(
+			array(
+				'orderId' => $order_id,
+				'data'    => array(),
+			)
+		) )->request();
 	}
 
 	/**
