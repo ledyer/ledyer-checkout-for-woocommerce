@@ -22,7 +22,7 @@ class Templates {
 	public function filters() {
 		// Override template if Ledyer Checkout page.
 
-		$settings = get_option( 'woocommerce_lco_settings' );
+		$settings = get_option( 'woocommerce_lco_settings', array() );
 
 		if ( 'redirect' !== ( $settings['checkout_flow'] ?? 'embedded' ) ) {
 			\add_filter( 'wc_get_template', array( $this, 'override_template' ), 999, 2 );

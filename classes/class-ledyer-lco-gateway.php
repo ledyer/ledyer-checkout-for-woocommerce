@@ -8,6 +8,7 @@
 
 namespace Ledyer;
 
+use Ledyer\Requests\Order\Session\Create_HPP;
 \defined( 'ABSPATH' ) || die();
 
 if ( class_exists( 'WC_Payment_Gateway' ) ) {
@@ -244,24 +245,10 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 			// HPP Redirect flow.
 			if ( 'redirect' === ( $this->settings['checkout_flow'] ?? 'embedded' ) ) {
-				$data         = \Ledyer\Requests\Helpers\Woocommerce_Bridge::get_cart_data();
-				$ledyer_order = ledyer()->api->create_order_session( $data, $order_id );
 				lco_create_or_update_order();
 
-				if ( ! $ledyer_order || ( is_object( $ledyer_order ) && is_wp_error( $ledyer_order ) ) ) {
-					// If failed then bail.
-					if( is_object( $ledyer_order ) && is_wp_error( $ledyer_order ) ) {
-						$errors = $ledyer_order->errors;
-					} else {
-						$errors = $ledyer_order;
-					}
-	
-					\Ledyer\Logger::log( $errors );
-					return false;
-				}
-
 				// Run redirect.
-				return $this->process_redirect_handler( $order_id, $ledyer_order );
+				return $this->hpp_redirect_handler( $order );
 
 			}
 
@@ -274,7 +261,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					'result'   => 'success',
 					'redirect' => add_query_arg(
 						array(
-							'lco_confirm'  => 'yes',
+							'lco_confirm' => 'yes',
 						),
 						$order->get_checkout_order_received_url()
 					),
@@ -364,21 +351,35 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		/**
 		 * Process the payment for HPP/redirect checkout flow.
 		 *
-		 * @param int   $order_id The WooCommerce order id.
-		 * @param array $ledyer_order The response from payment.
+		 * @param object $order The WooCommerce order.
 		 *
 		 * @return array|string[]
 		 */
-		protected function process_redirect_handler( $order_id, $ledyer_order ) {
-			$order = wc_get_order( $order_id );
+		protected function hpp_redirect_handler( $order ) {
+			$this->process_payment_handler( $order->get_id() );
 
-			$this->process_payment_handler( $order_id );
+			$data = \Ledyer\Requests\Helpers\Woocommerce_Bridge::get_cart_data();
+			if ( empty( $data ) ) {
+				wc_add_notice( 'Failed to get cart data for HPP.', 'error' );
+				return array(
+					'result' => 'error',
+				);
+			}
+
+			// Add confirmation URL to the order.
+			$data         = ( new Create_HPP() )->set_confirmation_url( $data, $order->get_id() );
+			$ledyer_order = ledyer()->api->create_order_session( $data );
+			if ( is_wp_error( $ledyer_order ) ) {
+				wc_add_notice( 'Failed to add confirmation URL to order session for HPP.', 'error' );
+				return array(
+					'result' => 'error',
+				);
+			}
 
 			// Create a HPP url.
 			$hpp_redirect = ledyer()->api->create_ledyer_hpp_url( $ledyer_order['sessionId'] );
-
 			if ( is_wp_error( $hpp_redirect ) ) {
-				wc_add_notice( 'Failed to create a HPP session with ledyer.', 'error' );
+				wc_add_notice( 'Failed to create HPP session with ledyer.', 'error' );
 				return array(
 					'result' => 'error',
 				);
