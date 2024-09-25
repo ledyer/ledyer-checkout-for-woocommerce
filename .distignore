@@ -10,7 +10,10 @@
 .editorconfig
 .distignore
 .gitignore
+.nvmrc
 commitlint.config.js
+composer.json
+composer-lock.json
 Dockerfile
 Dockerfile-*
 docker-compose.phpunit.yml
