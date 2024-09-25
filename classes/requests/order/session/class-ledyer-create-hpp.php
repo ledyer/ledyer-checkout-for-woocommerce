@@ -39,8 +39,8 @@ class Create_HPP extends Request_Order {
 	 * @return string The HPP URL.
 	 */
 	public function create_hpp_url( $session_id ) {
-		// Todo: remove hardcoding here.
-		return 'https://pos.sandbox.ledyer.com/?sessionId=' . $session_id;
+		$mode = 'yes' === ledyer()->get_setting( 'testmode' ) ? 'sandbox' : 'live';
+		return "https://pos.{$mode}.ledyer.com/?sessionId={$session_id}";
 	}
 
 	/**
