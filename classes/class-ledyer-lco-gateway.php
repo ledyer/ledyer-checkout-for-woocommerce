@@ -8,7 +8,6 @@
 
 namespace Ledyer;
 
-use Ledyer\Requests\Order\Session\Create_HPP;
 \defined( 'ABSPATH' ) || die();
 
 if ( class_exists( 'WC_Payment_Gateway' ) ) {
@@ -356,21 +355,20 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 * @return array|string[]
 		 */
 		protected function hpp_redirect_handler( $order ) {
-			$this->process_payment_handler( $order->get_id() );
 
-			$data = \Ledyer\Requests\Helpers\Woocommerce_Bridge::get_cart_data();
-			if ( empty( $data ) ) {
-				wc_add_notice( 'Failed to get cart data for HPP.', 'error' );
+			if ( empty( $order ) ) {
+				wc_add_notice( 'Failed to get order for HPP.', 'error' );
 				return array(
 					'result' => 'error',
 				);
 			}
+			$this->process_payment_handler( $order->get_id() );
 
+			$data = \Ledyer\Requests\Helpers\Woocommerce_Bridge::get_order_data( $order );
 			// Add confirmation URL to the order.
-			$data         = ( new Create_HPP() )->set_confirmation_url( $data, $order->get_id() );
 			$ledyer_order = ledyer()->api->create_order_session( $data );
 			if ( is_wp_error( $ledyer_order ) ) {
-				wc_add_notice( 'Failed to add confirmation URL to order session for HPP.', 'error' );
+				wc_add_notice( 'Failed to create order session for HPP.', 'error' );
 				return array(
 					'result' => 'error',
 				);

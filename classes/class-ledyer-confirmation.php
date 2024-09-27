@@ -31,15 +31,49 @@ class Confirmation {
 	 * Confirm the order in Woo
 	 */
 	public function confirm_order() {
-		$ledyer_confirm = filter_input( INPUT_GET, 'lco_confirm', FILTER_SANITIZE_URL );
-		$order_key      = filter_input( INPUT_GET, 'key', FILTER_SANITIZE_STRING );
+		$ledyer_confirm  = filter_input( INPUT_GET, 'lco_confirm', FILTER_SANITIZE_URL );
+		$order_key       = filter_input( INPUT_GET, 'key', FILTER_SANITIZE_SPECIAL_CHARS );
+		$ledyer_order_id = filter_input( INPUT_GET, 'ledyer_id', FILTER_SANITIZE_SPECIAL_CHARS );
 
 		if ( empty( $ledyer_confirm ) || empty( $order_key ) ) {
 			return;
 		}
 		$order_id = wc_get_order_id_by_order_key( $order_key );
+
 		if ( empty( $order_id ) ) {
+			\Ledyer\Logger::log( 'Could not get wc order id from key ' . $order_key );
 			return;
+		}
+
+		$order = wc_get_order( $order_id );
+		if ( empty( $order ) ) {
+			\Ledyer\Logger::log( 'Could not get wc order ' . $order_id );
+			return;
+		}
+
+		// Check if is HPP.
+		if ( ! empty( $ledyer_order_id ) ) {
+			$ledyer_order = ledyer()->api->get_order( $ledyer_order_id );
+			if ( is_wp_error( $ledyer_order ) ) {
+				\Ledyer\Logger::log( 'Could not get ledyer order ' . $ledyer_order_id );
+				return;
+			}
+
+			do_action( 'ledyer_process_payment', $order_id, $ledyer_order );
+
+			$order->update_meta_data( '_ledyer_date_paid', gmdate( 'Y-m-d H:i:s' ) );
+			$order->save();
+
+			$response = ledyer()->api->acknowledge_order( $ledyer_order_id );
+			if ( is_wp_error( $response ) ) {
+				\Ledyer\Logger::log( 'Couldn\'t acknowledge order ' . $ledyer_order_id );
+				return;
+			}
+
+			$ledyer_update_order = ledyer()->api->update_order_reference( $ledyer_order_id, array( 'reference' => $order->get_order_number() ) );
+			if ( is_wp_error( $ledyer_update_order ) ) {
+				\Ledyer\Logger::log( 'Couldn\'t set merchant reference ' . $order->get_order_number() );
+			}
 		}
 
 		Logger::log( $order_id . ': Confirm the Ledyer order from the confirmation page.' );
