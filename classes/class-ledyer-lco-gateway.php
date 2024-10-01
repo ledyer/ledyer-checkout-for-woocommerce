@@ -457,7 +457,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				$lco_order_id     = WC()->session->get( 'lco_wc_session_id' );
 
 				if ( is_order_received_page() ) {
-					$order_key = filter_input( INPUT_GET, 'key', FILTER_SANITIZE_STRING );
+					$order_key = filter_input( INPUT_GET, 'key', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
 					if ( empty( $order_key ) ) {
 						return;
