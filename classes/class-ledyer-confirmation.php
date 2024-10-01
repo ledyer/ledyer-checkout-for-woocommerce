@@ -72,7 +72,7 @@ class Confirmation {
 
 			$ledyer_update_order = ledyer()->api->update_order_reference( $ledyer_order_id, array( 'reference' => $order->get_order_number() ) );
 			if ( is_wp_error( $ledyer_update_order ) ) {
-				\Ledyer\Logger::log( 'Could not set the merchant reference for order number ' . $order->get_order_number() );
+				\Ledyer\Logger::log( 'Could not set the merchant reference for the WooCommerce order number ' . $order->get_order_number() );
 			}
 		}
 
