@@ -12,7 +12,6 @@ use Ledyer\Requests\Order\Management\Update_Order_Reference;
 use Ledyer\Requests\Order\Session\Create_Order;
 use Ledyer\Requests\Order\Session\Update_Order;
 use Ledyer\Requests\Order\Session\Get_Order;
-use Ledyer\Requests\Order\Session\Create_HPP;
 
 /**
  * API class.
@@ -37,18 +36,6 @@ class API {
 	 */
 	public function create_order_session( $data ) {
 		return ( new Create_Order( compact( 'data' ) ) )->request();
-	}
-
-	/**
-	 * Creates a Ledyer HPP URL.
-	 *
-	 * @param string $session_id The Ledyer Checkout session to use for the HPP request.
-	 * @param int    $order_id WooCommerce order ID.
-	 * @return string
-	 */
-	public function create_ledyer_hpp_url( $session_id ) {
-		$hpp = new Create_HPP();
-		return $hpp->create_hpp_url( $session_id );
 	}
 
 	/**

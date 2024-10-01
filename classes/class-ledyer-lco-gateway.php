@@ -243,7 +243,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$order = wc_get_order( $order_id );
 
 			// HPP Redirect flow.
-			if ( 'redirect' === ( $this->settings['checkout_flow'] ?? 'embedded' ) ) {
+			if ( is_wc_endpoint_url( 'order-pay' ) || 'redirect' === ( $this->settings['checkout_flow'] ?? 'embedded' ) ) {
 				lco_create_or_update_order();
 
 				// Run redirect.

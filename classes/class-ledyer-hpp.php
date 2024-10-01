@@ -1,22 +1,20 @@
 <?php
 /**
- * Create HPP
+ * File for HPP class.
  *
- * @package Ledyer\Requests\Order\Session
+ * @package Ledyer
  */
 
-namespace Ledyer\Requests\Order\Session;
-
-use Ledyer\Requests\Order\Request_Order;
+namespace Ledyer;
 
 defined( 'ABSPATH' ) || exit();
 
 /**
- * Class Create_HPP
+ * Class HPP
  *
- * @package Ledyer\Requests\Order\Session
+ * @package Ledyer
  */
-class Create_HPP extends Request_Order {
+class HPP {
 	/**
 	 * Creates the HPP URL.
 	 *
@@ -26,15 +24,5 @@ class Create_HPP extends Request_Order {
 	public function create_hpp_url( $session_id ) {
 		$mode = 'yes' === ledyer()->get_setting( 'testmode' ) ? 'sandbox' : 'live';
 		return "https://pos.{$mode}.ledyer.com/?sessionId={$session_id}";
-	}
-
-	/**
-	 *
-	 * Request method
-	 */
-	protected function set_url() {
-		$this->url = sprintf( 'v1/sessions/%s', $this->arguments['orderId'] );
-
-		parent::get_request_url();
 	}
 }

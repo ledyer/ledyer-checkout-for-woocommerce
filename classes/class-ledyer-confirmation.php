@@ -41,13 +41,13 @@ class Confirmation {
 		$order_id = wc_get_order_id_by_order_key( $order_key );
 
 		if ( empty( $order_id ) ) {
-			\Ledyer\Logger::log( 'Could not get wc order id from key ' . $order_key );
+			\Ledyer\Logger::log( 'Could not get WooCommerce order id from key ' . $order_key );
 			return;
 		}
 
 		$order = wc_get_order( $order_id );
 		if ( empty( $order ) ) {
-			\Ledyer\Logger::log( 'Could not get wc order ' . $order_id );
+			\Ledyer\Logger::log( 'Could not get WooCommerce order ' . $order_id );
 			return;
 		}
 
@@ -55,7 +55,7 @@ class Confirmation {
 		if ( ! empty( $ledyer_order_id ) ) {
 			$ledyer_order = ledyer()->api->get_order( $ledyer_order_id );
 			if ( is_wp_error( $ledyer_order ) ) {
-				\Ledyer\Logger::log( 'Could not get ledyer order ' . $ledyer_order_id );
+				\Ledyer\Logger::log( 'Could not get the order from Ledyer with the id ' . $ledyer_order_id );
 				return;
 			}
 
