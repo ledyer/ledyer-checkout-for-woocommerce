@@ -41,13 +41,13 @@ class Confirmation {
 		$order_id = wc_get_order_id_by_order_key( $order_key );
 
 		if ( empty( $order_id ) ) {
-			\Ledyer\Logger::log( 'Could not get WooCommerce order id from key ' . $order_key );
+			\Ledyer\Logger::log( 'Could not get the WooCommerce order id from order key ' . $order_key );
 			return;
 		}
 
 		$order = wc_get_order( $order_id );
 		if ( empty( $order ) ) {
-			\Ledyer\Logger::log( 'Could not get WooCommerce order ' . $order_id );
+			\Ledyer\Logger::log( 'Could not get the WooCommerce order with the id ' . $order_id );
 			return;
 		}
 
@@ -66,13 +66,13 @@ class Confirmation {
 
 			$response = ledyer()->api->acknowledge_order( $ledyer_order_id );
 			if ( is_wp_error( $response ) ) {
-				\Ledyer\Logger::log( 'Couldn\'t acknowledge order ' . $ledyer_order_id );
+				\Ledyer\Logger::log( 'Could not acknowledge the order from Ledyer with the id ' . $ledyer_order_id );
 				return;
 			}
 
 			$ledyer_update_order = ledyer()->api->update_order_reference( $ledyer_order_id, array( 'reference' => $order->get_order_number() ) );
 			if ( is_wp_error( $ledyer_update_order ) ) {
-				\Ledyer\Logger::log( 'Couldn\'t set merchant reference ' . $order->get_order_number() );
+				\Ledyer\Logger::log( 'Could not set the merchant reference for order number' . $order->get_order_number() );
 			}
 		}
 
