@@ -27,3 +27,11 @@ node_modules/
 *.log
 *.sql
 *.sqlite
+/vendor
+phpcs.xml
+composer.lock
+composer.json
+composer.json
+composer.json
+composer.json
+composer.json

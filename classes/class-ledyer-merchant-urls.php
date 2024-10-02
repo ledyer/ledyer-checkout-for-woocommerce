@@ -45,8 +45,8 @@ class Merchant_URLs {
 
 		$terms_url = get_permalink( wc_get_page_id( 'terms' ) );
 
-		if( ! empty( ledyer()->get_setting('terms_url') ) ) {
-			$terms_url = ledyer()->get_setting('terms_url');
+		if ( ! empty( ledyer()->get_setting( 'terms_url' ) ) ) {
+			$terms_url = ledyer()->get_setting( 'terms_url' );
 		}
 
 		return apply_filters( 'lco_wc_terms_url', $terms_url );
@@ -62,8 +62,8 @@ class Merchant_URLs {
 	private function get_privacy_url() {
 		$privacy_url = get_privacy_policy_url();
 
-		if( ! empty( ledyer()->get_setting('privacy_url') ) ) {
-			$privacy_url = ledyer()->get_setting('privacy_url');
+		if ( ! empty( ledyer()->get_setting( 'privacy_url' ) ) ) {
+			$privacy_url = ledyer()->get_setting( 'privacy_url' );
 		}
 
 		return apply_filters( 'lco_wc_privacy_url', $privacy_url );

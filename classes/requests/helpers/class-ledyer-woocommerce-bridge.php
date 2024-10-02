@@ -91,28 +91,28 @@ class Woocommerce_Bridge {
 
 		self::$ledyer_settings = array(
 			'security' => array(
-				'level' => intval( ledyer()->get_setting('security_level') ),
-				'requireClientValidation'  => true,
+				'level'                   => intval( ledyer()->get_setting( 'security_level' ) ),
+				'requireClientValidation' => true,
 			),
 		);
 
-		if( $full ) {
+		if ( $full ) {
 			self::$ledyer_settings = array(
 				'security' => array(
-					'level' => intval( ledyer()->get_setting('security_level') ),
-					'requireClientValidation'  => true,
+					'level'                   => intval( ledyer()->get_setting( 'security_level' ) ),
+					'requireClientValidation' => true,
 				),
 				'customer' => array(
-					'showNameFields' => 'yes' === ledyer()->get_setting('customer_show_name_fields'),
-					'allowShippingAddress' => 'yes' === ledyer()->get_setting('allow_custom_shipping'),
-					'showShippingAddressContact' => 'yes' === ledyer()->get_setting('show_shipping_address_contact'),
+					'showNameFields'             => 'yes' === ledyer()->get_setting( 'customer_show_name_fields' ),
+					'allowShippingAddress'       => 'yes' === ledyer()->get_setting( 'allow_custom_shipping' ),
+					'showShippingAddressContact' => 'yes' === ledyer()->get_setting( 'show_shipping_address_contact' ),
 				),
-				'urls' => array(
-					'terms' => $merchant_urls['terms'],
-					'privacy' => $merchant_urls['privacy'],
+				'urls'     => array(
+					'terms'        => $merchant_urls['terms'],
+					'privacy'      => $merchant_urls['privacy'],
 					'confirmation' => '',
-					'validate' => null,
-				)
+					'validate'     => null,
+				),
 			);
 		}
 	}
