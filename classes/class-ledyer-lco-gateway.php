@@ -8,6 +8,8 @@
 
 namespace Ledyer;
 
+use Ledyer\HPP;
+
 \defined( 'ABSPATH' ) || die();
 
 if ( class_exists( 'WC_Payment_Gateway' ) ) {
@@ -245,9 +247,9 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 			// HPP Redirect flow.
 			if ( is_wc_endpoint_url( 'order-pay' ) || 'redirect' === ( $this->settings['checkout_flow'] ?? 'embedded' ) ) {
-				lco_create_or_update_order();
 
 				// Run redirect.
+				error_log( print_r( $this->hpp_redirect_handler( $order ), true ) );
 				return $this->hpp_redirect_handler( $order );
 
 			}
@@ -358,9 +360,10 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		protected function hpp_redirect_handler( $order ) {
 
 			if ( empty( $order ) ) {
-				wc_add_notice( 'Failed to get order for HPP.', 'error' );
+
 				return array(
-					'result' => 'error',
+					'result'   => 'error',
+					'messages' => array( 'Failed to get order for HPP.' ),
 				);
 			}
 			$this->process_payment_handler( $order->get_id() );
@@ -372,21 +375,16 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			// Add confirmation URL to the order.
 			$ledyer_order = ledyer()->api->create_order_session( $data );
 			if ( is_wp_error( $ledyer_order ) ) {
-				wc_add_notice( 'Failed to create order session for HPP.', 'error' );
+
 				return array(
-					'result' => 'error',
+					'result'   => 'error',
+					'messages' => array( 'Failed to create order session for HPP.' ),
 				);
 			}
 
 			// Create a HPP url.
 			$hpp          = new HPP();
 			$hpp_redirect = $hpp->create_hpp_url( $ledyer_order['sessionId'] );
-			if ( is_wp_error( $hpp_redirect ) ) {
-				wc_add_notice( 'Failed to create HPP session with ledyer.', 'error' );
-				return array(
-					'result' => 'error',
-				);
-			}
 
 			// Save ledyer HPP url & Session ID.
 			$order->update_meta_data( '_wc_ledyer_hpp_url', sanitize_text_field( $hpp_redirect ) );

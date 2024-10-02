@@ -270,6 +270,7 @@ class Ledyer_Checkout_For_WooCommerce {
 		include_once LCO_WC_PLUGIN_PATH . '/classes/class-ledyer-lco-gateway.php';
 		include_once LCO_WC_PLUGIN_PATH . '/classes/class-ledyer-merchant-urls.php';
 		include_once LCO_WC_PLUGIN_PATH . '/classes/class-ledyer-templates.php';
+		include_once LCO_WC_PLUGIN_PATH . '/classes/class-ledyer-hpp.php';
 	}
 
 	/**
