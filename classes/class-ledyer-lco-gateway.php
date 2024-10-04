@@ -249,7 +249,6 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			if ( is_wc_endpoint_url( 'order-pay' ) || 'redirect' === ( $this->settings['checkout_flow'] ?? 'embedded' ) ) {
 
 				// Run redirect.
-				error_log( print_r( $this->hpp_redirect_handler( $order ), true ) );
 				return $this->hpp_redirect_handler( $order );
 
 			}
@@ -366,11 +365,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					'messages' => array( 'Failed to get order for HPP.' ),
 				);
 			}
-			$this->process_payment_handler( $order->get_id() );
 
-			if ( ! class_exists( '\Ledyer\Requests\Helpers\Order' ) ) {
-				require_once plugin_dir_path( __FILE__ ) . 'requests/helpers/class-ledyer-order.php';
-			}
 			$data = \Ledyer\Requests\Helpers\Order::get_order_data( $order );
 			// Add confirmation URL to the order.
 			$ledyer_order = ledyer()->api->create_order_session( $data );
@@ -386,9 +381,18 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$hpp          = new HPP();
 			$hpp_redirect = $hpp->create_hpp_url( $ledyer_order['sessionId'] );
 
-			// Save ledyer HPP url & Session ID.
-			$order->update_meta_data( '_wc_ledyer_hpp_url', sanitize_text_field( $hpp_redirect ) );
-			$order->update_meta_data( '_wc_ledyer_hpp_session_id', sanitize_key( $ledyer_order['sessionId'] ) );
+			// Set WC order transaction ID.
+			$order->update_meta_data( '_wc_ledyer_order_id', $ledyer_order['orderId'] );
+			$order->update_meta_data( '_wc_ledyer_session_id', $ledyer_order['id'] );
+
+			$order->set_transaction_id( $ledyer_order['orderId'] );
+
+			$environment = $this->testmode ? 'sandbox' : 'production';
+			$order->update_meta_data( '_wc_ledyer_environment', $environment );
+
+			$ledyer_country = wc_get_base_location()['country'];
+			$order->update_meta_data( '_wc_ledyer_country', $ledyer_country );
+
 			$order->save();
 
 			// All good. Redirect customer to ledyer Hosted payment page.

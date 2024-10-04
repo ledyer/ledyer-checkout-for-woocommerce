@@ -82,8 +82,7 @@ class Order {
 			$total_order_amount     += $shipping_total;
 			$total_order_vat_amount += $shipping_total_tax;
 		}
-		$merchant_urls    = ledyer()->merchant_urls->get_urls( $order->get_id() );
-		$confirmation_url = $merchant_urls ? $merchant_urls['confirmation'] : '';
+		$merchant_urls = ledyer()->merchant_urls->get_urls( $order->get_id() );
 		// Build the data array similar to the cart data.
 		$data = array(
 			'country'                 => $order->get_billing_country(),
@@ -103,9 +102,9 @@ class Order {
 					'showShippingAddressContact' => false,
 				),
 				'urls'     => array(
-					'terms'        => 'https://krokedil.anya.ngrok.io/?page_id=3',
+					'terms'        => $merchant_urls['terms'],
 					'privacy'      => '',
-					'confirmation' => $confirmation_url,
+					'confirmation' => $merchant_urls['confirmation'],
 					'validate'     => '',
 				),
 			),
