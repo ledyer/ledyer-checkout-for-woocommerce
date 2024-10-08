@@ -14,6 +14,7 @@
 commitlint.config.js
 composer.json
 composer-lock.json
+composer.lock
 Dockerfile
 Dockerfile-*
 docker-compose.phpunit.yml
@@ -32,6 +33,7 @@ readme.md
 README.md
 readme.dev.txt
 README.md
+release.config.js
 renovate.json
 webpack.config.js
 wpcron.txt
