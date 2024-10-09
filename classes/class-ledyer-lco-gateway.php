@@ -366,7 +366,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				);
 			}
 
-			$data = \Ledyer\Requests\Helpers\Order::get_order_data( $order );
+			$data = \Ledyer\Requests\Helpers\Woocommerce_Bridge::get_order_data( $order );
 			// Add confirmation URL to the order.
 			$ledyer_order = ledyer()->api->create_order_session( $data );
 			if ( is_wp_error( $ledyer_order ) ) {
@@ -383,7 +383,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 			// Set WC order transaction ID.
 			$order->update_meta_data( '_wc_ledyer_order_id', $ledyer_order['orderId'] );
-			$order->update_meta_data( '_wc_ledyer_session_id', $ledyer_order['id'] );
+			$order->update_meta_data( '_wc_ledyer_session_id', $ledyer_order['sessionId'] );
 
 			$order->set_transaction_id( $ledyer_order['orderId'] );
 
@@ -787,4 +787,3 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		}
 	}
 }
-

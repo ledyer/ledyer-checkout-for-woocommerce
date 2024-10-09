@@ -53,6 +53,53 @@ class Woocommerce_Bridge {
 	}
 
 	/**
+	 * Get formatted cart data for Ledyer API Requests
+	 *
+	 * @param \WC_Order $order WooCommerce order object.
+	 *
+	 * @return array[]
+	 */
+	public static function get_order_data( $order ) {
+
+		$is_test      = ledyer()->get_setting( 'testmode' );
+		$order_helper = new Order();
+		$order_helper->process_data( $order );
+
+		$merchant_urls = ledyer()->merchant_urls->get_urls( $order->get_id() );
+
+		$data = array(
+			'country'                 => $order->get_billing_country(),
+			'currency'                => $order->get_currency(),
+			'locale'                  => \get_locale(),
+			'metadata'                => null,
+			'orderLines'              => $order_helper->get_order_lines(),
+			'reference'               => null,
+			'settings'                => array(
+				'security' => array(
+					'level'                   => intval( ledyer()->get_setting( 'security_level' ) ),
+					'requireClientValidation' => true,
+				),
+				'customer' => array(
+					'showNameFields'             => 'yes' === ledyer()->get_setting( 'customer_show_name_fields' ),
+					'allowShippingAddress'       => 'yes' === ledyer()->get_setting( 'allow_custom_shipping' ),
+					'showShippingAddressContact' => 'yes' === ledyer()->get_setting( 'show_shipping_address_contact' ),
+				),
+				'urls'     => array(
+					'terms'        => $merchant_urls['terms'],
+					'privacy'      => $merchant_urls['privacy'],
+					'confirmation' => $merchant_urls['confirmation'],
+				),
+			),
+			'storeId'                 => ledyer()->get_setting( ( 'yes' === $is_test ? 'test_' : '' ) . 'store_id' ),
+			'totalOrderAmount'        => $order_helper->get_order_amount(),
+			'totalOrderAmountExclVat' => $order_helper->get_order_amount_ex_tax(),
+			'totalOrderVatAmount'     => $order_helper->get_order_tax_amount(),
+		);
+
+		return apply_filters( 'lco_' . __FUNCTION__, $data );
+	}
+
+	/**
 	 * Get formatted cart data for Ledyer API Requests -- update
 	 *
 	 * @return array[]
@@ -86,8 +133,9 @@ class Woocommerce_Bridge {
 	/**
 	 * Creates formatted Ledyer settings for Ledyer API
 	 */
-	private static function set_order_settings( $full = true ) {
-		$merchant_urls = ledyer()->merchant_urls->get_urls();
+	private static function set_order_settings( $full = true, $order = null ) {
+		$order_id      = $order ? $order->get_id() : null;
+		$merchant_urls = ledyer()->merchant_urls->get_urls( $order_id );
 
 		self::$ledyer_settings = array(
 			'security' => array(
