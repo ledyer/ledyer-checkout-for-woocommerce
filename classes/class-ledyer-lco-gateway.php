@@ -149,7 +149,11 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			);
 
 			if ( is_order_received_page() ) {
-				wp_enqueue_script( 'lco-iframe' );
+
+				if ( 'redirect' !== ( $this->settings['checkout_flow'] ?? 'embedded' ) ) {
+					wp_enqueue_script( 'lco-iframe' );
+				}
+
 				return;
 			}
 
@@ -231,7 +235,13 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$checkout_localize_params['force_update'] = true;
 
 			wp_localize_script( 'lco', 'lco_params', $checkout_localize_params );
+
 			wp_enqueue_script( 'lco-iframe' );
+
+			if ( is_wc_endpoint_url( 'order-pay' ) || 'redirect' === ( $this->settings['checkout_flow'] ?? 'embedded' ) ) {
+				return;
+			}
+
 			wp_enqueue_script( 'lco' );
 		}
 
