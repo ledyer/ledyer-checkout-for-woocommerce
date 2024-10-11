@@ -156,7 +156,7 @@ class Order {
 			$fee_total_tax = round( $fee_item->get_total_tax() * 100 );
 
 			$this->order_lines[] = array(
-				'type'           => 'fee',
+				'type'           => 'surcharge',
 				'reference'      => substr( $fee_item->get_id(), 0, 64 ),
 				'description'    => $fee_item->get_name(),
 				'quantity'       => 1,

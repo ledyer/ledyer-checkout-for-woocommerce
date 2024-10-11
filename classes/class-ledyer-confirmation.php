@@ -51,31 +51,6 @@ class Confirmation {
 			return;
 		}
 
-		// Check if is HPP.
-		if ( ! empty( $ledyer_order_id ) ) {
-			$ledyer_order = ledyer()->api->get_order( $ledyer_order_id );
-			if ( is_wp_error( $ledyer_order ) ) {
-				\Ledyer\Logger::log( 'Could not get the order from Ledyer with the id ' . $ledyer_order_id );
-				return;
-			}
-
-			do_action( 'ledyer_process_payment', $order_id, $ledyer_order );
-
-			$order->update_meta_data( '_ledyer_date_paid', gmdate( 'Y-m-d H:i:s' ) );
-			$order->save();
-
-			$response = ledyer()->api->acknowledge_order( $ledyer_order_id );
-			if ( is_wp_error( $response ) ) {
-				\Ledyer\Logger::log( 'Could not acknowledge the order from Ledyer with the id ' . $ledyer_order_id );
-				return;
-			}
-
-			$ledyer_update_order = ledyer()->api->update_order_reference( $ledyer_order_id, array( 'reference' => $order->get_order_number() ) );
-			if ( is_wp_error( $ledyer_update_order ) ) {
-				\Ledyer\Logger::log( 'Could not set the merchant reference for the WooCommerce order number ' . $order->get_order_number() );
-			}
-		}
-
 		Logger::log( $order_id . ': Confirm the Ledyer order from the confirmation page.' );
 		wc_ledyer_confirm_ledyer_order( $order_id );
 		lco_unset_sessions();

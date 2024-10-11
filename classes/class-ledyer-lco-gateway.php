@@ -149,11 +149,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			);
 
 			if ( is_order_received_page() ) {
-
-				if ( 'redirect' !== ( $this->settings['checkout_flow'] ?? 'embedded' ) ) {
-					wp_enqueue_script( 'lco-iframe' );
-				}
-
+				wp_enqueue_script( 'lco-iframe' );
 				return;
 			}
 
