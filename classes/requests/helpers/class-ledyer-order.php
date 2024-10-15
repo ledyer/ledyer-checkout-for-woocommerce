@@ -94,7 +94,7 @@ class Order {
 
 			// Add order line similar to cart data (without explicit rounding).
 			$this->order_lines[] = array(
-				'reference'      => $product->get_sku() ? $product->get_sku() : $product->get_id(),
+				'reference'      => $product->get_sku() ? $product->get_sku() : '',
 				'description'    => $item->get_name(),
 				'quantity'       => $quantity,
 				'vat'            => self::get_order_line_tax_rate( $this->order, $item ),
