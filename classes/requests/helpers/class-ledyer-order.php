@@ -94,7 +94,7 @@ class Order {
 
 			// Add order line similar to cart data (without explicit rounding).
 			$this->order_lines[] = array(
-				'reference'      => $product->get_sku() ? $product->get_sku() : '',
+				'reference'      => substr( (string) ( $product->get_sku() ? $product->get_sku() : $product->get_id() ), 0, 64 ),
 				'description'    => $item->get_name(),
 				'quantity'       => $quantity,
 				'vat'            => self::get_order_line_tax_rate( $this->order, $item ),
@@ -126,7 +126,7 @@ class Order {
 
 			$this->order_lines[] = array(
 				'type'           => 'shippingFee',
-				'reference'      => $shipping_item->get_method_id() . ':' . $shipping_item->get_instance_id(),
+				'reference'      => substr( (string) ( $shipping_item->get_method_id() . ':' . $shipping_item->get_instance_id() ), 0, 64 ),
 				'description'    => $shipping_item->get_name(),
 				'quantity'       => 1,
 				'vat'            => self::get_order_line_tax_rate( $this->order, $shipping_item ),
@@ -157,7 +157,7 @@ class Order {
 
 			$this->order_lines[] = array(
 				'type'           => 'surcharge',
-				'reference'      => substr( $fee_item->get_id(), 0, 64 ),
+				'reference'      => substr( (string) ( $fee_item->get_id() ), 0, 64 ),
 				'description'    => $fee_item->get_name(),
 				'quantity'       => 1,
 				'vat'            => self::get_order_line_tax_rate( $this->order, $fee_item ),
