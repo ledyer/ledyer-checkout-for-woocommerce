@@ -218,12 +218,20 @@ class Fields {
 				'title' => __( 'Iframe Settings', 'ledyer-checkout-for-woocommerce' ),
 				'type'  => 'title',
 			),
+			'vertical_layout' => array(
+				'title'       => __( 'Vertical layout', 'ledyer-checkout-for-woocommerce' ),
+				'label'       => __( 'Enable vertical layout', 'ledyer-checkout-for-woocommerce' ),
+				'type'        => 'checkbox',
+				'description' => __( 'Make ledyer checkout appear below shipping', 'ledyer-checkout-for-woocommerce' ),
+				'default'     => 'yes',
+				'desc_tip'    => true,
+			),
 			'iframe_padding'   => array(
 				'title'       => __( 'Iframe padding', 'ledyer-checkout-for-woocommerce' ),
 				'label'       => __( 'Use default padding', 'ledyer-checkout-for-woocommerce' ),
 				'type'        => 'checkbox',
 				'description' => __( 'Ledyer checkout comes with a wrapping padding of 12px by default.', 'ledyer-checkout-for-woocommerce' ),
-				'default'     => 'no',
+				'default'     => 'yes',
 				'desc_tip'    => true,
 			),
 			'color_button'               => array(
