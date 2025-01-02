@@ -9,6 +9,7 @@
 namespace Ledyer;
 
 use Ledyer\Admin\Meta_Box;
+use WP_REST_Response;
 
 \defined( 'ABSPATH' ) || die();
 
@@ -55,7 +56,7 @@ class Ledyer_Checkout_For_WooCommerce {
 	const SLUG     = 'ledyer-checkout-for-woocommerce';
 	const SETTINGS = 'ledyer_checkout_for_woocommerce_settings';
 
-	public function actions() {
+	public function actions(): void {
 		\add_action( 'plugins_loaded', array( $this, 'on_plugins_loaded' ) );
 		\add_action( 'admin_init', array( $this, 'on_admin_init' ) );
 
@@ -94,7 +95,7 @@ class Ledyer_Checkout_For_WooCommerce {
 	 *
 	 * @return \WP_REST_Response
 	 */
-	public function handle_notification( $request ) {
+	public function handle_notification( $request ): WP_REST_Response {
 		$request_body = json_decode( $request->get_body() );
 		$response     = new \WP_REST_Response();
 
@@ -119,7 +120,7 @@ class Ledyer_Checkout_For_WooCommerce {
 		return $response;
 	}
 
-	public function process_notification( $ledyer_order_id ) {
+	public function process_notification( $ledyer_order_id ): void {
 		Logger::log( 'process notification: ' . $ledyer_order_id );
 
 		$orders = wc_get_orders(
@@ -182,8 +183,8 @@ class Ledyer_Checkout_For_WooCommerce {
 				}
 				break;
 			case \LedyerPaymentStatus::orderCaptured:
-        $new_status = apply_filters('lco_captured_update_status', 'completed', $ledyer_payment_status);
-        $order->update_status($new_status);
+				$new_status = apply_filters( 'lco_captured_update_status', 'completed', $ledyer_payment_status );
+				$order->update_status( $new_status );
 				break;
 			case \LedyerPaymentStatus::orderRefunded:
 				$order->update_status( 'refunded' );
@@ -213,7 +214,7 @@ class Ledyer_Checkout_For_WooCommerce {
 	 *
 	 * @since 1.0.0
 	 */
-	public function on_plugins_loaded() {
+	public function on_plugins_loaded(): void {
 		if ( ! defined( 'WC_VERSION' ) ) {
 			return;
 		}
@@ -245,7 +246,7 @@ class Ledyer_Checkout_For_WooCommerce {
 	/**
 	 * Autoload classes
 	 */
-	public function include_files() {
+	public function include_files(): void {
 		include_once LCO_WC_PLUGIN_PATH . '/includes/lco-functions.php';
 		include_once LCO_WC_PLUGIN_PATH . '/includes/lco-types.php';
 		include_once LCO_WC_PLUGIN_PATH . '/classes/class-ledyer-singleton.php';
@@ -282,7 +283,7 @@ class Ledyer_Checkout_For_WooCommerce {
 	 *
 	 * @return string Setting link
 	 */
-	public function get_setting_link() {
+	public function get_setting_link(): string {
 		$section_slug = 'lco';
 
 		$params = array(
@@ -298,7 +299,7 @@ class Ledyer_Checkout_For_WooCommerce {
 	/**
 	 * Set LCO settings.
 	 */
-	public function set_settings() {
+	public function set_settings(): void {
 		self::$settings = get_option( 'woocommerce_lco_settings' );
 	}
 
@@ -321,7 +322,7 @@ class Ledyer_Checkout_For_WooCommerce {
 	 * @return array $methods Payment methods.
 	 * @since  1.0.0
 	 */
-	public function add_gateways( $methods ) {
+	public function add_gateways( $methods ): array {
 		$methods[] = 'Ledyer\LCO_Gateway';
 
 		return $methods;
@@ -334,7 +335,7 @@ class Ledyer_Checkout_For_WooCommerce {
 	 *
 	 * @return array Filtered links.
 	 */
-	public function plugin_action_links( $links ) {
+	public function plugin_action_links( $links ): array {
 		$setting_link = $this->get_setting_link();
 		$plugin_links = array(
 			'<a href="' . $setting_link . '">' . __( 'Settings', 'ledyer-checkout-for-woocommerce' ) . '</a>',
@@ -346,7 +347,7 @@ class Ledyer_Checkout_For_WooCommerce {
 	/**
 	 * Init meta box on admin hook.
 	 */
-	public function on_admin_init() {
+	public function on_admin_init(): void {
 		new Meta_Box();
 	}
 
@@ -354,12 +355,10 @@ class Ledyer_Checkout_For_WooCommerce {
 	 * Modify checkout fields
 	 *
 	 * @access public
-	 *
 	 * @param array $checkout_fields
-	 *
 	 * @return array $checkout_fields
 	 */
-	public function modify_checkout_fields( $checkout_fields ) {
+	public function modify_checkout_fields( $checkout_fields ): array {
 
 		if ( ! is_checkout() ) {
 			return $checkout_fields;
