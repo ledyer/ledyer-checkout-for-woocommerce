@@ -28,3 +28,5 @@ node_modules/
 *.log
 *.sql
 *.sqlite
+
+.phpactor.json
