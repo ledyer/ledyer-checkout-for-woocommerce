@@ -182,7 +182,8 @@ class Ledyer_Checkout_For_WooCommerce {
 				}
 				break;
 			case \LedyerPaymentStatus::orderCaptured:
-				$order->update_status( 'completed' );
+        $new_status = apply_filters('lco_captured_update_status', 'completed', $ledyer_payment_status);
+        $order->update_status($new_status);
 				break;
 			case \LedyerPaymentStatus::orderRefunded:
 				$order->update_status( 'refunded' );
