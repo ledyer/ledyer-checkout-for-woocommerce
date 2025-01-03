@@ -1,5 +1,5 @@
 === Ledyer Checkout for WooCommerce ===
-Contributors: ledyer
+Contributors: ledyerdevelopment
 Tags: woocommerce, ledyer, ecommerce, e-commerce, checkout
 Donate link: https://ledyer.com
 Requires at least: 5.0
