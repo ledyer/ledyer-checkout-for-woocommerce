@@ -1,5 +1,5 @@
 === Ledyer Checkout for WooCommerce ===
-Contributors: maksimer, ledyer
+Contributors: ledyer
 Tags: woocommerce, ledyer, ecommerce, e-commerce, checkout
 Donate link: https://ledyer.com
 Requires at least: 5.0
@@ -12,6 +12,9 @@ License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
 == Changelog ==
+= 2025.01.03    - version 1.10.1 =
+* Fix           - Improve accuracy of status update when order is captured.
+
 = 2025.01.02    - version 1.10.0 =
 * Feature       - Added possibility to change the checkout layout to horizontal, making the checkout appear next to shipping.
 * Fix           - Correct the default padding option, it was doing the opposite of what it said.
