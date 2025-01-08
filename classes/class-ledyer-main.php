@@ -153,7 +153,7 @@ class Ledyer_Checkout_For_WooCommerce {
 		$ackOrder = false;
 
 		switch ( $ledyer_payment_status['status'] ) {
-			case \LedyerPaymentStatus::paymentPending:
+			case \LedyerPaymentStatus::PAYMENT_PENDING:
 				if ( ! $order->has_status( array( 'on-hold', 'processing', 'completed' ) ) ) {
 					$note = sprintf(
 						__(
@@ -167,7 +167,7 @@ class Ledyer_Checkout_For_WooCommerce {
 					$ackOrder = true;
 				}
 				break;
-			case \LedyerPaymentStatus::paymentConfirmed:
+			case \LedyerPaymentStatus::PAYMENT_CONFIRMED:
 				if ( ! $order->has_status( array( 'processing', 'completed' ) ) ) {
 					$note = sprintf(
 						__(
@@ -182,14 +182,14 @@ class Ledyer_Checkout_For_WooCommerce {
 					$ackOrder = true;
 				}
 				break;
-			case \LedyerPaymentStatus::orderCaptured:
+			case \LedyerPaymentStatus::ORDER_CAPTURED:
 				$new_status = apply_filters( 'lco_captured_update_status', 'completed', $ledyer_payment_status );
 				$order->update_status( $new_status );
 				break;
-			case \LedyerPaymentStatus::orderRefunded:
+			case \LedyerPaymentStatus::ORDER_REFUNDED:
 				$order->update_status( 'refunded' );
 				break;
-			case \LedyerPaymentStatus::orderCancelled:
+			case \LedyerPaymentStatus::ORDER_CANCELLED:
 				$order->update_status( 'cancelled' );
 				break;
 		}

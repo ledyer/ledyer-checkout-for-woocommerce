@@ -257,7 +257,7 @@ function wc_ledyer_confirm_ledyer_order( $order_id ) {
 	$ackOrder = false;
 
 	switch ( $ledyer_payment_status['status'] ) {
-		case LedyerPaymentStatus::orderPending:
+		case LedyerPaymentStatus::ORDER_PENDING:
 			if ( ! $order->has_status( array( 'on-hold', 'processing', 'completed' ) ) ) {
 				$note = sprintf(
 					__(
@@ -270,7 +270,7 @@ function wc_ledyer_confirm_ledyer_order( $order_id ) {
 				$order->update_status( 'on-hold', $note );
 			}
 			break;
-		case LedyerPaymentStatus::paymentPending:
+		case LedyerPaymentStatus::PAYMENT_PENDING:
 			if ( ! $order->has_status( array( 'on-hold', 'processing', 'completed' ) ) ) {
 				$note = sprintf(
 					__(
@@ -284,7 +284,7 @@ function wc_ledyer_confirm_ledyer_order( $order_id ) {
 				$ackOrder = true;
 			}
 			break;
-		case LedyerPaymentStatus::paymentConfirmed:
+		case LedyerPaymentStatus::PAYMENT_CONFIRMED:
 			if ( ! $order->has_status( array( 'processing', 'completed' ) ) ) {
 				$note = sprintf(
 					__(
