@@ -254,7 +254,7 @@ function wc_ledyer_confirm_ledyer_order( $order_id ) {
 		$order->save();
 	}
 
-	$ackOrder = false;
+	$ack_order = false;
 
 	switch ( $ledyer_payment_status['status'] ) {
 		case LedyerPaymentStatus::ORDER_PENDING:
@@ -281,7 +281,7 @@ function wc_ledyer_confirm_ledyer_order( $order_id ) {
 					$ledyer_payment_status['note']
 				);
 				$order->update_status( 'on-hold', $note );
-				$ackOrder = true;
+				$ack_order = true;
 			}
 			break;
 		case LedyerPaymentStatus::PAYMENT_CONFIRMED:
@@ -296,12 +296,12 @@ function wc_ledyer_confirm_ledyer_order( $order_id ) {
 				);
 				$order->add_order_note( $note );
 				$order->payment_complete( $payment_id );
-				$ackOrder = true;
+				$ack_order = true;
 			}
 			break;
 	}
 
-	if ( $ackOrder ) {
+	if ( $ack_order ) {
 		$ledyer_order = ledyer()->api->get_order( $payment_id );
 		if ( is_wp_error( $ledyer_order ) ) {
 			\Ledyer\Logger::log( 'Could not get the order from Ledyer with the id ' . $payment_id );
