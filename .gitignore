@@ -30,3 +30,4 @@ node_modules/
 *.sqlite
 
 .phpactor.json
+.php-cs-fixer.cache

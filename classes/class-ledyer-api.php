@@ -4,6 +4,7 @@
  *
  * @package Ledyer
  */
+
 namespace Ledyer;
 
 \defined( 'ABSPATH' ) || die();

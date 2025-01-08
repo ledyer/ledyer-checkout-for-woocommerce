@@ -24,6 +24,6 @@ class Create_Order extends Request_Order {
 	 * Set entrypoint
 	 */
 	protected function set_url() {
-		$this->url = trim('v1/sessions/');
+		$this->url = trim( 'v1/sessions/' );
 	}
 }

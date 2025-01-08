@@ -21,11 +21,11 @@ trait Singleton {
 	/** @var settings */
 	private static $settings = array();
 
-  /**
-   * Instantiate the class.
-   *
-   * @return self
-   */
+	/**
+	 * Instantiate the class.
+	 *
+	 * @return self
+	 */
 	public static function instance(): self {
 		if ( is_null( self::$instance ) ) {
 			self::$instance = new self();
@@ -68,4 +68,3 @@ trait Singleton {
 	public function set_settings(): void {
 	}
 }
-
