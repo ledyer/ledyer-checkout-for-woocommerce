@@ -150,7 +150,7 @@ class Ledyer_Checkout_For_WooCommerce {
 			return;
 		}
 
-		$ackOrder = false;
+		$ack_order = false;
 
 		switch ( $ledyer_payment_status['status'] ) {
 			case \LedyerPaymentStatus::PAYMENT_PENDING:
@@ -164,7 +164,7 @@ class Ledyer_Checkout_For_WooCommerce {
 						$ledyer_payment_status['note']
 					);
 					$order->update_status( 'on-hold', $note );
-					$ackOrder = true;
+					$ack_order = true;
 				}
 				break;
 			case \LedyerPaymentStatus::PAYMENT_CONFIRMED:
@@ -179,7 +179,7 @@ class Ledyer_Checkout_For_WooCommerce {
 					);
 					$order->add_order_note( $note );
 					$order->payment_complete( $ledyer_order_id );
-					$ackOrder = true;
+					$ack_order = true;
 				}
 				break;
 			case \LedyerPaymentStatus::ORDER_CAPTURED:
@@ -194,7 +194,7 @@ class Ledyer_Checkout_For_WooCommerce {
 				break;
 		}
 
-		if ( $ackOrder ) {
+		if ( $ack_order ) {
 			$response = ledyer()->api->acknowledge_order( $ledyer_order_id );
 			if ( is_wp_error( $response ) ) {
 				\Ledyer\Logger::log( 'Couldn\'t acknowledge order ' . $ledyer_order_id );
