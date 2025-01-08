@@ -744,11 +744,11 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				$this->lom_validate_customer_field( $order, '_shipping_phone', 9, 30 );
 				$this->lom_validate_customer_email( $order, '_shipping_email' );
 		}
-		public function lom_validate_customer_field( $order, $fieldName, $min, $max ) {
-			$value = sanitize_text_field( $_POST[ $fieldName ] );
+		public function lom_validate_customer_field( $order, $field_name, $min, $max ) {
+			$value = sanitize_text_field( $_POST[ $field_name ] );
 			$valid = $this->lom_validate_field_length( $value, $min, $max );
 			if ( ! $valid ) {
-				$order->add_order_note( 'Ledyer customer data could not be updated. Invalid ' . $fieldName );
+				$order->add_order_note( 'Ledyer customer data could not be updated. Invalid ' . $field_name );
 				wp_safe_redirect( wp_get_referer() );
 				exit;
 			}
@@ -760,14 +760,14 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$len = strlen( $str );
 			return ! ( $len < $min || $len > $max );
 		}
-		public function lom_validate_customer_email( $order, $fieldName ) {
-			$value = sanitize_text_field( $_POST[ $fieldName ] );
+		public function lom_validate_customer_email( $order, $field_name ) {
+			$value = sanitize_text_field( $_POST[ $field_name ] );
 			if ( ! $value ) {
 				return true;
 			}
 			$valid = is_email( $value );
 			if ( ! $valid ) {
-				$order->add_order_note( 'Ledyer customer data could not be updated. Invalid ' . $fieldName );
+				$order->add_order_note( 'Ledyer customer data could not be updated. Invalid ' . $field_name );
 				wp_safe_redirect( wp_get_referer() );
 				exit;
 			}
