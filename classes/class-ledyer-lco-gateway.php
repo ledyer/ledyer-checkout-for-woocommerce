@@ -122,19 +122,19 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				return;
 			}
 
-			$scriptSrcUrl = 'https://checkout.live.ledyer.com/bootstrap.js';
+			$script_src_url = 'https://checkout.live.ledyer.com/bootstrap.js';
 
 			if ( $this->testmode ) {
 				switch ( ledyer()->get_setting( 'development_test_environment' ) ) {
 					case 'local':
 					case 'local-fe':
-						$scriptSrcUrl = 'http://localhost:1337/bootstrap.iife.js';
+						$script_src_url = 'http://localhost:1337/bootstrap.iife.js';
 						break;
 					case 'development':
-						$scriptSrcUrl = 'https://checkout.dev.ledyer.com/bootstrap.js';
+						$script_src_url = 'https://checkout.dev.ledyer.com/bootstrap.js';
 						break;
 					default:
-						$scriptSrcUrl = 'https://checkout.sandbox.ledyer.com/bootstrap.js';
+						$script_src_url = 'https://checkout.sandbox.ledyer.com/bootstrap.js';
 						break;
 				}
 			}
@@ -142,7 +142,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			// Register iframe script
 			wp_register_script(
 				'lco-iframe',
-				$scriptSrcUrl,
+				$script_src_url,
 				array( 'jquery', 'wc-cart' ),
 				LCO_WC_VERSION,
 				true
