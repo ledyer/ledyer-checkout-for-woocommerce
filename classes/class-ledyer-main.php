@@ -114,8 +114,8 @@ class Ledyer_Checkout_For_WooCommerce {
 			return $response;
 		}
 
-		$scheduleId = as_schedule_single_action( time() + 120, 'schedule_process_notification', array( $ledyer_order_id ) );
-		Logger::log( 'Enqueued notification: ' . $ledyer_event_type . ', schedule-id:' . $scheduleId );
+		$schedule_id = as_schedule_single_action( time() + 120, 'schedule_process_notification', array( $ledyer_order_id ) );
+		Logger::log( 'Enqueued notification: ' . $ledyer_event_type . ', schedule-id:' . $schedule_id );
 		$response->set_status( 200 );
 		return $response;
 	}
