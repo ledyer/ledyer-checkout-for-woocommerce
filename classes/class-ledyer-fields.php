@@ -241,6 +241,19 @@ class Fields {
 				'default'     => '#000000',
 				'desc_tip'    => true,
 			),
+			// Payment settings
+			'payment_settings_title'       => array(
+				'title' => __( 'Payment Settings', 'ledyer-checkout-for-woocommerce' ),
+				'type'  => 'title',
+			),
+			'keep_cards_processing'   => array(
+				'title'       => __( 'Card Payment Status', 'ledyer-checkout-for-woocommerce' ),
+				'label'       => __( 'Keep card payments in processing status (when autocomplete is active)', 'ledyer-checkout-for-woocommerce' ),
+				'type'        => 'checkbox',
+				'description' => __( 'If checked, orders paid with card will stay in processing status instead of being automatically marked as completed.', 'ledyer-checkout-for-woocommerce' ),
+				'default'     => 'no',
+				'desc_tip'    => true,
+			),
 		);
 
 		$devmode = 'local' === wp_get_environment_type() || 'development' === wp_get_environment_type();
