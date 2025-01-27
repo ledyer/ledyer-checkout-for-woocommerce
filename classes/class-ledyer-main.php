@@ -184,7 +184,6 @@ class Ledyer_Checkout_For_WooCommerce {
 			case \LedyerPaymentStatus::orderCaptured:
 				$new_status = 'completed';
 
-				// Get settings and log them
 				$settings = get_option('woocommerce_lco_settings');
 
 				// Check if we should keep card payments in processing status
