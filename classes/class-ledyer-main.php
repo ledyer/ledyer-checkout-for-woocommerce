@@ -123,14 +123,12 @@ class Ledyer_Checkout_For_WooCommerce {
 		Logger::log( 'process notification: ' . $ledyer_order_id );
 
 		$orders = wc_get_orders(
-			array(
 				array(
 					'meta_key' => '_wc_ledyer_order_id',
 					'meta_value' => $ledyer_order_id,
 					'meta_compare' => '=',
 					'date_created' => '>' . (time() - MONTH_IN_SECONDS),
 				),
-			),
 		);
 
 		$order_id = isset( $orders[0] ) ? $orders[0]->get_id() : null;
