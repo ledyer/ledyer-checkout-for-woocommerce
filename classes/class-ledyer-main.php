@@ -134,6 +134,8 @@ class Ledyer_Checkout_For_WooCommerce {
 		$order_id = isset( $orders[0] ) ? $orders[0]->get_id() : null;
 		$order    = wc_get_order( $order_id );
 
+		Logger::log('Order to process: ' . $order_id);
+
 		if ( ! is_object( $order ) ) {
 			Logger::log( 'Could not find woo order with ledyer id: ' . $ledyer_order_id );
 			return;
