@@ -51,8 +51,8 @@ class Ledyer_Checkout_For_WooCommerce {
 	 */
 	public $checkout;
 
-	const VERSION  = '1.10.1';
 	const SLUG     = 'ledyer-checkout-for-woocommerce';
+	const VERSION = '1.10.2';
 	const SETTINGS = 'ledyer_checkout_for_woocommerce_settings';
 
 	public function actions() {
