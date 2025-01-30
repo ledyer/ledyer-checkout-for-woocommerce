@@ -180,8 +180,21 @@ class Ledyer_Checkout_For_WooCommerce {
 				}
 				break;
 			case \LedyerPaymentStatus::orderCaptured:
-        $new_status = apply_filters('lco_captured_update_status', 'completed', $ledyer_payment_status);
-        $order->update_status($new_status);
+				$new_status = 'completed';
+
+				$settings = get_option('woocommerce_lco_settings');
+
+				// Check if we should keep card payments in processing status
+				if (isset($settings['keep_cards_processing'])
+					&& 'yes' === $settings['keep_cards_processing']
+					&& isset($ledyer_payment_status['paymentMethod'])
+					&& isset($ledyer_payment_status['paymentMethod']['type'])
+					&& $ledyer_payment_status['paymentMethod']['type'] === 'card') {
+					$new_status = 'processing';
+				}
+
+				$new_status = apply_filters('lco_captured_update_status', $new_status, $ledyer_payment_status);
+				$order->update_status($new_status);
 				break;
 			case \LedyerPaymentStatus::orderRefunded:
 				$order->update_status( 'refunded' );
