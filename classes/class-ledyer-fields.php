@@ -242,11 +242,11 @@ class Fields {
 				'desc_tip'    => true,
 			),
 			// Payment settings
-			'payment_settings_title'       => array(
+			'payment_settings_title'         => array(
 				'title' => __( 'Payment Settings', 'ledyer-checkout-for-woocommerce' ),
 				'type'  => 'title',
 			),
-			'keep_cards_processing'   => array(
+			'keep_cards_processing'          => array(
 				'title'       => __( 'Card Payment Status', 'ledyer-checkout-for-woocommerce' ),
 				'label'       => __( 'Keep card payments in processing status (when autocomplete is active)', 'ledyer-checkout-for-woocommerce' ),
 				'type'        => 'checkbox',
