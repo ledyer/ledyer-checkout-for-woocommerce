@@ -29,5 +29,7 @@ node_modules/
 *.sql
 *.sqlite
 
-.phpactor.json
+# tools
+.aider*
 .php-cs-fixer.cache
+.phpactor.json

@@ -19,6 +19,7 @@ use WP_REST_Response;
  * Init class
  */
 class Ledyer_Checkout_For_WooCommerce {
+
 	use Singleton;
 
 	/**
@@ -52,8 +53,8 @@ class Ledyer_Checkout_For_WooCommerce {
 	 */
 	public $checkout;
 
-	const VERSION  = '1.10.1';
 	const SLUG     = 'ledyer-checkout-for-woocommerce';
+	const VERSION  = '1.11.0';
 	const SETTINGS = 'ledyer_checkout_for_woocommerce_settings';
 
 	public function actions(): void {
@@ -125,19 +126,17 @@ class Ledyer_Checkout_For_WooCommerce {
 
 		$orders = wc_get_orders(
 			array(
-				'meta_query'   => array(
-					array(
-						'key'     => '_wc_ledyer_order_id',
-						'value'   => $ledyer_order_id,
-						'compare' => '=',
-					),
-				),
+				'meta_key'     => '_wc_ledyer_order_id',
+				'meta_value'   => $ledyer_order_id,
+				'meta_compare' => '=',
 				'date_created' => '>' . ( time() - MONTH_IN_SECONDS ),
-			)
+			),
 		);
 
 		$order_id = isset( $orders[0] ) ? $orders[0]->get_id() : null;
 		$order    = wc_get_order( $order_id );
+
+		Logger::log( 'Order to process: ' . $order_id );
 
 		if ( ! is_object( $order ) ) {
 			Logger::log( 'Could not find woo order with ledyer id: ' . $ledyer_order_id );
@@ -182,8 +181,23 @@ class Ledyer_Checkout_For_WooCommerce {
 					$ack_order = true;
 				}
 				break;
-			case \LedyerPaymentStatus::ORDER_CAPTURED:
-				$new_status = apply_filters( 'lco_captured_update_status', 'completed', $ledyer_payment_status );
+			case \LedyerPaymentStatus::orderCaptured:
+				$new_status = 'completed';
+
+				$settings = get_option( 'woocommerce_lco_settings' );
+
+				// Check if we should keep card payments in processing status
+				if (
+					isset( $settings['keep_cards_processing'] )
+					&& 'yes' === $settings['keep_cards_processing']
+					&& isset( $ledyer_payment_status['paymentMethod'] )
+					&& isset( $ledyer_payment_status['paymentMethod']['type'] )
+					&& $ledyer_payment_status['paymentMethod']['type'] === 'card'
+				) {
+					$new_status = 'processing';
+				}
+
+				$new_status = apply_filters( 'lco_captured_update_status', $new_status, $ledyer_payment_status );
 				$order->update_status( $new_status );
 				break;
 			case \LedyerPaymentStatus::ORDER_REFUNDED:
