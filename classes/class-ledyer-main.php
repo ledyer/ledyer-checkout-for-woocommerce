@@ -60,7 +60,7 @@ class Ledyer_Checkout_For_WooCommerce {
 	/**
 	 * Register WordPress actions.
 	 */
-	public function actions(): void {
+	public function actions() {
 		\add_action( 'plugins_loaded', array( $this, 'on_plugins_loaded' ) );
 		\add_action( 'admin_init', array( $this, 'on_admin_init' ) );
 
@@ -98,7 +98,7 @@ class Ledyer_Checkout_For_WooCommerce {
 	 * @param \WP_REST_Request $request The incoming request object.
 	 * @return \WP_REST_Response
 	 */
-	public function handle_notification( \WP_REST_Request $request ): \WP_REST_Response {
+	public function handle_notification( \WP_REST_Request $request ) {
 		$request_body = json_decode( $request->get_body() );
 		$response     = new \WP_REST_Response();
 
