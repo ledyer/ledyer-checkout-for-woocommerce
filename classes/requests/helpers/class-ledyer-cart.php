@@ -101,10 +101,10 @@ class Cart {
 	public function get_order_taxable_amount() {
 		$total_amount = 0;
 		foreach ( $this->order_lines as $order_line ) {
-			$lineTotal           = $order_line['totalAmount'];
-			$multiPurposeVoucher = 'giftCard' === $order_line['type'] && $order_line['vat'] == 0 && $lineTotal < 0;
-			if ( ! $multiPurposeVoucher ) {
-				$total_amount += $lineTotal;
+			$line_total            = $order_line['totalAmount'];
+			$multi_purpose_voucher = 'giftCard' === $order_line['type'] && 0 === $order_line['vat'] && $line_total < 0;
+			if ( ! $multi_purpose_voucher ) {
+				$total_amount += $line_total;
 			}
 		}
 

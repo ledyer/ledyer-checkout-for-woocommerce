@@ -241,7 +241,7 @@ class Fields {
 				'default'     => '#000000',
 				'desc_tip'    => true,
 			),
-			// Payment settings
+			// Payment settings.
 			'payment_settings_title'         => array(
 				'title' => __( 'Payment Settings', 'ledyer-checkout-for-woocommerce' ),
 				'type'  => 'title',

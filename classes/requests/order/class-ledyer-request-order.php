@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit();
  * @package Ledyer\Requests\Order
  */
 abstract class Request_Order extends Request {
-	/*
+	/**
 	 * Set request url for all Request_Order child classes
 	 */
 	protected function set_request_url() {
@@ -39,7 +39,7 @@ abstract class Request_Order extends Request {
 		}
 		$this->set_url();
 	}
-	/*
+	/**
 	 * Set entrypoint in all Request_Order child classes
 	 */
 	abstract protected function set_url();

@@ -27,7 +27,7 @@ $vertical_layout = 'yes' === ledyer()->get_setting( 'vertical_layout' ) ? 'verti
 			<?php
 			do_action( 'lco_wc_before_order_review' );
 
-			// Show order review based on settings
+			// Show order review based on settings.
 			if ( ! isset( $settings['show_subtotal_detail'] ) || in_array( $settings['show_subtotal_detail'], array( 'woo', 'both' ), true ) ) :
 				woocommerce_order_review();
 			endif;

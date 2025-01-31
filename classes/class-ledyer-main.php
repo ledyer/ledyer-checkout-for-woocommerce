@@ -57,6 +57,9 @@ class Ledyer_Checkout_For_WooCommerce {
 	const VERSION  = '1.11.0';
 	const SETTINGS = 'ledyer_checkout_for_woocommerce_settings';
 
+	/**
+	 * Register WordPress actions.
+	 */
 	public function actions(): void {
 		\add_action( 'plugins_loaded', array( $this, 'on_plugins_loaded' ) );
 		\add_action( 'admin_init', array( $this, 'on_admin_init' ) );
@@ -92,11 +95,10 @@ class Ledyer_Checkout_For_WooCommerce {
 	/**
 	 * Handles notification callbacks
 	 *
-	 * @param $request
-	 *
+	 * @param \WP_REST_Request $request The incoming request object.
 	 * @return \WP_REST_Response
 	 */
-	public function handle_notification( $request ): WP_REST_Response {
+	public function handle_notification( \WP_REST_Request $request ): \WP_REST_Response {
 		$request_body = json_decode( $request->get_body() );
 		$response     = new \WP_REST_Response();
 
@@ -121,6 +123,11 @@ class Ledyer_Checkout_For_WooCommerce {
 		return $response;
 	}
 
+	/**
+	 * Process notification from Ledyer
+	 *
+	 * @param string $ledyer_order_id The Ledyer order ID to process notification for.
+	 */
 	public function process_notification( $ledyer_order_id ): void {
 		Logger::log( 'process notification: ' . $ledyer_order_id );
 
@@ -186,7 +193,7 @@ class Ledyer_Checkout_For_WooCommerce {
 
 				$settings = get_option( 'woocommerce_lco_settings' );
 
-				// Check if we should keep card payments in processing status
+				// Check if we should keep card payments in processing status.
 				if (
 					isset( $settings['keep_cards_processing'] )
 					&& 'yes' === $settings['keep_cards_processing']
@@ -320,12 +327,11 @@ class Ledyer_Checkout_For_WooCommerce {
 	/**
 	 * Get LCO setting by name
 	 *
-	 * @param string $key
-	 *
-	 * @return mixed
+	 * @param string $key The setting key to get.
+	 * @return mixed The setting value.
 	 */
 	public function get_setting( $key ) {
-		return self::$settings[ $key ];
+		return self::$settings[ $key ] ?? null;
 	}
 
 	/**
@@ -369,8 +375,8 @@ class Ledyer_Checkout_For_WooCommerce {
 	 * Modify checkout fields
 	 *
 	 * @access public
-	 * @param array $checkout_fields
-	 * @return array $checkout_fields
+	 * @param array $checkout_fields The checkout fields.
+	 * @return array $checkout_fields The modified checkout fields.
 	 */
 	public function modify_checkout_fields( $checkout_fields ): array {
 

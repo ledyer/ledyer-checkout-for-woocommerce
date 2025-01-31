@@ -16,9 +16,18 @@ namespace Ledyer;
  */
 trait Singleton {
 
-	/** @var self */
+	/**
+	 * Instance of the singleton class
+	 *
+	 * @var self
+	 */
 	private static $instance = null;
-	/** @var settings */
+
+	/**
+	 * Settings array for the singleton class
+	 *
+	 * @var array
+	 */
 	private static $settings = array();
 
 	/**

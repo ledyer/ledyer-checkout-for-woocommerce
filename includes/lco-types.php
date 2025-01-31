@@ -2,6 +2,9 @@
 
 \defined( 'ABSPATH' ) || die();
 
+/**
+ * Class containing Ledyer payment status constants.
+ */
 abstract class LedyerPaymentStatus {
 	const ORDER_INITIATED   = 'orderInitiated';
 	const ORDER_PENDING     = 'orderPending';
