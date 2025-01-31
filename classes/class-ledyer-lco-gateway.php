@@ -831,7 +831,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		}
 
 		/**
-		 * Checks if order was placed using Ledyer payment method.
+		 * Checks if order was placed using Ledyer.
 		 *
 		 * @param string $payment_method The payment method to check.
 		 * @return bool True if order was placed with Ledyer, false otherwise.

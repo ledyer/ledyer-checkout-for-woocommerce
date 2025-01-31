@@ -111,7 +111,7 @@ class Ledyer_Checkout_For_WooCommerce {
 		$ledyer_event_type = $request_body->{'eventType'};
 		$ledyer_order_id   = $request_body->{'orderId'};
 
-		if ( $ledyer_event_type === null || $ledyer_order_id === null ) {
+		if ( null === $ledyer_event_type || null === $ledyer_order_id ) {
 			Logger::log( 'Request body doesn\'t hold orderId and eventType data.' );
 			$response->set_status( 400 );
 			return $response;
@@ -199,7 +199,7 @@ class Ledyer_Checkout_For_WooCommerce {
 					&& 'yes' === $settings['keep_cards_processing']
 					&& isset( $ledyer_payment_status['paymentMethod'] )
 					&& isset( $ledyer_payment_status['paymentMethod']['type'] )
-					&& $ledyer_payment_status['paymentMethod']['type'] === 'card'
+					&& 'card' === $ledyer_payment_status['paymentMethod']['type']
 				) {
 					$new_status = 'processing';
 				}
@@ -235,7 +235,7 @@ class Ledyer_Checkout_For_WooCommerce {
 	 *
 	 * @since 1.0.0
 	 */
-	public function on_plugins_loaded(): void {
+	public function on_plugins_loaded() {
 		if ( ! defined( 'WC_VERSION' ) ) {
 			return;
 		}
@@ -267,7 +267,7 @@ class Ledyer_Checkout_For_WooCommerce {
 	/**
 	 * Autoload classes
 	 */
-	public function include_files(): void {
+	public function include_files() {
 		include_once LCO_WC_PLUGIN_PATH . '/includes/lco-functions.php';
 		include_once LCO_WC_PLUGIN_PATH . '/includes/lco-types.php';
 		include_once LCO_WC_PLUGIN_PATH . '/classes/class-ledyer-singleton.php';
@@ -304,7 +304,7 @@ class Ledyer_Checkout_For_WooCommerce {
 	 *
 	 * @return string Setting link
 	 */
-	public function get_setting_link(): string {
+	public function get_setting_link() {
 		$section_slug = 'lco';
 
 		$params = array(
@@ -320,7 +320,7 @@ class Ledyer_Checkout_For_WooCommerce {
 	/**
 	 * Set LCO settings.
 	 */
-	public function set_settings(): void {
+	public function set_settings() {
 		self::$settings = get_option( 'woocommerce_lco_settings' );
 	}
 
@@ -342,7 +342,7 @@ class Ledyer_Checkout_For_WooCommerce {
 	 * @return array $methods Payment methods.
 	 * @since  1.0.0
 	 */
-	public function add_gateways( $methods ): array {
+	public function add_gateways( $methods ) {
 		$methods[] = 'Ledyer\LCO_Gateway';
 
 		return $methods;
@@ -355,7 +355,7 @@ class Ledyer_Checkout_For_WooCommerce {
 	 *
 	 * @return array Filtered links.
 	 */
-	public function plugin_action_links( $links ): array {
+	public function plugin_action_links( $links ) {
 		$setting_link = $this->get_setting_link();
 		$plugin_links = array(
 			'<a href="' . $setting_link . '">' . __( 'Settings', 'ledyer-checkout-for-woocommerce' ) . '</a>',
@@ -378,7 +378,7 @@ class Ledyer_Checkout_For_WooCommerce {
 	 * @param array $checkout_fields The checkout fields.
 	 * @return array $checkout_fields The modified checkout fields.
 	 */
-	public function modify_checkout_fields( $checkout_fields ): array {
+	public function modify_checkout_fields( $checkout_fields ) {
 
 		if ( ! is_checkout() ) {
 			return $checkout_fields;
