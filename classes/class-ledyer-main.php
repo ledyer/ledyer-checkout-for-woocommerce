@@ -188,7 +188,7 @@ class Ledyer_Checkout_For_WooCommerce {
 					$ack_order = true;
 				}
 				break;
-			case \LedyerPaymentStatus::orderCaptured:
+			case \LedyerPaymentStatus::ORDER_CAPTURED:
 				$new_status = 'completed';
 
 				$settings = get_option( 'woocommerce_lco_settings' );
