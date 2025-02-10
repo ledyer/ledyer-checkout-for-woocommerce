@@ -28,8 +28,8 @@ If you are missing data i woocommerce, make sure you have set the following:
 
 ## Code formatting
 
-We are following rules specified in phpcs.xml. For automatic formatting on save etc, we recommend [phpcbf](https://phpqa.io/projects/phpcbf.html), when in installed you can run
-```
-$ vendor/bin/phpcbf --standard=phpcs.xml .
+We are following rules specified in phpcs.xml. For automatic formatting on save etc we recommend [phpcbf](https://phpqa.io/projects/phpcbf.html), when in installed you can run
+```shell
+vendor/bin/phpcbf --standard=phpcs.xml .
 ```
 To format the whole codebase, or you may wanna find a plugin for you specific development environment.
