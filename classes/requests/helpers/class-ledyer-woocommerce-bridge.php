@@ -131,7 +131,8 @@ class Woocommerce_Bridge {
 	}
 
 	/**
-	 * Get locale in BCP 47 format
+	 * Get locale in BCP 47 format. usually get_locale() returns xx_XX format
+	 * however in some causes (due to plugins) it might come as xx.
 	 *
 	 * @return string
 	 */
@@ -142,14 +143,16 @@ class Woocommerce_Bridge {
 		} elseif ( 'sv' === $locale ) {
 			$locale = 'sv-SE';
 		} elseif ( 'nb' === $locale || 'no' === $locale ) {
-			$locale = 'nb-NO';
-		} elseif ( 'nn' === $locale ) {
-			$locale = 'nn-NO';
+			$locale = 'no-NO';
 		} elseif ( 'fi' === $locale ) {
 			$locale = 'fi-FI';
 		} elseif ( 'da' === $locale ) {
 			$locale = 'da-DK';
+		} elseif ( preg_match( '/^[a-z]{2}_[A-Z]{2}$/', $locale ) ) {
+			$locale = str_replace( '_', '-', $locale );
 		}
+
+		\Ledyer\Logger::log( 'Using locale: ' . $locale );
 		return $locale;
 	}
 
