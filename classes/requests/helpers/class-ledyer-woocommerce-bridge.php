@@ -139,9 +139,16 @@ class Woocommerce_Bridge {
 		$locale = \get_locale();
 		if ( 'en' === $locale ) {
 			$locale = 'en-US';
-		}
-		if ( 'sv' === $locale ) {
-			$locale = 'sv_SE';
+		} elseif ( 'sv' === $locale ) {
+			$locale = 'sv-SE';
+		} elseif ( 'nb' === $locale || 'no' === $locale ) {
+			$locale = 'nb-NO';
+		} elseif ( 'nn' === $locale ) {
+			$locale = 'nn-NO';
+		} elseif ( 'fi' === $locale ) {
+			$locale = 'fi-FI';
+		} elseif ( 'da' === $locale ) {
+			$locale = 'da-DK';
 		}
 		return $locale;
 	}
