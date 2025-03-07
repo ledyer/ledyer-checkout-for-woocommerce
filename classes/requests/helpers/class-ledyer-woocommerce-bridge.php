@@ -36,7 +36,7 @@ class Woocommerce_Bridge {
 		$cart->process_data();
 
 		$data = array(
-			'locale'                  => \get_locale(),
+			'locale'                  => self::get_bcp47_locale(),
 			'metadata'                => null,
 			'orderLines'              => $cart->get_order_lines(),
 			'reference'               => null,
@@ -70,7 +70,7 @@ class Woocommerce_Bridge {
 		$data = array(
 			'country'                 => $order->get_billing_country(),
 			'currency'                => $order->get_currency(),
-			'locale'                  => \get_locale(),
+			'locale'                  => self::get_bcp47_locale(),
 			'metadata'                => null,
 			'orderLines'              => $order_helper->get_order_lines(),
 			'reference'               => null,
@@ -109,7 +109,7 @@ class Woocommerce_Bridge {
 		$cart->process_data();
 
 		$data = array(
-			'locale'                  => get_locale(),
+			'locale'                  => self::get_bcp47_locale(),
 			'orderLines'              => $cart->get_order_lines(),
 			'settings'                => self::get_order_settings( false ),
 			'totalOrderAmount'        => $cart->get_order_amount(),
@@ -128,6 +128,22 @@ class Woocommerce_Bridge {
 		);
 
 		return apply_filters( 'lco_' . __FUNCTION__, $data );
+	}
+
+	/**
+	 * Get locale in BCP 47 format
+	 *
+	 * @return string
+	 */
+	private static function get_bcp47_locale() {
+		$locale = \get_locale();
+		if ( 'en' === $locale ) {
+			$locale = 'en-US';
+		}
+		if ( 'sv' === $locale ) {
+			$locale = 'sv_SE';
+		}
+		return $locale;
 	}
 
 	/**
