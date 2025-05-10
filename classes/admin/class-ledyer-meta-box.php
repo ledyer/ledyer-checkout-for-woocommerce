@@ -33,21 +33,21 @@ class Meta_Box {
 	 * @return void
 	 */
 	public function add_meta_boxes( $screen_id ) {
-        $order_id = null;
+		$order_id = null;
 		if ( 'shop_order' === $screen_id ) {
 			$order_id = get_the_ID();
 		} elseif ( 'woocommerce_page_wc-orders' === $screen_id ) {
-            $order_id = $_GET['id'] ?? null;
-        }
+			$order_id = $_GET['id'] ?? null;
+		}
 
-        if (null === $order_id) {
-            return;
-        }
+		if ( null === $order_id ) {
+			return;
+		}
 
-        $order = wc_get_order( $order_id );
-        if ( in_array( $order->get_payment_method(), array( 'lco', 'ledyer_payments' ), true ) ) {
-            add_meta_box( 'lco_meta_box', __( 'Ledyer Order Info', 'ledyer-checkout-for-woocommerce' ), array( $this, 'meta_box_content' ), $screen_id, 'side', 'core' );
-        }
+		$order = wc_get_order( $order_id );
+		if ( in_array( $order->get_payment_method(), array( 'lco', 'ledyer_payments' ), true ) ) {
+			add_meta_box( 'lco_meta_box', __( 'Ledyer Order Info', 'ledyer-checkout-for-woocommerce' ), array( $this, 'meta_box_content' ), $screen_id, 'side', 'core' );
+		}
 	}
 
 	/**
