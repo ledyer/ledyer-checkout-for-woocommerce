@@ -77,33 +77,31 @@ class Callback {
 	 * @return \WP_REST_Response
 	 */
 	public function handle_notification( \WP_REST_Request $request ) {
-		$request_body = json_decode( $request->get_body() );
-		$response     = new \WP_REST_Response();
+		$request_body = $request->get_json_params();
+		$response     = new \WP_REST_Response( null, 400 );
 
-		if ( json_last_error() !== JSON_ERROR_NONE ) {
-			Logger::log( "[CALLBACK]: Request body isn't valid JSON string." );
-			$response->set_status( 400 );
+		if ( empty( $request_body ) ) {
+			Logger::log( "[CALLBACK]: Request body isn't valid JSON string. Received: " . wp_json_encode( $request_body ) );
 			return $response;
 		}
 
-		$ledyer_event_type = $request_body->{'eventType'};
-		$ledyer_order_id   = $request_body->{'orderId'};
+		$ledyer_event_type = $request_body['eventType'];
+		$ledyer_order_id   = $request_body['orderId'];
 
 		if ( ! isset( $ledyer_event_type, $ledyer_order_id ) ) {
 			Logger::log( "[CALLBACK]: Request body doesn't hold orderId and eventType data." );
-			$response->set_status( 400 );
 			return $response;
 		}
 
-		$scheduleId = as_schedule_single_action( time() + 60, 'schedule_process_notification', array( $ledyer_order_id, $ledyer_event_type ) );
+		$schedule_id = as_schedule_single_action( time() + 60, 'schedule_process_notification', array( $ledyer_order_id, $ledyer_event_type ) );
 
-		if ( 0 === $scheduleId ) {
+		if ( 0 === $schedule_id ) {
 			Logger::log( "[CALLBACK]: Couldn't schedule process_notification for order: $ledyer_order_id and type: $ledyer_event_type" );
 			$response->set_status( 500 );
 			return $response;
 		}
 
-		Logger::log( "[CALLBACK]: Enqueued notification: $ledyer_event_type, schedule-id: $scheduleId" );
+		Logger::log( "[CALLBACK]: Enqueued notification: $ledyer_event_type, schedule-id: $schedule_id" );
 		$response->set_status( 200 );
 		return $response;
 	}
