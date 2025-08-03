@@ -455,7 +455,7 @@ class Cart {
 			// Calculate tax rate.
 			$_tax          = new WC_Tax();
 			$tmp_rates     = $_tax->get_rates( $product->get_tax_class() );
-			$vat           = array_shift( $tmp_rates );
+			$vat           = is_array( $tmp_rates ) ? array_shift( $tmp_rates ) : $tmp_rates;
 			$item_tax_rate = isset( $vat['rate'] ) ? round( $vat['rate'] * 100 ) : 0;
 		} else {
 			$item_tax_rate = 0;
@@ -608,7 +608,7 @@ class Cart {
 	public function get_shipping_tax_rate() {
 		if ( WC()->cart->shipping_tax_total > 0 ) {
 			$shipping_rates    = WC_Tax::get_shipping_tax_rates();
-			$vat               = array_shift( $shipping_rates );
+			$vat               = is_array( $shipping_rates ) ? array_shift( $shipping_rates ) : $shipping_rates;
 			$shipping_tax_rate = isset( $vat['rate'] ) ? round( $vat['rate'] * 100 ) : 0;
 		} else {
 			$shipping_tax_rate = 0;
