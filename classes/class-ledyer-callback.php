@@ -135,8 +135,10 @@ class Callback {
 
 		$order_id = $order->get_id();
 		$order    = wc_get_order( $order_id );
-		if ( $order->get_meta( '_wc_ledyer_order_id' ) !== $ledyer_order_id ) {
-			Logger::log( "[SCHEDULER]: Order ID mismatch for Ledyer order ID: $ledyer_order_id" );
+
+		$wc_order_ledyer_order_id = $order->get_meta( '_wc_ledyer_order_id' );
+		if ( $ledyer_order_id !== $wc_order_ledyer_order_id ) {
+			Logger::log( "[SCHEDULER]: Order {$order->get_order_number()} has Ledyer order ID $wc_order_ledyer_order_id. Expected $ledyer_order_id" );
 			return;
 		}
 

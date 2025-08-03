@@ -451,17 +451,25 @@ class Cart {
 	 * @access public
 	 */
 	public function get_item_tax_rate( $cart_item, $product ) {
+		$item_tax_rate = 0;
 		if ( $product->is_taxable() && $cart_item['line_subtotal_tax'] > 0 ) {
-			// Calculate tax rate.
-			$_tax          = new WC_Tax();
-			$tmp_rates     = $_tax->get_rates( $product->get_tax_class() );
-			$vat           = is_array( $tmp_rates ) ? array_shift( $tmp_rates ) : $tmp_rates;
-			$item_tax_rate = isset( $vat['rate'] ) ? round( $vat['rate'] * 100 ) : 0;
-		} else {
-			$item_tax_rate = 0;
+			$tax       = new WC_Tax();
+			$tax_rates = $tax->get_rates( $product->get_tax_class() );
+			if ( empty( $tax_rates ) ) {
+				$item_tax_rate = 0.0 === floatval( $cart_item['line_total'] ) ? 0 : round( $cart_item['line_tax'] / $cart_item['line_total'] * 10000 );
+			} else {
+				$item_tax_rate = array_map(
+					function ( $i ) {
+						return round( ( $i['rate'] ?? 0 ) * 100 );
+					},
+					$tax_rates
+				);
+
+				$item_tax_rate = array_shift( $item_tax_rate );
+			}
 		}
 
-		return round( $item_tax_rate );
+		return $item_tax_rate;
 	}
 
 
@@ -614,6 +622,14 @@ class Cart {
 			$shipping_tax_rate = 0;
 		}
 
+		$shipping_rates = WC_Tax::get_shipping_tax_rates();
+		if ( ! is_array( $shipping_rates ) ) {
+			return 0;
+		}
+
+		$vat               = array_shift( $shipping_rates );
+		$shipping_tax_rate = isset( $vat['rate'] ) ? round( $vat['rate'] * 100 ) : 0;
+
 		return intval( round( $shipping_tax_rate ) );
 	}
 
@@ -625,11 +641,7 @@ class Cart {
 	 * @access public
 	 */
 	public function get_shipping_tax_amount() {
-		$shipping_total_amount        = $this->get_shipping_amount();
-		$shipping_total_excluding_tax = $shipping_total_amount / ( 1 + ( $this->get_shipping_tax_rate() / 10000 ) );
-		$shipping_tax_amount          = $shipping_total_amount - $shipping_total_excluding_tax;
-
-		return intval( round( $shipping_tax_amount ) );
+		return self::format_number( WC()->cart->get_shipping_tax() );
 	}
 
 	/**
