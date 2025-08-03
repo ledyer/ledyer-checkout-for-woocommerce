@@ -127,15 +127,20 @@ class Callback {
 			),
 		);
 
-		$order_id = isset( $orders[0] ) ? $orders[0]->get_id() : null;
-		$order    = wc_get_order( $order_id );
-
-		Logger::log( "Order to process: $order_id" );
-
-		if ( ! is_object( $order ) ) {
-			Logger::log( "[SCHEDULER]: Could not find woo order with ledyer id: $ledyer_order_id" );
+		$order = reset( $orders );
+		if ( ! $order ) {
+			Logger::log( "[SCHEDULER]: No WooCommerce order found for Ledyer order ID: $ledyer_order_id" );
 			return;
 		}
+
+		$order_id = $order->get_id();
+		$order    = wc_get_order( $order_id );
+		if ( $order->get_meta( '_wc_ledyer_order_id' ) !== $ledyer_order_id ) {
+			Logger::log( "[SCHEDULER]: Order ID mismatch for Ledyer order ID: $ledyer_order_id" );
+			return;
+		}
+
+		Logger::log( "[SCHEDULER]: Order to process: $order_id" );
 
 		if ( 'com.ledyer.order.ready_for_capture' === $ledyer_event_type ) {
 			$order->update_meta_data( '_ledyer_ready_for_capture', true );
