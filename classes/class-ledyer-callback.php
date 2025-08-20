@@ -78,11 +78,10 @@ class Callback {
 	 */
 	public function handle_notification( \WP_REST_Request $request ) {
 		$request_body = $request->get_json_params();
-		$response     = new \WP_REST_Response();
+		$response     = new \WP_REST_Response( null, 400 );
 
 		if ( empty( $request_body ) ) {
-			Logger::log( "Request body isn't valid JSON string." );
-			$response->set_status( 400 );
+			Logger::log( "[CALLBACK]: Request body isn't valid JSON string. Received: " . wp_json_encode( $request_body ) );
 			return $response;
 		}
 
@@ -90,13 +89,19 @@ class Callback {
 		$ledyer_order_id   = $request_body['orderId'];
 
 		if ( ! isset( $ledyer_event_type, $ledyer_order_id ) ) {
-			Logger::log( "Request body doesn't hold orderId and eventType data." );
-			$response->set_status( 400 );
+			Logger::log( "[CALLBACK]: Request body doesn't hold orderId and eventType data." );
 			return $response;
 		}
 
 		$schedule_id = as_schedule_single_action( time() + 60, 'schedule_process_notification', array( $ledyer_order_id, $ledyer_event_type ) );
-		Logger::log( "Enqueued notification: $ledyer_event_type, schedule-id: $schedule_id" );
+
+		if ( 0 === $schedule_id ) {
+			Logger::log( "[CALLBACK]: Couldn't schedule process_notification for order: $ledyer_order_id and type: $ledyer_event_type" );
+			$response->set_status( 500 );
+			return $response;
+		}
+
+		Logger::log( "[CALLBACK]: Enqueued notification: $ledyer_event_type, schedule-id: $schedule_id" );
 		$response->set_status( 200 );
 		return $response;
 	}
@@ -111,7 +116,7 @@ class Callback {
 	 * @param string $ledyer_event_type The type of event from Ledyer.
 	 */
 	public function process_notification( $ledyer_order_id, $ledyer_event_type ) {
-		Logger::log( "process notification: $ledyer_order_id" );
+		Logger::log( "[SCHEDULER]: process notification: $ledyer_order_id" );
 
 		$orders = wc_get_orders(
 			array(
@@ -122,21 +127,22 @@ class Callback {
 			),
 		);
 
-		$order_id = isset( $orders[0] ) ? $orders[0]->get_id() : false;
-		$order    = wc_get_order( $order_id );
-
-		Logger::log( "Order to process: $order_id" );
-
-		if ( ! is_object( $order ) ) {
-			Logger::log( "Could not find woo order with ledyer id: $ledyer_order_id" );
+		$order = reset( $orders );
+		if ( ! $order ) {
+			Logger::log( "[SCHEDULER]: No WooCommerce order found for Ledyer order ID: $ledyer_order_id" );
 			return;
 		}
+
+		$order_id = $order->get_id();
+		$order    = wc_get_order( $order_id );
 
 		$wc_order_ledyer_order_id = $order->get_meta( '_wc_ledyer_order_id' );
 		if ( $ledyer_order_id !== $wc_order_ledyer_order_id ) {
 			Logger::log( "[SCHEDULER]: Order {$order->get_order_number()} has Ledyer order ID $wc_order_ledyer_order_id. Expected $ledyer_order_id" );
 			return;
 		}
+
+		Logger::log( "[SCHEDULER]: Order to process: $order_id" );
 
 		if ( 'com.ledyer.order.ready_for_capture' === $ledyer_event_type ) {
 			$order->update_meta_data( '_ledyer_ready_for_capture', true );
@@ -146,13 +152,56 @@ class Callback {
 
 		$ledyer_payment_status = ledyer()->api->get_payment_status( $ledyer_order_id );
 		if ( is_wp_error( $ledyer_payment_status ) ) {
-			\Ledyer\Logger::log( "Could not get ledyer payment status $ledyer_order_id" );
+			Logger::log( "[SCHEDULER]: Could not get ledyer payment status $ledyer_order_id" );
 			return;
+		}
+
+		$ledyer_payment_method = $ledyer_payment_status['paymentMethod'];
+		if ( ! empty( $ledyer_payment_status['paymentMethod'] ) ) {
+			$ledyer_payment_provider = sanitize_text_field( $ledyer_payment_method['provider'] );
+			$ledyer_payment_type     = sanitize_text_field( $ledyer_payment_method['type'] );
+
+			$order->update_meta_data( 'ledyer_payment_type', $ledyer_payment_type );
+			$order->update_meta_data( 'ledyer_payment_method', $ledyer_payment_provider );
+
+			switch ( $ledyer_payment_type ) {
+				case 'invoice':
+					$method_title = __( 'Invoice', 'ledyer-checkout-for-woocommerce' );
+					break;
+				case 'advanceInvoice':
+					$method_title = __( 'Advance Invoice', 'ledyer-checkout-for-woocommerce' );
+					break;
+				case 'card':
+					$method_title = __( 'Card', 'ledyer-checkout-for-woocommerce' );
+					break;
+				case 'bankTransfer':
+					$method_title = __( 'Direct Debit', 'ledyer-checkout-for-woocommerce' );
+					break;
+				case 'partPayment':
+					$method_title = __( 'Part Payment', 'ledyer-checkout-for-woocommerce' );
+					break;
+			}
+
+			$order->set_payment_method_title( sprintf( '%s (Ledyer)', $method_title ) );
+			$order->save();
 		}
 
 		$ack_order = false;
 
 		switch ( $ledyer_payment_status['status'] ) {
+			case \LedyerPaymentStatus::ORDER_PENDING:
+				if ( ! $order->has_status( array( 'on-hold', 'processing', 'completed' ) ) ) {
+					$note = sprintf(
+						__(
+							'New session created in Ledyer with Payment ID %1$s. %2$s',
+							'ledyer-checkout-for-woocommerce'
+						),
+						$ledyer_order_id,
+						$ledyer_payment_status['note']
+					);
+					$order->update_status( 'on-hold', $note );
+				}
+				break;
 			case \LedyerPaymentStatus::PAYMENT_PENDING:
 				if ( ! $order->has_status( array( 'on-hold', 'processing', 'completed' ) ) ) {
 					$note = sprintf(
@@ -212,12 +261,12 @@ class Callback {
 		if ( $ack_order ) {
 			$response = ledyer()->api->acknowledge_order( $ledyer_order_id );
 			if ( is_wp_error( $response ) ) {
-				\Ledyer\Logger::log( "Couldn't acknowledge order $ledyer_order_id" );
+				Logger::log( "[SCHEDULER]: Couldn't acknowledge order $ledyer_order_id" );
 				return;
 			}
 			$ledyer_update_order = ledyer()->api->update_order_reference( $ledyer_order_id, array( 'reference' => $order->get_order_number() ) );
 			if ( is_wp_error( $ledyer_update_order ) ) {
-				\Ledyer\Logger::log( "Couldn't set merchant reference {$order->get_order_number()}" );
+				Logger::log( "[SCHEDULER]: Couldn't set merchant reference {$order->get_order_number()}" );
 				return;
 			}
 		}
