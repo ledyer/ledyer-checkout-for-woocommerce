@@ -1,4 +1,5 @@
 <?php
+
 /**
  * AJAX class file.
  *
@@ -18,6 +19,7 @@ namespace Ledyer;
  */
 class AJAX extends \WC_AJAX {
 
+
 	/**
 	 * Hook in ajax handlers.
 	 */
@@ -34,6 +36,7 @@ class AJAX extends \WC_AJAX {
 			'lco_wc_change_payment_method' => true,
 			'lco_wc_get_ledyer_order'      => true,
 			'lco_wc_log_js'                => true,
+			'lco_wc_get_redirect_url'      => true,
 		);
 
 		foreach ( $ajax_events as $ajax_event => $nopriv ) {
@@ -197,7 +200,7 @@ class AJAX extends \WC_AJAX {
 						$fields['shipping_address'][ $key ] = isset( $ledyer_order['customer']['shippingAddress']['contact'] ) ? $ledyer_order['customer']['shippingAddress']['contact']['lastName'] : '';
 						break;
 					case 'billing_company':
-						$fields['billing_address'][ $key ] = isset( $ledyer_order['customer']['billingAddress'] ) ? $ledyer_order['customer']['billingAddress']['companyName'] : '';
+							$fields['billing_address'][ $key ] = isset( $ledyer_order['customer']['billingAddress'] ) ? $ledyer_order['customer']['billingAddress']['companyName'] : '';
 						break;
 					case 'shipping_company':
 						$fields['shipping_address'][ $key ] = isset( $ledyer_order['customer']['shippingAddress'] ) ? $ledyer_order['customer']['shippingAddress']['companyName'] : '';
@@ -248,5 +251,34 @@ class AJAX extends \WC_AJAX {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Gets the confirmed redirect URL after order is fully processed
+	 */
+	public static function lco_wc_get_redirect_url() {
+		$nonce = isset( $_POST['nonce'] ) ? sanitize_key( $_POST['nonce'] ) : '';
+		if ( ! wp_verify_nonce( $nonce, 'lco_wc_get_redirect_url' ) ) {
+			wp_send_json_error( 'bad_nonce' );
+			exit;
+		}
+
+		$redirect_url = WC()->session->get( 'lco_confirmed_redirect' );
+
+		if ( $redirect_url ) {
+			WC()->session->__unset( 'lco_confirmed_redirect' );
+			Logger::log( 'Providing confirmed redirect URL: ' . $redirect_url );
+
+			wp_send_json_success(
+				array(
+					'redirect_url' => $redirect_url,
+				)
+			);
+		} else {
+			Logger::log( 'No confirmed redirect URL available in session' );
+			wp_send_json_error( 'no_redirect_available' );
+		}
+
+		exit;
 	}
 }

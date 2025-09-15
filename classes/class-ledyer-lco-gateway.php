@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Class file for LCO_Gateway class.
  *
@@ -19,6 +20,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 	 * @extends WC_Payment_Gateway
 	 */
 	class LCO_Gateway extends \WC_Payment_Gateway {
+
 
 		public function __construct() {
 			$this->id                 = 'lco';
@@ -72,6 +74,9 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 			// Invalidate token cache when settings are updated
 			\add_action( 'woocommerce_update_options', array( $this, 'on_ledyer_settings_save' ), 1 );
+
+			// Add hook to handle redirect after order is fully processed
+			add_action( 'woocommerce_checkout_order_processed', array( $this, 'handle_order_processed_redirect' ), 20, 3 );
 		}
 
 		public function on_ledyer_settings_save() {
@@ -226,6 +231,8 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				'timeout_time'                 => apply_filters( 'lco_checkout_timeout_duration', 20 ),
 				'pay_for_order'                => $pay_for_order,
 				'no_shipping_message'          => apply_filters( 'woocommerce_no_shipping_available_html', __( 'There are no shipping options available. Please ensure that your address has been entered correctly, or contact us if you need any help.', 'woocommerce' ) ),
+				'get_redirect_url'             => \WC_AJAX::get_endpoint( 'lco_wc_get_redirect_url' ),
+				'get_redirect_nonce'           => wp_create_nonce( 'lco_wc_get_redirect_url' ),
 			);
 
 			$checkout_localize_params['force_update'] = true;
@@ -253,31 +260,65 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 			// HPP Redirect flow.
 			if ( is_wc_endpoint_url( 'order-pay' ) || 'redirect' === ( $this->settings['checkout_flow'] ?? 'embedded' ) ) {
-
-				// Run redirect.
 				return $this->hpp_redirect_handler( $order );
-
 			}
 
-			// Regular purchase.
-			// 1. Process the payment.
-			// 2. Redirect to order received page.
+			// Regular purchase - Process payment but defer redirect
 			if ( $this->process_payment_handler( $order_id ) ) {
-				// Base64 encoded timestamp to always have a fresh URL for on hash change event.
+				// DON'T return redirect URL yet - let the order processing complete first
+				// Store the intended redirect URL in session for later use
+				WC()->session->set( 'lco_pending_redirect', $order->get_checkout_order_received_url() );
+
+				// Return success without redirect - this prevents premature redirect
 				return array(
 					'result'   => 'success',
-					'redirect' => add_query_arg(
-						array(
-							'lco_confirm' => 'yes',
-						),
-						$order->get_checkout_order_received_url()
-					),
+					'redirect' => false, // No immediate redirect
 				);
 			} else {
 				return array(
 					'result' => 'error',
 				);
 			}
+		}
+
+		/**
+		 * Handle redirect after order is fully processed
+		 * This ensures the order exists before any redirect happens
+		 */
+		public function handle_order_processed_redirect( $order_id, $posted_data, $order ) {
+			// Only handle for Ledyer orders
+			if ( $order->get_payment_method() !== 'lco' ) {
+				return;
+			}
+
+			// Check if we have a pending redirect for this session
+			$pending_redirect = WC()->session->get( 'lco_pending_redirect' );
+			if ( ! $pending_redirect ) {
+				return;
+			}
+
+			// Verify the order has been properly processed with Ledyer data
+			$ledyer_order_id = $order->get_meta( '_wc_ledyer_order_id', true );
+			$transaction_id  = $order->get_transaction_id();
+
+			if ( empty( $ledyer_order_id ) || empty( $transaction_id ) ) {
+				// Order not properly processed yet - this shouldn't happen
+				error_log( "Ledyer: Order {$order_id} processed but missing Ledyer metadata" );
+				return;
+			}
+
+			// Order is fully processed - now we can safely provide redirect info
+			// Store the redirect URL where JavaScript can access it
+			WC()->session->set(
+				'lco_confirmed_redirect',
+				add_query_arg(
+					array( 'lco_confirm' => 'yes' ),
+					$pending_redirect
+				)
+			);
+
+			// Clean up
+			WC()->session->__unset( 'lco_pending_redirect' );
 		}
 
 		/**
@@ -435,10 +476,10 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 				if ( is_object( $order ) && $order->get_transaction_id() ) {
 					?>
-					<div id="lco-iframe">
-						<?php do_action( 'lco_wc_thankyou_before_snippet' ); ?>
-						<?php do_action( 'lco_wc_thankyou_after_snippet' ); ?>
-					</div>
+			<div id="lco-iframe">
+					<?php do_action( 'lco_wc_thankyou_before_snippet' ); ?>
+					<?php do_action( 'lco_wc_thankyou_after_snippet' ); ?>
+			</div>
 
 					<?php
 				}
@@ -454,7 +495,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					switch ( ledyer()->get_setting( 'development_test_environment' ) ) {
 						case 'local':
 						case 'local-fe':
-							$env = 'localhost';
+								$env = 'localhost';
 							break;
 						case 'development':
 							$env = 'dev';
@@ -492,8 +533,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 * @param $posted_data
 		 * @param $order
 		 */
-		public function wc_order_created( $order_id, $posted_data, $order ) {
-		}
+		public function wc_order_created( $order_id, $posted_data, $order ) {}
 
 		/**
 		 * Add additional billing fields on Edit Order Screen
@@ -514,52 +554,54 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$care_of        = $order->get_meta( '_billing_care_of', true );
 
 			?>
-				<div class="address">
-					<p
-					<?php
-					if ( ! $attention_name ) {
-						echo ' class="none_set"'; }
-					?>
-					>
-						<strong>Attention Name:</strong>
-						<?php echo $attention_name ? esc_html( $attention_name ) : ''; ?>
-					</p>
-				</div>
-				<div class="edit_address">
-					<?php
-						woocommerce_wp_text_input(
-							array(
-								'id'            => '_billing_attention_name',
-								'label'         => 'Attention Name:',
-								'value'         => $attention_name,
-								'wrapper_class' => 'form-field-wide',
-							)
-						);
-					?>
-				</div>
-				<div class="address">
-					<p
-					<?php
-					if ( ! $care_of ) {
-						echo ' class="none_set"'; }
-					?>
-					>
-						<strong>Care Of:</strong>
-						<?php echo $care_of ? esc_html( $care_of ) : ''; ?>
-					</p>
-				</div>
-				<div class="edit_address">
-					<?php
-						woocommerce_wp_text_input(
-							array(
-								'id'            => '_billing_care_of',
-								'label'         => 'Care Of:',
-								'value'         => $care_of,
-								'wrapper_class' => 'form-field-wide',
-							)
-						);
-					?>
-				</div>
+		<div class="address">
+		<p
+			<?php
+			if ( ! $attention_name ) {
+				echo ' class="none_set"';
+			}
+			?>
+			>
+			<strong>Attention Name:</strong>
+			<?php echo $attention_name ? esc_html( $attention_name ) : ''; ?>
+		</p>
+		</div>
+		<div class="edit_address">
+			<?php
+			woocommerce_wp_text_input(
+				array(
+					'id'            => '_billing_attention_name',
+					'label'         => 'Attention Name:',
+					'value'         => $attention_name,
+					'wrapper_class' => 'form-field-wide',
+				)
+			);
+			?>
+		</div>
+		<div class="address">
+		<p
+			<?php
+			if ( ! $care_of ) {
+				echo ' class="none_set"';
+			}
+			?>
+			>
+			<strong>Care Of:</strong>
+			<?php echo $care_of ? esc_html( $care_of ) : ''; ?>
+		</p>
+		</div>
+		<div class="edit_address">
+			<?php
+			woocommerce_wp_text_input(
+				array(
+					'id'            => '_billing_care_of',
+					'label'         => 'Care Of:',
+					'value'         => $care_of,
+					'wrapper_class' => 'form-field-wide',
+				)
+			);
+			?>
+		</div>
 			<?php
 		}
 		/**
@@ -585,114 +627,116 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$email          = $order->get_meta( '_shipping_email', true );
 
 			?>
-				<div class="address">
-					<p
-					<?php
-					if ( ! $attention_name ) {
-						echo ' class="none_set"'; }
-					?>
-					>
-						<strong>Attention Name:</strong>
-						<?php echo $attention_name ? esc_html( $attention_name ) : ''; ?>
-					</p>
-				</div>
-				<div class="edit_address">
-					<?php
-						woocommerce_wp_text_input(
-							array(
-								'id'            => '_shipping_attention_name',
-								'label'         => 'Attention Name:',
-								'value'         => $attention_name,
-								'wrapper_class' => 'form-field-wide',
-							)
-						);
-					?>
-				</div>
-				<div class="address">
-					<p
-					<?php
-					if ( ! $care_of ) {
-						echo ' class="none_set"'; }
-					?>
-					>
-						<strong>Care Of:</strong>
-						<?php echo $care_of ? esc_html( $care_of ) : ''; ?>
-					</p>
-				</div>
-				<div class="edit_address">
-					<?php
-						woocommerce_wp_text_input(
-							array(
-								'id'            => '_shipping_care_of',
-								'label'         => 'Care Of:',
-								'value'         => $care_of,
-								'wrapper_class' => 'form-field-wide',
-							)
-						);
-					?>
-				</div>
+		<div class="address">
+		<p
+			<?php
+			if ( ! $attention_name ) {
+				echo ' class="none_set"';
+			}
+			?>
+			>
+			<strong>Attention Name:</strong>
+			<?php echo $attention_name ? esc_html( $attention_name ) : ''; ?>
+		</p>
+		</div>
+		<div class="edit_address">
+			<?php
+			woocommerce_wp_text_input(
+				array(
+					'id'            => '_shipping_attention_name',
+					'label'         => 'Attention Name:',
+					'value'         => $attention_name,
+					'wrapper_class' => 'form-field-wide',
+				)
+			);
+			?>
+		</div>
+		<div class="address">
+		<p
+			<?php
+			if ( ! $care_of ) {
+				echo ' class="none_set"';
+			}
+			?>
+			>
+			<strong>Care Of:</strong>
+			<?php echo $care_of ? esc_html( $care_of ) : ''; ?>
+		</p>
+		</div>
+		<div class="edit_address">
+			<?php
+			woocommerce_wp_text_input(
+				array(
+					'id'            => '_shipping_care_of',
+					'label'         => 'Care Of:',
+					'value'         => $care_of,
+					'wrapper_class' => 'form-field-wide',
+				)
+			);
+			?>
+		</div>
 			<?php
 
 			if ( ! empty( $first_name ) || ! empty( $last_name ) ) {
 				?>
-					<div class="address">
-						<p>
-							<strong>Order Recipient Name:</strong>
-							<?php echo $first_name ? esc_html( $first_name ) : ''; ?>
-							<?php echo $last_name ? esc_html( $last_name ) : ''; ?>
-						</p>
-					</div>
+		<div class="address">
+			<p>
+			<strong>Order Recipient Name:</strong>
+				<?php echo $first_name ? esc_html( $first_name ) : ''; ?>
+				<?php echo $last_name ? esc_html( $last_name ) : ''; ?>
+			</p>
+		</div>
 				<?php
 			}
 
 			if ( ! empty( $phone ) ) {
 				?>
-					<div class="address">
-						<p>
-							<strong>Order Recipient Phone:</strong>
-							<?php echo $phone ? esc_html( $phone ) : ''; ?>
-						</p>
-					</div>
+		<div class="address">
+			<p>
+			<strong>Order Recipient Phone:</strong>
+				<?php echo $phone ? esc_html( $phone ) : ''; ?>
+			</p>
+		</div>
 				<?php
 			}
 			?>
-				<div class="edit_address">
-					<?php
-						woocommerce_wp_text_input(
-							array(
-								'id'            => '_shipping_phone',
-								'label'         => 'Order Recipient Phone:',
-								'value'         => $phone,
-								'wrapper_class' => 'form-field-wide',
-							)
-						);
-					?>
-				</div>
+		<div class="edit_address">
+			<?php
+			woocommerce_wp_text_input(
+				array(
+					'id'            => '_shipping_phone',
+					'label'         => 'Order Recipient Phone:',
+					'value'         => $phone,
+					'wrapper_class' => 'form-field-wide',
+				)
+			);
+			?>
+		</div>
 			<?php
 
 			if ( ! empty( $email ) ) {
 				?>
-					<div class="address">
-						<p>
-							<strong>Order Recipient Email:</strong>
-							<?php echo $email ? esc_html( $email ) : ''; ?>
-						</p>
-					</div>
+		<div class="address">
+			<p>
+			<strong>Order Recipient Email:</strong>
+				<?php echo $email ? esc_html( $email ) : ''; ?>
+			</p>
+		</div>
 				<?php
 			}
 			?>
-				<div class="edit_address">
-					<?php
-						woocommerce_wp_text_input(
-							array(
-								'id'            => '_shipping_email',
-								'label'         => 'Order Recipient Email:',
-								'value'         => $email,
-								'wrapper_class' => 'form-field-wide',
-							)
-						);
-					?>
-				</div>
+		<div class="edit_address">
+			<?php
+			woocommerce_wp_text_input(
+				array(
+					'id'            => '_shipping_email',
+					'label'         => 'Order Recipient Email:',
+					'value'         => $email,
+					'wrapper_class' => 'form-field-wide',
+				)
+			);
+			?>
+		</div>
 			<?php
 		}
 
@@ -728,27 +772,27 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			if ( ! $this->lom_allow_editing( $order ) ) {
 				return;
 			}
-				$this->lom_validate_customer_field( $order, '_billing_company', 0, 100 );
-				$this->lom_validate_customer_field( $order, '_billing_address_1', 0, 100 );
-				$this->lom_validate_customer_field( $order, '_billing_address_2', 0, 100 );
-				$this->lom_validate_customer_field( $order, '_billing_postcode', 0, 10 );
-				$this->lom_validate_customer_field( $order, '_billing_city', 0, 50 );
-				$this->lom_validate_customer_field( $order, '_billing_country', 0, 50 );
-				$this->lom_validate_customer_field( $order, '_billing_attention_name', 0, 100 );
-				$this->lom_validate_customer_field( $order, '_billing_care_of', 0, 100 );
+			$this->lom_validate_customer_field( $order, '_billing_company', 0, 100 );
+			$this->lom_validate_customer_field( $order, '_billing_address_1', 0, 100 );
+			$this->lom_validate_customer_field( $order, '_billing_address_2', 0, 100 );
+			$this->lom_validate_customer_field( $order, '_billing_postcode', 0, 10 );
+			$this->lom_validate_customer_field( $order, '_billing_city', 0, 50 );
+			$this->lom_validate_customer_field( $order, '_billing_country', 0, 50 );
+			$this->lom_validate_customer_field( $order, '_billing_attention_name', 0, 100 );
+			$this->lom_validate_customer_field( $order, '_billing_care_of', 0, 100 );
 
-				$this->lom_validate_customer_field( $order, '_shipping_company', 0, 100 );
-				$this->lom_validate_customer_field( $order, '_shipping_address_1', 0, 100 );
-				$this->lom_validate_customer_field( $order, '_shipping_address_2', 0, 100 );
-				$this->lom_validate_customer_field( $order, '_shipping_postcode', 0, 10 );
-				$this->lom_validate_customer_field( $order, '_shipping_city', 0, 50 );
-				$this->lom_validate_customer_field( $order, '_shipping_country', 0, 50 );
-				$this->lom_validate_customer_field( $order, '_shipping_attention_name', 0, 100 );
-				$this->lom_validate_customer_field( $order, '_shipping_care_of', 0, 100 );
-				$this->lom_validate_customer_field( $order, '_shipping_first_name', 0, 200 );
-				$this->lom_validate_customer_field( $order, '_shipping_last_name', 0, 200 );
-				$this->lom_validate_customer_field( $order, '_shipping_phone', 9, 30 );
-				$this->lom_validate_customer_email( $order, '_shipping_email' );
+			$this->lom_validate_customer_field( $order, '_shipping_company', 0, 100 );
+			$this->lom_validate_customer_field( $order, '_shipping_address_1', 0, 100 );
+			$this->lom_validate_customer_field( $order, '_shipping_address_2', 0, 100 );
+			$this->lom_validate_customer_field( $order, '_shipping_postcode', 0, 10 );
+			$this->lom_validate_customer_field( $order, '_shipping_city', 0, 50 );
+			$this->lom_validate_customer_field( $order, '_shipping_country', 0, 50 );
+			$this->lom_validate_customer_field( $order, '_shipping_attention_name', 0, 100 );
+			$this->lom_validate_customer_field( $order, '_shipping_care_of', 0, 100 );
+			$this->lom_validate_customer_field( $order, '_shipping_first_name', 0, 200 );
+			$this->lom_validate_customer_field( $order, '_shipping_last_name', 0, 200 );
+			$this->lom_validate_customer_field( $order, '_shipping_phone', 9, 30 );
+			$this->lom_validate_customer_email( $order, '_shipping_email' );
 		}
 
 		/**
