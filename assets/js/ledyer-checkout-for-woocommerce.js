@@ -234,6 +234,49 @@ jQuery( function ( $ ) {
 			} );
 		},
 
+    /**
+    * Poll for redirect URL - this waits for WooCommerce to finish processing
+    */
+    pollForRedirectUrl: function(attempt = 1) {
+      const maxAttempts = 10; // Maximum 5 seconds total
+
+      $.ajax({
+        type: 'POST',
+        url: lco_params.get_redirect_url,
+        data: {
+          nonce: lco_params.get_redirect_nonce
+        },
+        dataType: 'json',
+        timeout: 2000,
+        success: function(response) {
+          if (response.success && response.data.redirect_url) {
+            lco_wc.logToFile(`Order fully processed, redirecting after ${attempt} attempts`);
+            window.location.href = response.data.redirect_url;
+          } else {
+            lco_wc.handleRedirectPollRetry(attempt, maxAttempts);
+          }
+        },
+        error: function() {
+          lco_wc.handleRedirectPollRetry(attempt, maxAttempts);
+        }
+      });
+    },
+
+    /**
+    * Handle retry logic for redirect polling
+    */
+    handleRedirectPollRetry: function(attempt, maxAttempts) {
+      if (attempt >= maxAttempts) {
+        lco_wc.logToFile('Max polling attempts reached, redirect may have failed');
+        lco_wc.failOrder('Det gick inte att slutföra beställningen. Vänligen kontakta kundtjänst.');
+        return;
+      }
+
+      setTimeout(() => {
+        lco_wc.pollForRedirectUrl(attempt + 1);
+      }, 500);
+    },
+
 		/**
 		 * Gets the Ledyer order and starts the order submission
 		 */
@@ -527,57 +570,43 @@ jQuery( function ( $ ) {
 						},
 					} );
 
-					sessionStorage.removeItem( 'ledyerWooRedirectUrl' );
-
 					$.ajax( {
 						type: 'POST',
 						url: lco_params.submit_order,
 						data: lco_wc.cleanupForm( $( 'form.checkout' ) ),
 						dataType: 'json',
-						success( data ) {
-							// data is an object with the following properties:
-							// { result: "success" | "failure"; refresh: "boolean", reload: boolean, messages: string; }
-							try {
-								if ( 'success' === data.result ) {
-									lco_wc.logToFile(
-										'Successfully created order in WooCommerce.'
-									);
-									const url = new URL( data.redirect );
-									sessionStorage.setItem(
-										'ledyerWooRedirectUrl',
-										url
-									);
+            success( data ) {
+              try {
+                if ( 'success' === data.result ) {
+                  lco_wc.logToFile('Order creation initiated successfully');
 
-									if ( should_validate ) {
-										window.ledyer.api.clientValidation( {
-											shouldProceed: true,
-										} );
-										// Ledyer will respond with a new event when order is complete
-										// So don't redirect just yet,
-										// eventually redirection will happen in ledyerCheckoutOrderComplete
-										return;
-									}
-									window.location.href = url.toString();
-								} else {
-									throw 'Result failed';
-								}
-							} catch ( err ) {
-								if ( data.messages ) {
-									lco_wc.logToFile(
-										'Checkout error | ' + data.messages
-									);
-									lco_wc.failOrder(
-										'Vänligen kontrollera att alla uppgifter är korrekt ifyllda.',
-										data.messages
-									);
-								} else {
-									lco_wc.logToFile(
-										'Checkout error | No message' + err
-									);
-									lco_wc.failOrder();
-								}
-							}
-						},
+                  if ( should_validate ) {
+                    // Tell Ledyer validation passed
+                    window.ledyer.api.clientValidation({
+                      shouldProceed: true,
+                    });
+                    // Ledyer will call ledyerCheckoutOrderComplete when ready
+                    return;
+                  }
+
+                  // For non-validation flow, poll for redirect URL
+                  lco_wc.pollForRedirectUrl();
+                } else {
+                  throw 'Result failed';
+                }
+              } catch ( err ) {
+                if ( data.messages ) {
+                  lco_wc.logToFile('Checkout error | ' + data.messages);
+                  lco_wc.failOrder(
+                    'Vänligen kontrollera att alla uppgifter är korrekt ifyllda.',
+                    data.messages
+                  );
+                } else {
+                  lco_wc.logToFile('Checkout error | No message' + err);
+                  lco_wc.failOrder();
+                }
+              }
+          },
 						error( data ) {
 							try {
 								lco_wc.logToFile(
@@ -622,24 +651,14 @@ jQuery( function ( $ ) {
 				lco_wc.changeFromLco
 			);
 
-			$( document ).on(
-				'ledyerCheckoutOrderComplete',
-				function ( event ) {
-					lco_wc.logToFile(
-						'ledyerCheckoutOrderComplete from Ledyer triggered'
-					);
-					if ( ! lco_params.pay_for_order ) {
-						const redirectUrl = sessionStorage.getItem(
-							'ledyerWooRedirectUrl'
-						);
-						if ( redirectUrl ) {
-							// This means that placeLedyerOrder was called successfully already
-							// (Due to an earlier call caused by client validation)
-							window.location.href = redirectUrl;
-						}
-					}
-				}
-			);
+      $( document ).on( 'ledyerCheckoutOrderComplete', function ( event ) {
+        lco_wc.logToFile('ledyerCheckoutOrderComplete from Ledyer triggered');
+
+        if ( ! lco_params.pay_for_order ) {
+          // Now poll for the redirect URL - order should be fully processed by now
+          lco_wc.pollForRedirectUrl();
+        }
+      });
 
 			$( document ).on( 'ledyerCheckoutOrderPending', function ( event ) {
 				lco_wc.logToFile(
