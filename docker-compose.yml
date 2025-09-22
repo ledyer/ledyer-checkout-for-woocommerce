@@ -14,6 +14,7 @@ services:
       - dbdata:/var/lib/mysql
 
   wordpress-dev:
+    user: "www-data"
     depends_on:
       - db
     build:
@@ -50,10 +51,11 @@ services:
     restart: on-failure
 
   wordpress-cli:
+    user: "www-data"
     depends_on:
       - db
       - wordpress-dev
-    image: wordpress:cli
+    image: wordpress:cli-2.12.0
     restart: on-failure
     environment:
       WORDPRESS_DB_HOST: db
@@ -67,7 +69,6 @@ services:
         define( 'WP_DEBUG_LOG', true );
         define( 'WP_DEBUG_DISPLAY', false );
         define( 'SCRIPT_DEBUG', true );
-    user: xfs
     command: >
       /bin/sh -c '
       sleep 10;
