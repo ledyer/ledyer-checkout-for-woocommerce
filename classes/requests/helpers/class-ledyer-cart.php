@@ -81,15 +81,15 @@ class Cart {
 	 *
 	 * @return int
 	 */
-	public function get_order_amount() {
-		$order_amount = round( WC()->cart->total * 100 );
+  public function get_order_amount() {
+    $order_amount = self::format_number( WC()->cart->total );
 
-		if ( $order_amount < 0 ) {
-			return 0;
-		}
+    if ( $order_amount < 0 ) {
+      return 0;
+    }
 
-		return $order_amount;
-	}
+    return $order_amount;
+  }
 
 	/**
 	 * Gets order total amount eligible for tax for Ledyer API
