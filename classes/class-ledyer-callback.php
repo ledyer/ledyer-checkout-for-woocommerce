@@ -206,7 +206,7 @@ class Callback {
 				if ( ! $order->has_status( array( 'on-hold', 'processing', 'completed' ) ) ) {
 					$note = sprintf(
 						__(
-							'New payment created in Ledyer with Payment ID %1$s. %2$s',
+							'New payment pending payment created in Ledyer with Payment ID %1$s. %2$s',
 							'ledyer-checkout-for-woocommerce'
 						),
 						$ledyer_order_id,
@@ -220,7 +220,7 @@ class Callback {
 				if ( ! $order->has_status( array( 'processing', 'completed' ) ) ) {
 					$note = sprintf(
 						__(
-							'New payment created in Ledyer with Payment ID %1$s. %2$s',
+							'Payment successfully confirmed in Ledyer with Payment ID %1$s. %2$s',
 							'ledyer-checkout-for-woocommerce'
 						),
 						$ledyer_order_id,
