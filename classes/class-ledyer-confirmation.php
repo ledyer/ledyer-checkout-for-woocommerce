@@ -84,6 +84,8 @@ class Confirmation {
 		$ledyer_update_order_reference = ledyer()->api->update_order_reference( $payment_id, array( 'reference' => $order->get_order_number() ) );
 		if ( is_wp_error( $ledyer_update_order_reference ) ) {
 			\Ledyer\Logger::log( "Couldn't set merchant reference {$order->get_order_number()}" );
+		} else {
+			$order->update_meta_data( '_ledyer_merchant_reference', $order->get_order_number() );
 		}
 
 		$ledyer_note           = '';
