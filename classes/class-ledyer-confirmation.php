@@ -131,10 +131,10 @@ class Confirmation {
 		if ( 'advanceInvoice' === $ledyer_payment_type ) {
 			$order->update_status( 'on-hold', $note );
 		} elseif ( $order->needs_processing() ) {
-			$order->update_status( 'on-hold', $note );
-		} else {
 			$order->add_order_note( $note );
 			$order->payment_complete( $payment_id );
+		} else {
+			$order->update_status( 'on-hold', $note );
 		}
 
 		$order->update_meta_data( '_ledyer_date_paid', gmdate( 'Y-m-d H:i:s' ) );
