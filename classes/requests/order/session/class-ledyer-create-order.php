@@ -21,6 +21,14 @@ class Create_Order extends Request_Order {
 	 */
 
 	protected $method = 'POST';
+
+	/**
+	 * The log title to use for the debug log.
+	 *
+	 * @var string
+	 */
+	protected $log_title = 'Create session';
+
 	/**
 	 * Set entrypoint
 	 */

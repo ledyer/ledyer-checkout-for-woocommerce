@@ -24,6 +24,13 @@ class Update_Order_Reference extends Request_Order {
 	protected $method = 'POST';
 
 	/**
+	 * The log title to use for the debug log.
+	 *
+	 * @var string
+	 */
+	protected $log_title = 'Update merchant reference';
+
+	/**
 	 * Set entrypoint
 	 */
 	protected function set_url() {

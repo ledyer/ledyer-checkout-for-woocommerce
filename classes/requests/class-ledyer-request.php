@@ -55,6 +55,13 @@ abstract class Request {
 	 */
 	protected $request_url;
 	/**
+	 * The log title to use for the debug log.
+	 *
+	 * @var string
+	 */
+	protected $log_title = '';
+
+	/**
 	 * Requests Class constructor.
 	 *
 	 * @param array $arguments Request arguments.
@@ -209,7 +216,7 @@ abstract class Request {
 	protected function process_response( $response, $request_args, $request_url ) {
 		$code = wp_remote_retrieve_response_code( $response );
 
-		$log = Logger::format_log( '', 'POST', 'Debugger', $request_args, json_decode( wp_remote_retrieve_body( $response ), true ), $code );
+		$log = Logger::format_log( '', 'POST', $this->log_title, $request_args, json_decode( wp_remote_retrieve_body( $response ), true ), $code );
 
 		Logger::log( $log );
 
