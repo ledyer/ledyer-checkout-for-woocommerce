@@ -1,4 +1,4 @@
-<?php
+<?php // phpcs:ignore WordPress.Files.FileName.InvalidClassFileName
 /**
  * Abstract Request
  *
@@ -6,7 +6,6 @@
  */
 namespace Ledyer\Requests;
 
-use Ledyer\Credentials;
 use Ledyer\Logger;
 
 defined( 'ABSPATH' ) || exit();
@@ -114,7 +113,7 @@ abstract class Request {
 		$client = new \WP_Http();
 
 		$headers = array(
-			'Authorization' => 'Basic ' . base64_encode( $client_credentials['merchant_id'] . ':' . $client_credentials['shared_secret'] ),
+			'Authorization' => 'Basic ' . base64_encode( $client_credentials['merchant_id'] . ':' . $client_credentials['shared_secret'] ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions
 		);
 
 		$response = $client->post(
@@ -176,7 +175,7 @@ abstract class Request {
 		);
 
 		if ( 'POST' === $this->method && $this->arguments['data'] ) {
-			$request_args['body'] = json_encode( $this->arguments['data'] );
+			$request_args['body'] = wp_json_encode( $this->arguments['data'] );
 		}
 
 		return $request_args;
