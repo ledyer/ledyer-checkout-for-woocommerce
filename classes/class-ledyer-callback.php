@@ -144,15 +144,15 @@ class Callback {
 
 		Logger::log( "[SCHEDULER]: Order to process: $order_id" );
 
-		if ( 'com.ledyer.order.ready_for_capture' === $ledyer_event_type ) {
-			$order->update_meta_data( '_ledyer_ready_for_capture', true );
-			$order->save();
-			return;
-		}
-
 		$ledyer_payment_status = ledyer()->api->get_payment_status( $ledyer_order_id );
 		if ( is_wp_error( $ledyer_payment_status ) ) {
 			Logger::log( "[SCHEDULER]: Could not get ledyer payment status $ledyer_order_id" );
+			return;
+		}
+
+		// Process the ready for capture event.
+		if ( 'com.ledyer.order.ready_for_capture' === $ledyer_event_type ) {
+			$this->process_ready_for_capture( $ledyer_payment_status, $order, $ledyer_order_id );
 			return;
 		}
 
@@ -186,89 +186,144 @@ class Callback {
 			$order->save();
 		}
 
+		$this->process_order_status( $ledyer_payment_status, $order, $ledyer_order_id );
+	}
+
+	/**
+	 * Process the ready for capture event.
+	*
+	 * @param array $ledyer_payment_status The Ledyer payment status response.
+	 * @param \WC_Order $order The WooCommerce order object.
+	 * @param string $ledyer_order_id The Ledyer order ID.
+	 *
+	 * @return void
+	 */
+	private function process_ready_for_capture( $ledyer_payment_status, $order, $ledyer_order_id ) {
+	    $order->update_meta_data( '_ledyer_ready_for_capture', true );
+
+	    // If we where waiting for the ready for capture event, we can now complete the order.
+	    $waiting_on_ready_for_capture = $order->get_meta( '_ledyer_waiting_on_ready_for_capture', true );
+	    if ( ! empty( $waiting_on_ready_for_capture ) ) {
+	    	$order->delete_meta_data( '_ledyer_waiting_on_ready_for_capture' );
+	    	Logger::log( "[SCHEDULER]: Order {$order->get_order_number()} was waiting for ready_for_capture event. Now processing the order." );
+	    	$this->process_order_status( $ledyer_payment_status, $order, $ledyer_order_id );
+	    }
+
+	    // Save the order and return.
+	    $order->save();
+	}
+
+	/**
+	 * Process the order status based on the Ledyer payment status.
+	 *
+	 * @param array $ledyer_payment_status The Ledyer payment status response.
+	 * @param \WC_Order $order The WooCommerce order object.
+	 * @param string $ledyer_order_id The Ledyer order ID.
+	 *
+	 * @return void
+	 */
+	private function process_order_status( $ledyer_payment_status, $order, $ledyer_order_id ) {
 		$ack_order = false;
 
-		switch ( $ledyer_payment_status['status'] ) {
-			case \LedyerPaymentStatus::ORDER_PENDING:
-				if ( ! $order->has_status( array( 'on-hold', 'processing', 'completed' ) ) ) {
-					$note = sprintf(
-						__(
-							'New session created in Ledyer with Payment ID %1$s. %2$s',
-							'ledyer-checkout-for-woocommerce'
-						),
-						$ledyer_order_id,
-						$ledyer_payment_status['note']
-					);
-					$order->update_status( 'on-hold', $note );
-				}
-				break;
-			case \LedyerPaymentStatus::PAYMENT_PENDING:
-				if ( ! $order->has_status( array( 'on-hold', 'processing', 'completed' ) ) ) {
-					$note = sprintf(
-						__(
-							'New payment pending payment created in Ledyer with Payment ID %1$s. %2$s',
-							'ledyer-checkout-for-woocommerce'
-						),
-						$ledyer_order_id,
-						$ledyer_payment_status['note']
-					);
-					$order->update_status( 'on-hold', $note );
-					$ack_order = true;
-				}
-				break;
-			case \LedyerPaymentStatus::PAYMENT_CONFIRMED:
-				if ( ! $order->has_status( array( 'processing', 'completed' ) ) ) {
-					$note = sprintf(
-						__(
-							'Payment successfully confirmed in Ledyer with Payment ID %1$s. %2$s',
-							'ledyer-checkout-for-woocommerce'
-						),
-						$ledyer_order_id,
-						$ledyer_payment_status['note']
-					);
-					$order->add_order_note( $note );
-					$order->payment_complete( $ledyer_order_id );
-					$ack_order = true;
-				}
-				break;
-			case \LedyerPaymentStatus::ORDER_CAPTURED:
-				$new_status = 'completed';
+	    switch ( $ledyer_payment_status['status'] ) {
+	    	case \LedyerPaymentStatus::ORDER_PENDING:
+	    		if ( ! $order->has_status( array( 'on-hold', 'processing', 'completed' ) ) ) {
+	    			$note = sprintf(
+	    				__(
+	    					'New session created in Ledyer with Payment ID %1$s. %2$s',
+	    					'ledyer-checkout-for-woocommerce'
+	    				),
+	    				$ledyer_order_id,
+	    				$ledyer_payment_status['note']
+	    			);
+	    			$order->update_status( 'on-hold', $note );
+	    		}
+	    		break;
+	    	case \LedyerPaymentStatus::PAYMENT_PENDING:
+	    		if ( ! $order->has_status( array( 'on-hold', 'processing', 'completed' ) ) ) {
+	    			$note = sprintf(
+	    				__(
+	    					'New payment pending payment created in Ledyer with Payment ID %1$s. %2$s',
+	    					'ledyer-checkout-for-woocommerce'
+	    				),
+	    				$ledyer_order_id,
+	    				$ledyer_payment_status['note']
+	    			);
+	    			$order->update_status( 'on-hold', $note );
+	    			$ack_order = true;
+	    		}
+	    		break;
+	    	case \LedyerPaymentStatus::PAYMENT_CONFIRMED:
+	    		if ( ! $order->has_status( array( 'processing', 'completed' ) ) ) {
+	    			$note = sprintf(
+	    				__(
+	    					'Payment successfully confirmed in Ledyer with Payment ID %1$s. %2$s',
+	    					'ledyer-checkout-for-woocommerce'
+	    				),
+	    				$ledyer_order_id,
+	    				$ledyer_payment_status['note']
+	    			);
 
-				$settings = get_option( 'woocommerce_lco_settings' );
 
-				// Check if we should keep card payments in processing status.
-				if (
-					isset( $settings['keep_cards_processing'] )
-					&& 'yes' === $settings['keep_cards_processing']
-					&& isset( $ledyer_payment_status['paymentMethod'] )
-					&& isset( $ledyer_payment_status['paymentMethod']['type'] )
-					&& 'card' === $ledyer_payment_status['paymentMethod']['type']
-				) {
-					$new_status = 'processing';
+	    			$order->add_order_note( $note );
+
+	    			// If the order does not need payment, we need to ensure the "ready-for-capture" event has been triggered.
+	    			$ready_for_capture = $order->get_meta( '_ledyer_ready_for_capture', true );
+	    			if ( ! $order->needs_payment() && empty( $ready_for_capture ) ) {
+	    				// Set the metadata to indicate the order is still waiting for the ready for capture event.
+	    				$order->update_meta_data( '_ledyer_waiting_on_ready_for_capture', true );
+	    				$order->save();
+	    				Logger::log( "[SCHEDULER]: Order {$order->get_order_number()} is paid but waiting for ready_for_capture event." );
+	    				return;
+	    			}
+	    			$order->payment_complete( $ledyer_order_id );
+	    			$ack_order = true;
+	    		}
+	    		break;
+	    	case \LedyerPaymentStatus::ORDER_CAPTURED:
+	    		$new_status = 'completed';
+
+	    		$settings = get_option( 'woocommerce_lco_settings' );
+
+	    		// Check if we should keep card payments in processing status.
+	    		if (
+	    			isset( $settings['keep_cards_processing'] )
+	    			&& 'yes' === $settings['keep_cards_processing']
+	    			&& isset( $ledyer_payment_status['paymentMethod'] )
+	    			&& isset( $ledyer_payment_status['paymentMethod']['type'] )
+	    			&& 'card' === $ledyer_payment_status['paymentMethod']['type']
+	    		) {
+	    			$new_status = 'processing';
+	    		}
+
+	    		$new_status = apply_filters( 'lco_captured_update_status', $new_status, $ledyer_payment_status );
+	    		$order->update_status( $new_status );
+	    		break;
+	    	case \LedyerPaymentStatus::ORDER_REFUNDED:
+	    		$order->update_status( 'refunded' );
+	    		break;
+	    	case \LedyerPaymentStatus::ORDER_CANCELLED:
+	    		$order->update_status( 'cancelled' );
+	    		break;
+	    }
+
+		// If we need to acknowledge the order, do it now.
+	    if ( $ack_order ) {
+	    	$response = ledyer()->api->acknowledge_order( $ledyer_order_id );
+	    	if ( is_wp_error( $response ) ) {
+	    		Logger::log( "[SCHEDULER]: Couldn't acknowledge order $ledyer_order_id" );
+	    		return;
+	    	}
+
+			// If the merchant reference was not already set, set it now.
+			$merchant_reference = $order->get_meta( '_ledyer_merchant_reference', true );
+	    	if ( empty( $merchant_reference ) ) {
+				$ledyer_update_order = ledyer()->api->update_order_reference( $ledyer_order_id, array( 'reference' => $order->get_order_number() ) );
+				if ( is_wp_error( $ledyer_update_order ) ) {
+					Logger::log( "[SCHEDULER]: Couldn't set merchant reference {$order->get_order_number()}" );
+					return;
 				}
-
-				$new_status = apply_filters( 'lco_captured_update_status', $new_status, $ledyer_payment_status );
-				$order->update_status( $new_status );
-				break;
-			case \LedyerPaymentStatus::ORDER_REFUNDED:
-				$order->update_status( 'refunded' );
-				break;
-			case \LedyerPaymentStatus::ORDER_CANCELLED:
-				$order->update_status( 'cancelled' );
-				break;
-		}
-
-		if ( $ack_order ) {
-			$response = ledyer()->api->acknowledge_order( $ledyer_order_id );
-			if ( is_wp_error( $response ) ) {
-				Logger::log( "[SCHEDULER]: Couldn't acknowledge order $ledyer_order_id" );
-				return;
 			}
-			$ledyer_update_order = ledyer()->api->update_order_reference( $ledyer_order_id, array( 'reference' => $order->get_order_number() ) );
-			if ( is_wp_error( $ledyer_update_order ) ) {
-				Logger::log( "[SCHEDULER]: Couldn't set merchant reference {$order->get_order_number()}" );
-				return;
-			}
-		}
+	    }
 	}
 }
