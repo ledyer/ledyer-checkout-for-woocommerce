@@ -3,15 +3,28 @@ Contributors: ledyerdevelopment
 Tags: woocommerce, ledyer, ecommerce, e-commerce, checkout
 Donate link: https://ledyer.com
 Requires at least: 5.0
-Tested up to: 6.6.2
+Tested up to: 6.8.3
 Requires PHP: 7.4
 WC requires at least: 5.6.0
-WC tested up to: 9.3.3
-Stable tag: 1.11.2
+WC tested up to: 10.2.2
+Stable tag: 1.12.0
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
 == Changelog ==
+= 2025.10.09    - version 1.12.0 =
+* Feature       - The plugin will now send callback urls to Ledyer when creating the order, this will remove the need for these to be set in the Ledyer portal going forward.
+* Feature       - Added support for the Pay for order/redirect checkout flow.
+* Feature       - The plugin will now send callback urls to Ledyer when creating the order, this will remove the need for these to be set in the Ledyer portal going forward.
+* Enhancement   - Improved the logging in the plugin to make debugging easier. Each request has their own title, and the response is logged properly.
+* Enhancement   - The Authentication header and access token is now removed from the logs to improve security.
+* Tweak         - Orders that do not require processing are now set to on-hold until we receive the ready_for_capture event from Ledyer. This prevents orders from being set to Completed in WooCommerce before Ledyer has processed the payment.
+* Fix           - The order metabox is now compatible with HPOS.
+* Fix           - Resolved merchant reference not being set properly for virtual orders.
+* Fix           - Resolved issue where the wrong order was processed by notification callbacks.
+* Fix           - Removed declaration of support for subscriptions, since it has not been implemented yet.
+* Fix           - Addressed various deprecation warnings from PHP 8.2 and 8.3.
+
 = 2025.03.27    - version 1.11.2 =
 * Chore         - Trigger a new release
 

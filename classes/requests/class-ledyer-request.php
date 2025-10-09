@@ -1,4 +1,4 @@
-<?php
+<?php // phpcs:ignore WordPress.Files.FileName.InvalidClassFileName
 /**
  * Abstract Request
  *
@@ -6,7 +6,6 @@
  */
 namespace Ledyer\Requests;
 
-use Ledyer\Credentials;
 use Ledyer\Logger;
 
 defined( 'ABSPATH' ) || exit();
@@ -54,6 +53,13 @@ abstract class Request {
 	 * @var string
 	 */
 	protected $request_url;
+	/**
+	 * The log title to use for the debug log.
+	 *
+	 * @var string
+	 */
+	protected $log_title = '';
+
 	/**
 	 * Requests Class constructor.
 	 *
@@ -107,7 +113,7 @@ abstract class Request {
 		$client = new \WP_Http();
 
 		$headers = array(
-			'Authorization' => 'Basic ' . base64_encode( $client_credentials['merchant_id'] . ':' . $client_credentials['shared_secret'] ),
+			'Authorization' => 'Basic ' . base64_encode( $client_credentials['merchant_id'] . ':' . $client_credentials['shared_secret'] ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions
 		);
 
 		$response = $client->post(
@@ -169,7 +175,7 @@ abstract class Request {
 		);
 
 		if ( 'POST' === $this->method && $this->arguments['data'] ) {
-			$request_args['body'] = json_encode( $this->arguments['data'] );
+			$request_args['body'] = wp_json_encode( $this->arguments['data'] );
 		}
 
 		return $request_args;
@@ -209,7 +215,7 @@ abstract class Request {
 	protected function process_response( $response, $request_args, $request_url ) {
 		$code = wp_remote_retrieve_response_code( $response );
 
-		$log = Logger::format_log( '', 'POST', 'Debugger', $request_args, json_decode( wp_remote_retrieve_body( $response ), true ), $code );
+		$log = Logger::format_log( '', 'POST', $this->log_title, $request_args, json_decode( wp_remote_retrieve_body( $response ), true ), $code );
 
 		Logger::log( $log );
 

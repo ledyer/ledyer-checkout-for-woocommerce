@@ -10,7 +10,7 @@
 /**
  * Gets a Ledyer order. Either creates or updates existing order.
  *
- * @return array
+ * @return array|false
  */
 function lco_create_or_update_order() {
 	// Need to calculate these here, because WooCommerce hasn't done it yet.
@@ -60,26 +60,24 @@ function lco_create_or_update_order() {
 			);
 
 			return $ledyer_order;
-		} else {
+		} elseif ( ( $ledyer_order_id !== $ledyer_order['orderId'] ) || ( $ledyer_session_id !== $ledyer_order['sessionId'] ) ) {
 			// If sessions somehow change??
-			if ( ( $ledyer_order_id !== $ledyer_order['orderId'] ) || ( $ledyer_session_id !== $ledyer_order['sessionId'] ) ) {
-				WC()->session->set( 'lco_wc_session_id', $ledyer_order['sessionId'] );
-				WC()->session->set( 'lco_wc_order_id', $ledyer_order['orderId'] );
-				WC()->session->set(
-					'lco_wc_settings',
-					array(
-						'allow_custom_shipping'         => ledyer()->get_setting( 'allow_custom_shipping' ),
-						'show_shipping_address_contact' => ledyer()->get_setting( 'show_shipping_address_contact' ),
-						'customer_show_name_fields'     => ledyer()->get_setting( 'customer_show_name_fields' ),
-						'terms_url'                     => ledyer()->get_setting( 'terms_url' ),
-						'privacy_url'                   => ledyer()->get_setting( 'privacy_url' ),
-					)
-				);
-			}
+			WC()->session->set( 'lco_wc_session_id', $ledyer_order['sessionId'] );
+			WC()->session->set( 'lco_wc_order_id', $ledyer_order['orderId'] );
+			WC()->session->set(
+				'lco_wc_settings',
+				array(
+					'allow_custom_shipping'         => ledyer()->get_setting( 'allow_custom_shipping' ),
+					'show_shipping_address_contact' => ledyer()->get_setting( 'show_shipping_address_contact' ),
+					'customer_show_name_fields'     => ledyer()->get_setting( 'customer_show_name_fields' ),
+					'terms_url'                     => ledyer()->get_setting( 'terms_url' ),
+					'privacy_url'                   => ledyer()->get_setting( 'privacy_url' ),
+				)
+			);
 		}
 		return $ledyer_order;
 	} else {
-		// Create new order, since we dont have one.
+		// Create new order, since we don't have one.
 		$data         = \Ledyer\Requests\Helpers\Woocommerce_Bridge::get_cart_data();
 		$ledyer_order = ledyer()->api->create_order_session( $data );
 
@@ -140,7 +138,7 @@ function lco_wc_get_selected_payment_method() {
 }
 
 /**
- * Unsets the sessions used by the plguin.
+ * Unsets the sessions used by the plugin.
  *
  * @return void
  */
@@ -186,144 +184,6 @@ function lco_wc_add_extra_checkout_fields() {
 }
 
 /**
- * Confirm the order in WooCommerce.
- *
- * @param int $order_id Woocommerce order id.
- *
- * @return void
- */
-function wc_ledyer_confirm_ledyer_order( $order_id ) {
-	$order = wc_get_order( $order_id );
-	// If the order is already completed or on-hold, return.
-	if ( ! empty( $order->get_date_paid() ) || $order->has_status( array( 'on-hold' ) ) ) {
-		return;
-	}
-
-	$payment_id = $order->get_meta( '_wc_ledyer_order_id', true );
-	$session_id = $order->get_meta( '_wc_ledyer_session_id', true );
-
-	if ( null === $payment_id && null !== WC()->session && method_exists( WC()->session, 'get' ) && WC()->session->get( 'lco_wc_order_id' ) ) {
-		$payment_id = WC()->session->get( 'lco_wc_order_id' );
-	}
-
-	if ( null === $payment_id ) {
-		return;
-	}
-
-	$ledyer_order = ledyer()->api->get_order_session( $payment_id );
-	$order->set_transaction_id( $ledyer_order['orderId'] );
-
-	if ( null === $session_id ) {
-		$session_id = WC()->session->get( 'lco_wc_session_id' );
-	}
-
-	$ledyer_payment_status = ledyer()->api->get_payment_status( $payment_id );
-	if ( is_wp_error( $ledyer_payment_status ) ) {
-		\Ledyer\Logger::log( 'Could not get ledyer payment status ' . $payment_id );
-		return;
-	}
-
-	$ledyer_payment_method = $ledyer_payment_status['paymentMethod'];
-	if ( ! empty( $ledyer_payment_method ) ) {
-
-		$ledyer_payment_provider = sanitize_text_field( $ledyer_payment_method['provider'] );
-		$ledyer_payment_type     = sanitize_text_field( $ledyer_payment_method['type'] );
-
-		$order->update_meta_data( 'ledyer_payment_type', $ledyer_payment_type );
-		$order->update_meta_data( 'ledyer_payment_method', $ledyer_payment_provider );
-
-		switch ( $ledyer_payment_type ) {
-			case 'invoice':
-				$method_title = __( 'Invoice', 'ledyer-checkout-for-woocommerce' );
-				break;
-			case 'advanceInvoice':
-				$method_title = __( 'Advance Invoice', 'ledyer-checkout-for-woocommerce' );
-				break;
-			case 'card':
-				$method_title = __( 'Card', 'ledyer-checkout-for-woocommerce' );
-				break;
-			case 'bankTransfer':
-				$method_title = __( 'Direct Debit', 'ledyer-checkout-for-woocommerce' );
-				break;
-			case 'partPayment':
-				$method_title = __( 'Part Payment', 'ledyer-checkout-for-woocommerce' );
-				break;
-		}
-		$order->set_payment_method_title( sprintf( '%s (Ledyer)', $method_title ) );
-		$order->save();
-	}
-
-	$ack_order = false;
-
-	switch ( $ledyer_payment_status['status'] ) {
-		case LedyerPaymentStatus::ORDER_PENDING:
-			if ( ! $order->has_status( array( 'on-hold', 'processing', 'completed' ) ) ) {
-				$note = sprintf(
-					__(
-						'New session created in Ledyer with Payment ID %1$s. %2$s',
-						'ledyer-checkout-for-woocommerce'
-					),
-					$payment_id,
-					$ledyer_payment_status['note']
-				);
-				$order->update_status( 'on-hold', $note );
-			}
-			break;
-		case LedyerPaymentStatus::PAYMENT_PENDING:
-			if ( ! $order->has_status( array( 'on-hold', 'processing', 'completed' ) ) ) {
-				$note = sprintf(
-					__(
-						'New payment created in Ledyer with Payment ID %1$s. %2$s',
-						'ledyer-checkout-for-woocommerce'
-					),
-					$payment_id,
-					$ledyer_payment_status['note']
-				);
-				$order->update_status( 'on-hold', $note );
-				$ack_order = true;
-			}
-			break;
-		case LedyerPaymentStatus::PAYMENT_CONFIRMED:
-			if ( ! $order->has_status( array( 'processing', 'completed' ) ) ) {
-				$note = sprintf(
-					__(
-						'New payment created in Ledyer with Payment ID %1$s. %2$s',
-						'ledyer-checkout-for-woocommerce'
-					),
-					$payment_id,
-					$ledyer_payment_status['note']
-				);
-				$order->add_order_note( $note );
-				$order->payment_complete( $payment_id );
-				$ack_order = true;
-			}
-			break;
-	}
-
-	if ( $ack_order ) {
-		$ledyer_order = ledyer()->api->get_order( $payment_id );
-		if ( is_wp_error( $ledyer_order ) ) {
-			\Ledyer\Logger::log( 'Could not get the order from Ledyer with the id ' . $payment_id );
-			return;
-		}
-
-		do_action( 'ledyer_process_payment', $order_id, $ledyer_order );
-		$order->update_meta_data( '_ledyer_date_paid', gmdate( 'Y-m-d H:i:s' ) );
-		$order->save();
-
-		$response = ledyer()->api->acknowledge_order( $payment_id );
-		if ( is_wp_error( $response ) ) {
-			\Ledyer\Logger::log( 'Couldn\'t acknowledge order ' . $payment_id );
-		}
-		$ledyer_update_order = ledyer()->api->update_order_reference( $payment_id, array( 'reference' => $order->get_order_number() ) );
-		if ( is_wp_error( $ledyer_update_order ) ) {
-			\Ledyer\Logger::log( 'Couldn\'t set merchant reference ' . $order->get_order_number() );
-		}
-	}
-}
-
-
-/**
  * Redirects to cart with error message if checkout template fails to load.
  *
  * @return void
@@ -332,8 +192,7 @@ function wc_ledyer_cart_redirect() {
 	$url = add_query_arg(
 		array(
 			'lco-order' => 'error',
-			'reason'    => base64_encode( __( 'Failed to load Ledyer Checkout template file.', 'ledyer-checkout-for-woocommerce' ) ),
-			// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions
+			'reason'    => base64_encode( __( 'Failed to load Ledyer Checkout template file.', 'ledyer-checkout-for-woocommerce' ) ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions
 		),
 		wc_get_cart_url()
 	);

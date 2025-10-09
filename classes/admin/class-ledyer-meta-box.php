@@ -1,4 +1,4 @@
-<?php
+<?php // phpcs:ignore WordPress.Files.FileName.InvalidClassFileName
 /**
  * Meta box
  *
@@ -29,24 +29,16 @@ class Meta_Box {
 	/**
 	 * Adds meta box to the side of a LCO order.
 	 *
-	 * @param string $screen_id The WordPress admin screen ID.
+	 * @param string $post_type The WordPress admin screen ID.
 	 * @return void
 	 */
-	public function add_meta_boxes( $screen_id ) {
-		$order_id = null;
-		if ( 'shop_order' === $screen_id ) {
+	public function add_meta_boxes( $post_type ) {
+		if ( 'shop_order' === $post_type || 'woocommerce_page_wc-orders' === $post_type ) {
 			$order_id = get_the_ID();
-		} elseif ( 'woocommerce_page_wc-orders' === $screen_id ) {
-			$order_id = $_GET['id'] ?? null;
-		}
-
-		if ( null === $order_id ) {
-			return;
-		}
-
-		$order = wc_get_order( $order_id );
-		if ( in_array( $order->get_payment_method(), array( 'lco', 'ledyer_payments' ), true ) ) {
-			add_meta_box( 'lco_meta_box', __( 'Ledyer Order Info', 'ledyer-checkout-for-woocommerce' ), array( $this, 'meta_box_content' ), $screen_id, 'side', 'core' );
+			$order    = wc_get_order( $order_id );
+			if ( in_array( $order->get_payment_method(), array( 'lco', 'ledyer_payments' ), true ) ) {
+				add_meta_box( 'lco_meta_box', __( 'Ledyer Order Info', 'ledyer-checkout-for-woocommerce' ), array( $this, 'meta_box_content' ), wc_get_page_screen_id( 'shop-order' ), 'side', 'core' );
+			}
 		}
 	}
 
@@ -60,7 +52,7 @@ class Meta_Box {
 		$order    = wc_get_order( $order_id );
 
 		// False if automatic settings are enabled, true if not. If true then show the option.
-		if ( ! empty( $order->get_meta( '_transaction_id', true ) ) && ! empty( $order->get_meta( '_wc_ledyer_order_id', true ) ) ) {
+		if ( ! empty( $order->get_transaction_id() ) && ! empty( $order->get_meta( '_wc_ledyer_order_id', true ) ) ) {
 			$ledyer_order = ledyer()->api->get_order( $order->get_meta( '_wc_ledyer_order_id', true ) );
 
 			if ( is_wp_error( $ledyer_order ) && 404 === $ledyer_order->get_error_code() ) {
@@ -176,7 +168,9 @@ class Meta_Box {
 					<?php echo esc_html( implode( ', ', $ledyer_order['riskProfile']['tags'] ) ); ?><br />
 				<?php endif; ?>
 				<strong><?php esc_html_e( 'Updated: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong>
-				<?php echo esc_html( sprintf( __( '%1$s at %2$s', 'woocommerce' ), date_i18n( wc_date_format(), strtotime( $ledyer_order['updatedAt'] ) ), date_i18n( wc_time_format(), strtotime( $ledyer_order['updatedAt'] ) ) ) ); ?><br />
+				<?php // @TODO - See if this needs to change. ?>
+				<?php // translators: %1$s: date, %2$s: date. ?>
+				<?php echo esc_html( sprintf( __( '%1$s at %2$s', 'ledyer-checkout-for-woocommerce' ), date_i18n( wc_date_format(), strtotime( $ledyer_order['updatedAt'] ) ), date_i18n( wc_time_format(), strtotime( $ledyer_order['updatedAt'] ) ) ) ); ?><br />
 			<?php } ?>
 		</div>
 		<?php

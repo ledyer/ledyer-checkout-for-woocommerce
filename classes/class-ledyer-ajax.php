@@ -14,7 +14,7 @@ namespace Ledyer;
  *
  * Registers AJAX actions for Ledyer Checkout for WooCommerce.
  *
- * @extends WC_AJAX
+ * @extends \WC_AJAX
  */
 class AJAX extends \WC_AJAX {
 
@@ -128,14 +128,20 @@ class AJAX extends \WC_AJAX {
 	 * @return void
 	 */
 	public static function lco_wc_log_js() {
-		$nonce = isset( $_POST['nonce'] ) ? sanitize_key( $_POST['nonce'] ) : '';
-		if ( ! wp_verify_nonce( $nonce, 'lco_wc_log_js' ) ) {
-			wp_send_json_error( 'bad_nonce' );
-			exit;
-		}
-		$posted_message  = isset( $_POST['message'] ) ? sanitize_text_field( wp_unslash( $_POST['message'] ) ) : '';
+		check_ajax_referer( 'lco_wc_log_js', 'nonce' );
 		$ledyer_order_id = WC()->session->get( 'lco_wc_order_id' );
-		$message         = "Frontend JS $ledyer_order_id: $posted_message";
+
+		// Get the content size of the request.
+		$post_size = (int) $_SERVER['CONTENT_LENGTH'] ?? 0;
+
+		// If the post data is too long, log an error message and return.
+		if ( $post_size > 1024 ) {
+			Logger::log( "Frontend JS $ledyer_order_id: message too long and can't be logged." );
+			wp_send_json_success(); // Return success to not stop anything in the frontend if this happens.
+		}
+
+		$posted_message = filter_input( INPUT_POST, 'message', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		$message        = "Frontend JS $ledyer_order_id: $posted_message";
 		Logger::log( $message );
 		wp_send_json_success();
 		wp_die();
@@ -172,10 +178,9 @@ class AJAX extends \WC_AJAX {
 	/**
 	 * Sets hidden customer fields using info from Ledyer order.
 	 *
-	 * @return array
+	 * @return array|null
 	 */
 	public static function set_customer_data( $ledyer_order ) {
-
 		if ( WC()->checkout() && ! empty( WC()->checkout()->checkout_fields ) ) {
 			$fields = WC()->checkout()->checkout_fields;
 

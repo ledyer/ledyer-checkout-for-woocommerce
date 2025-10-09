@@ -16,12 +16,20 @@ defined( 'ABSPATH' ) || exit();
  * @package Ledyer\Requests\Order\Management
  */
 class Acknowledge_Order extends Request_Order {
-		/**
-		 * Request method
-		 *
-		 * @var string
-		 */
+	/**
+	 * Request method
+	 *
+	 * @var string
+	 */
 	protected $method = 'POST';
+
+	/**
+	 * The log title to use for the debug log.
+	 *
+	 * @var string
+	 */
+	protected $log_title = 'Acknowledge order';
+
 	/**
 	 * Set entrypoint
 	 */

@@ -6,6 +6,8 @@
  */
 namespace Ledyer\Requests\Helpers;
 
+use Ledyer\Callback;
+
 defined( 'ABSPATH' ) || exit();
 
 /**
@@ -159,8 +161,8 @@ class Woocommerce_Bridge {
 	/**
 	 * Creates formatted Ledyer settings for Ledyer API
 	 *
-	 * @param bool          $full Whether to get full settings or not.
-	 * @param WC_Order|null $order Optional WooCommerce order object.
+	 * @param bool           $full Whether to get full settings or not.
+	 * @param \WC_Order|null $order Optional WooCommerce order object.
 	 */
 	private static function set_order_settings( $full = true, $order = null ) {
 		$order_id      = $order ? $order->get_id() : null;
@@ -185,6 +187,7 @@ class Woocommerce_Bridge {
 					'showShippingAddressContact' => 'yes' === ledyer()->get_setting( 'show_shipping_address_contact' ),
 				),
 				'urls'     => array(
+					'notification' => apply_filters( 'lco_notification_url', home_url( Callback::API_ENDPOINT ) ),
 					'terms'        => $merchant_urls['terms'],
 					'privacy'      => $merchant_urls['privacy'],
 					'confirmation' => '',

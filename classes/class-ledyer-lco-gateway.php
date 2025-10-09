@@ -20,6 +20,20 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 	 */
 	class LCO_Gateway extends \WC_Payment_Gateway {
 
+		/**
+		 * The option for if logging is enabled.
+		 *
+		 * @var string
+		 */
+		public $logging;
+
+		/**
+		 * The option for if testmode is enabled.
+		 *
+		 * @var string
+		 */
+		public $testmode;
+
 		public function __construct() {
 			$this->id                 = 'lco';
 			$this->method_title       = __( 'Ledyer Checkout', 'ledyer-checkout-for-woocommerce' );
@@ -29,15 +43,6 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				'lco_wc_supports',
 				array(
 					'products',
-					'subscriptions',
-					'subscription_cancellation',
-					'subscription_suspension',
-					'subscription_reactivation',
-					'subscription_amount_changes',
-					'subscription_date_changes',
-					'multiple_subscriptions',
-					'subscription_payment_method_change_customer',
-					'subscription_payment_method_change_admin',
 				)
 			);
 
@@ -110,11 +115,15 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			}
 
 			// Load the Ledyer Checkout for WooCommerce stylesheet.
+			$url  = plugins_url( 'build/ledyer-checkout-for-woocommerce.css', LCO_WC_MAIN_FILE );
+			$path = plugin_dir_path( LCO_WC_MAIN_FILE ) . 'build/ledyer-checkout-for-woocommerce.css';
+			$ver  = file_exists( $path ) ? filemtime( $path ) : LCO_WC_VERSION;
+
 			wp_register_style(
 				'lco',
-				plugins_url( 'build/ledyer-checkout-for-woocommerce.css', LCO_WC_MAIN_FILE ),
+				$url,
 				array(),
-				filemtime( plugin_dir_path( LCO_WC_MAIN_FILE ) . ( 'build/ledyer-checkout-for-woocommerce.css' ) )
+				$ver
 			);
 			wp_enqueue_style( 'lco' );
 
@@ -328,9 +337,9 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				}
 				// Set order recipient meta
 				if ( isset( $ledyer_order['customer']['shippingAddress']['contact'] ) ) {
-					$order->update_meta_data( '_shipping_first_name', sanitize_text_field( $ledyer_order['customer']['shippingAddress']['contact']['firstName'] ) );
-					$order->update_meta_data( '_shipping_last_name', sanitize_text_field( $ledyer_order['customer']['shippingAddress']['contact']['lastName'] ) );
-					$order->update_meta_data( '_shipping_phone', sanitize_text_field( $ledyer_order['customer']['shippingAddress']['contact']['phone'] ) );
+					$order->set_shipping_first_name( sanitize_text_field( $ledyer_order['customer']['shippingAddress']['contact']['firstName'] ) );
+					$order->set_shipping_last_name( sanitize_text_field( $ledyer_order['customer']['shippingAddress']['contact']['lastName'] ) );
+					$order->set_shipping_phone( sanitize_text_field( $ledyer_order['customer']['shippingAddress']['contact']['phone'] ) );
 					$order->update_meta_data( '_shipping_email', sanitize_text_field( $ledyer_order['customer']['shippingAddress']['contact']['email'] ) );
 				}
 
@@ -346,7 +355,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				do_action( 'lco_wc_process_payment', $order_id, $ledyer_order );
 
 				// Check that the transaction id got set correctly.
-				if ( $order->get_meta( '_transaction_id', true ) === $ledyer_order_id ) {
+				if ( $order->get_transaction_id() === $ledyer_order_id ) {
 					return true;
 				}
 			}
@@ -565,23 +574,16 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		/**
 		 * Add additional shipping fields on Edit Order Screen
 		 *
-		 * @param $order
+		 * @param \WC_Order $order
 		 *
 		 * @return void
 		 */
 		public function ledyer_order_shipping_fields( $order ) {
-
-			if ( 'Automattic\WooCommerce\Admin\Overrides\Order' === get_class( $order ) ) {
-				$order_id = $order->get_id();
-			} else {
-				$order_id = $order->id;
-			}
-
 			$attention_name = $order->get_meta( '_shipping_attention_name', true );
 			$care_of        = $order->get_meta( '_shipping_care_of', true );
-			$first_name     = $order->get_meta( '_shipping_first_name', true );
-			$last_name      = $order->get_meta( '_shipping_last_name', true );
-			$phone          = $order->get_meta( '_shipping_phone', true );
+			$first_name     = $order->get_shipping_first_name();
+			$last_name      = $order->get_shipping_last_name();
+			$phone          = $order->get_shipping_phone();
 			$email          = $order->get_meta( '_shipping_email', true );
 
 			?>
@@ -711,7 +713,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$order->update_meta_data( '_billing_care_of', sanitize_text_field( $_POST['_billing_care_of'] ) );
 			$order->update_meta_data( '_shipping_attention_name', sanitize_text_field( $_POST['_shipping_attention_name'] ) );
 			$order->update_meta_data( '_shipping_care_of', sanitize_text_field( $_POST['_shipping_care_of'] ) );
-			$order->update_meta_data( '_shipping_phone', sanitize_text_field( $_POST['_shipping_phone'] ) );
+			$order->set_shipping_phone( sanitize_text_field( $_POST['_shipping_phone'] ) );
 			$order->update_meta_data( '_shipping_email', sanitize_text_field( $_POST['_shipping_email'] ) );
 			$order->save();
 		}
@@ -754,10 +756,10 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		/**
 		 * Validates customer field length
 		 *
-		 * @param WC_Order $order The WooCommerce order object.
-		 * @param string   $field_name The field name to validate.
-		 * @param int      $min Minimum allowed length.
-		 * @param int      $max Maximum allowed length.
+		 * @param \WC_Order $order The WooCommerce order object.
+		 * @param string    $field_name The field name to validate.
+		 * @param int       $min Minimum allowed length.
+		 * @param int       $max Maximum allowed length.
 		 * @return void
 		 */
 		public function lom_validate_customer_field( $order, $field_name, $min, $max ) {
@@ -791,8 +793,8 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		/**
 		 * Validates customer email field
 		 *
-		 * @param WC_Order $order The WooCommerce order object.
-		 * @param string   $field_name The field name to validate.
+		 * @param \WC_Order $order The WooCommerce order object.
+		 * @param string    $field_name The field name to validate.
 		 * @return bool
 		 */
 		public function lom_validate_customer_email( $order, $field_name ) {
@@ -814,7 +816,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		/**
 		 * Checks if order is allowed to be edited
 		 *
-		 * @param WC_Order $order The WooCommerce order object.
+		 * @param \WC_Order $order The WooCommerce order object.
 		 * @return bool
 		 */
 		public function lom_allow_editing( $order ) {
