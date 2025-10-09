@@ -266,18 +266,18 @@ class Callback {
 
 
 	    			$order->add_order_note( $note );
+					$ack_order = true;
 
-	    			// If the order does not need payment, we need to ensure the "ready-for-capture" event has been triggered.
+					// If the order does not need payment, we need to ensure the "ready-for-capture" event has been triggered.
 	    			$ready_for_capture = $order->get_meta( '_ledyer_ready_for_capture', true );
 	    			if ( ! $order->needs_payment() && empty( $ready_for_capture ) ) {
 	    				// Set the metadata to indicate the order is still waiting for the ready for capture event.
 	    				$order->update_meta_data( '_ledyer_waiting_on_ready_for_capture', true );
 	    				$order->save();
 	    				Logger::log( "[SCHEDULER]: Order {$order->get_order_number()} is paid but waiting for ready_for_capture event." );
-	    				return;
+	    				break;
 	    			}
 	    			$order->payment_complete( $ledyer_order_id );
-	    			$ack_order = true;
 	    		}
 	    		break;
 	    	case \LedyerPaymentStatus::ORDER_CAPTURED:
