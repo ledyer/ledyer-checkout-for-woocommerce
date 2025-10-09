@@ -23,9 +23,17 @@ class Get_Order extends Request_Order {
 	 */
 
 	protected $method = 'GET';
-		/**
-		 * Set entrypoint
-		 */
+
+	/**
+	 * The log title to use for the debug log.
+	 *
+	 * @var string
+	 */
+	protected $log_title = 'Get order';
+
+	/**
+	 * Set entrypoint
+	 */
 	protected function set_url() {
 		$this->url = sprintf( 'v1/orders/%s', $this->arguments['orderId'] );
 

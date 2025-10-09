@@ -60,22 +60,20 @@ function lco_create_or_update_order() {
 			);
 
 			return $ledyer_order;
-		} else {
+		} elseif ( ( $ledyer_order_id !== $ledyer_order['orderId'] ) || ( $ledyer_session_id !== $ledyer_order['sessionId'] ) ) {
 			// If sessions somehow change??
-			if ( ( $ledyer_order_id !== $ledyer_order['orderId'] ) || ( $ledyer_session_id !== $ledyer_order['sessionId'] ) ) {
-				WC()->session->set( 'lco_wc_session_id', $ledyer_order['sessionId'] );
-				WC()->session->set( 'lco_wc_order_id', $ledyer_order['orderId'] );
-				WC()->session->set(
-					'lco_wc_settings',
-					array(
-						'allow_custom_shipping'         => ledyer()->get_setting( 'allow_custom_shipping' ),
-						'show_shipping_address_contact' => ledyer()->get_setting( 'show_shipping_address_contact' ),
-						'customer_show_name_fields'     => ledyer()->get_setting( 'customer_show_name_fields' ),
-						'terms_url'                     => ledyer()->get_setting( 'terms_url' ),
-						'privacy_url'                   => ledyer()->get_setting( 'privacy_url' ),
-					)
-				);
-			}
+			WC()->session->set( 'lco_wc_session_id', $ledyer_order['sessionId'] );
+			WC()->session->set( 'lco_wc_order_id', $ledyer_order['orderId'] );
+			WC()->session->set(
+				'lco_wc_settings',
+				array(
+					'allow_custom_shipping'         => ledyer()->get_setting( 'allow_custom_shipping' ),
+					'show_shipping_address_contact' => ledyer()->get_setting( 'show_shipping_address_contact' ),
+					'customer_show_name_fields'     => ledyer()->get_setting( 'customer_show_name_fields' ),
+					'terms_url'                     => ledyer()->get_setting( 'terms_url' ),
+					'privacy_url'                   => ledyer()->get_setting( 'privacy_url' ),
+				)
+			);
 		}
 		return $ledyer_order;
 	} else {
@@ -194,8 +192,7 @@ function wc_ledyer_cart_redirect() {
 	$url = add_query_arg(
 		array(
 			'lco-order' => 'error',
-			'reason'    => base64_encode( __( 'Failed to load Ledyer Checkout template file.', 'ledyer-checkout-for-woocommerce' ) ),
-			// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions
+			'reason'    => base64_encode( __( 'Failed to load Ledyer Checkout template file.', 'ledyer-checkout-for-woocommerce' ) ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions
 		),
 		wc_get_cart_url()
 	);

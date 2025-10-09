@@ -1,4 +1,4 @@
-<?php
+<?php // phpcs:ignore WordPress.Files.FileName.InvalidClassFileName
 /**
  * Meta box
  *
@@ -29,7 +29,7 @@ class Meta_Box {
 	/**
 	 * Adds meta box to the side of a LCO order.
 	 *
-	 * @param string $screen_id The WordPress admin screen ID.
+	 * @param string $post_type The WordPress admin screen ID.
 	 * @return void
 	 */
 	public function add_meta_boxes( $post_type ) {
@@ -168,7 +168,9 @@ class Meta_Box {
 					<?php echo esc_html( implode( ', ', $ledyer_order['riskProfile']['tags'] ) ); ?><br />
 				<?php endif; ?>
 				<strong><?php esc_html_e( 'Updated: ', 'ledyer-checkout-for-woocommerce' ); ?> </strong>
-				<?php echo esc_html( sprintf( __( '%1$s at %2$s', 'woocommerce' ), date_i18n( wc_date_format(), strtotime( $ledyer_order['updatedAt'] ) ), date_i18n( wc_time_format(), strtotime( $ledyer_order['updatedAt'] ) ) ) ); ?><br />
+				<?php // @TODO - See if this needs to change. ?>
+				<?php // translators: %1$s: date, %2$s: date. ?>
+				<?php echo esc_html( sprintf( __( '%1$s at %2$s', 'ledyer-checkout-for-woocommerce' ), date_i18n( wc_date_format(), strtotime( $ledyer_order['updatedAt'] ) ), date_i18n( wc_time_format(), strtotime( $ledyer_order['updatedAt'] ) ) ) ); ?><br />
 			<?php } ?>
 		</div>
 		<?php

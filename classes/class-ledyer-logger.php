@@ -71,9 +71,16 @@ class Logger {
 		if ( isset( $response['snippet'] ) ) {
 			unset( $response['snippet'] );
 		}
-		// Unset the snippet to prevent issues in the request body.
-		if ( isset( $request_args['body'] ) ) {
-			$request_body = json_decode( $request_args['body'], true );
+
+		// Mask the access token in the response.
+		if ( isset( $response['access_token'] ) ) {
+			$response['access_token'] = '[REDACTED]';
+		}
+
+		// Mask the authorization header.
+		if ( isset( $request_args['headers']['Authorization'] ) ) {
+			$replacement = strlen( $request_args['headers']['Authorization'] ) > 15 ? '[REDACTED]' : '[MISSING]';
+			$request_args['headers']['Authorization'] = $replacement;
 		}
 
 		return array(
@@ -82,7 +89,7 @@ class Logger {
 			'title'          => $title,
 			'request'        => $request_args,
 			'response'       => array(
-				'body' => $request_body ?? $response,
+				'body' => $response,
 				'code' => $code,
 			),
 			'timestamp'      => gmdate( 'Y-m-d H:i:s' ),

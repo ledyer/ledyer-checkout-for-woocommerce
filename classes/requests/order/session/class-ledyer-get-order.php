@@ -22,6 +22,14 @@ class Get_Order extends Request_Order {
 	 * @var string
 	 */
 	protected $method = 'GET';
+
+	/**
+	 * The log title to use for the debug log.
+	 *
+	 * @var string
+	 */
+	protected $log_title = 'Get session';
+
 	/**
 	 * Set entrypoint
 	 */

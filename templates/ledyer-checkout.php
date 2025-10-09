@@ -11,7 +11,7 @@ do_action( 'woocommerce_before_checkout_form', WC()->checkout() );
 
 // If checkout registration is disabled and not logged in, the user cannot checkout.
 if ( ! $checkout->is_registration_enabled() && $checkout->is_registration_required() && ! is_user_logged_in() ) {
-	echo esc_html( apply_filters( 'woocommerce_checkout_must_be_logged_in_message', __( 'You must be logged in to checkout.', 'woocommerce' ) ) );
+	echo esc_html( apply_filters( 'woocommerce_checkout_must_be_logged_in_message', __( 'You must be logged in to checkout.', 'woocommerce' ) ) ); // phpcs:ignore
 	return;
 }
 
@@ -40,7 +40,7 @@ $vertical_layout = 'yes' === ledyer()->get_setting( 'vertical_layout' ) ? 'verti
 			<?php
 			do_action( 'lco_wc_before_snippet' );
 
-			// Create or update the order and handle redirection
+			// Create or update the order and handle redirection.
 			$ledyer_order = lco_create_or_update_order();
 			if ( false === $ledyer_order ) :
 				wc_ledyer_cart_redirect();
