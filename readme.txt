@@ -23,7 +23,7 @@ License URI: http://www.gnu.org/licenses/gpl-3.0.html
 * Fix           - Resolved merchant reference not being set properly for virtual orders.
 * Fix           - Resolved issue where the wrong order was processed by notification callbacks.
 * Fix           - Removed declaration of support for subscriptions, since it has not been implemented yet.
-* Fix           - Addressed various deprecation warnings from PHP 8.2 and 8.3..
+* Fix           - Addressed various deprecation warnings from PHP 8.2 and 8.3.
 
 = 2025.03.27    - version 1.11.2 =
 * Chore         - Trigger a new release
