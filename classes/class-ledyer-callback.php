@@ -201,7 +201,7 @@ class Callback {
 	private function process_ready_for_capture( $ledyer_payment_status, $order, $ledyer_order_id ) {
 	    $order->update_meta_data( '_ledyer_ready_for_capture', true );
 
-	    // If we where waiting for the ready for capture event, we can now complete the order.
+	    // If we were waiting for the ready for capture event, we can now complete the order.
 	    $waiting_on_ready_for_capture = $order->get_meta( '_ledyer_waiting_on_ready_for_capture', true );
 	    if ( ! empty( $waiting_on_ready_for_capture ) ) {
 	    	$order->delete_meta_data( '_ledyer_waiting_on_ready_for_capture' );
