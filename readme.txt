@@ -7,11 +7,15 @@ Tested up to: 6.8.3
 Requires PHP: 7.4
 WC requires at least: 5.6.0
 WC tested up to: 10.2.2
-Stable tag: 1.12.0
+Stable tag: 1.12.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
 == Changelog ==
+= 2025.10.13    - version 1.12.1 =
+* Fix           - Fixes an issue that would cause Advance invoices to not leave the on-hold status when confirmed by Ledyer.
+* Fix           - Fixed a fatal error that could happen on the thankyou page when using SCP 300 as the security level with Ledyer.
+
 = 2025.10.09    - version 1.12.0 =
 * Feature       - The plugin will now send callback urls to Ledyer when creating the order, this will remove the need for these to be set in the Ledyer portal going forward.
 * Feature       - Added support for the Pay for order/redirect checkout flow.
