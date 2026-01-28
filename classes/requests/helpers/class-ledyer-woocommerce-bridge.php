@@ -87,6 +87,7 @@ class Woocommerce_Bridge {
 					'showShippingAddressContact' => 'yes' === ledyer()->get_setting( 'show_shipping_address_contact' ),
 				),
 				'urls'     => array(
+					'notification' => apply_filters( 'lco_notification_url', home_url( Callback::API_ENDPOINT ) ),
 					'terms'        => $merchant_urls['terms'],
 					'privacy'      => $merchant_urls['privacy'],
 					'confirmation' => $merchant_urls['confirmation'],
