@@ -3,15 +3,18 @@ Contributors: ledyerdevelopment
 Tags: woocommerce, ledyer, ecommerce, e-commerce, checkout
 Donate link: https://ledyer.com
 Requires at least: 5.0
-Tested up to: 6.8.3
+Tested up to: 6.9
 Requires PHP: 7.4
 WC requires at least: 5.6.0
-WC tested up to: 10.2.2
-Stable tag: 1.12.1
+WC tested up to: 10.4.3
+Stable tag: 1.12.2
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
 == Changelog ==
+= 2026.01.28    - version 1.12.2 =
+* Fix           - Resolved an issue where orders created via the redirect flow were not correctly updated to the "processing" status.
+
 = 2025.10.13    - version 1.12.1 =
 * Fix           - Fixes an issue that would cause Advance invoices to not leave the on-hold status when confirmed by Ledyer.
 * Fix           - Fixed a fatal error that could happen on the thankyou page when using SCP 300 as the security level with Ledyer.
