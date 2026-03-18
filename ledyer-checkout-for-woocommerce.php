@@ -11,6 +11,7 @@
  *
  * WC requires at least: 3.2.0
  * WC tested up to: 10.3.5
+ * Requires Plugins: woocommerce
  *
  * Copyright (c) 2017-2025 Ledyer
  *
