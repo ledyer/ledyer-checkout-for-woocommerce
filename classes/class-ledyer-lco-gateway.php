@@ -253,6 +253,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		/**
 		 * Process the payment and return the result.
 		 *
+		 * @throws \Exception If something goes wrong during payment processing.
 		 * @param int $order_id WooCommerce order ID.
 		 *
 		 * @return array
@@ -271,7 +272,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			// Regular purchase.
 			// 1. Process the payment.
 			// 2. Redirect to order received page.
-			if ( $this->process_payment_handler( $order_id ) ) {
+			if (false && $this->process_payment_handler( $order_id ) ) {
 				// Base64 encoded timestamp to always have a fresh URL for on hash change event.
 				return array(
 					'result'   => 'success',
@@ -283,9 +284,8 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					),
 				);
 			} else {
-				return array(
-					'result' => 'error',
-				);
+				$message = __('Something went wrong. Please try again.', 'ledyer-checkout-for-woocommerce');
+				throw new \Exception( esc_html( $message ) );
 			}
 		}
 
@@ -294,7 +294,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 *
 		 * @param int $order_id WooCommerce order ID.
 		 *
-		 * @return mixed
+		 * @return bool
 		 */
 		public function process_payment_handler( $order_id ) {
 			// Get the Ledyer order ID.
@@ -374,22 +374,16 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		protected function hpp_redirect_handler( $order ) {
 
 			if ( empty( $order ) ) {
-
-				return array(
-					'result'   => 'error',
-					'messages' => array( 'Failed to get order for HPP.' ),
-				);
+				$message = __('Failed to get order for HPP.', 'ledyer-checkout-for-woocommerce');
+				throw new \Exception( esc_html( $message ) );
 			}
 
 			$data = \Ledyer\Requests\Helpers\Woocommerce_Bridge::get_order_data( $order );
 			// Add confirmation URL to the order.
 			$ledyer_order = ledyer()->api->create_order_session( $data );
 			if ( is_wp_error( $ledyer_order ) ) {
-
-				return array(
-					'result'   => 'error',
-					'messages' => array( 'Failed to create order session for HPP.' ),
-				);
+				$message = __('Failed to create order session for HPP.', 'ledyer-checkout-for-woocommerce');
+				throw new \Exception( esc_html( $message ) );
 			}
 
 			// Create a HPP url.
