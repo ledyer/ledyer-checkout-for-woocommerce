@@ -568,7 +568,7 @@ jQuery( function ( $ ) {
 									);
 									lco_wc.failOrder(
 										'Vänligen kontrollera att alla uppgifter är korrekt ifyllda.',
-										data.messages
+										$(data.messages).text() // WC will add its own notice markup. Extract just the text to avoid showing HTML in the alert.
 									);
 								} else {
 									lco_wc.logToFile(
