@@ -272,7 +272,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			// Regular purchase.
 			// 1. Process the payment.
 			// 2. Redirect to order received page.
-			if (false && $this->process_payment_handler( $order_id ) ) {
+			if ($this->process_payment_handler( $order_id ) ) {
 				// Base64 encoded timestamp to always have a fresh URL for on hash change event.
 				return array(
 					'result'   => 'success',
