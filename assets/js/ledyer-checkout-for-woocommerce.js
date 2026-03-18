@@ -568,7 +568,7 @@ jQuery( function ( $ ) {
 									);
 									lco_wc.failOrder(
 										'Vänligen kontrollera att alla uppgifter är korrekt ifyllda.',
-										$(data.messages).text() // WC will add its own notice markup. Extract just the text to avoid showing HTML in the alert.
+										$('<div>').html(data.messages).text() // WC will add its own notice markup. Extract just the text to avoid showing HTML in the alert. In case we receive plaintext, we don't want jQuery to interpret it as a selector, hence the <div>.
 									);
 								} else {
 									lco_wc.logToFile(
