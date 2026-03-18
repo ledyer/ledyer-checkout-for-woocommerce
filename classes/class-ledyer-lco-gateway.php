@@ -284,7 +284,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					),
 				);
 			} else {
-				$message = __('Something went wrong. Please try again.', 'ledyer-checkout-for-woocommerce');
+				$message = __( 'Could not complete the order. Please try again. If the problem persists, please contact customer support.', 'ledyer-checkout-for-woocommerce' );
 				throw new \Exception( esc_html( $message ) );
 			}
 		}
