@@ -367,9 +367,10 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		/**
 		 * Process the payment for HPP/redirect checkout flow.
 		 *
+		 * @throws \Exception If something goes wrong during payment processing.
 		 * @param object $order The WooCommerce order.
 		 *
-		 * @return array|string[]
+		 * @return array{result: string, redirect: string}
 		 */
 		protected function hpp_redirect_handler( $order ) {
 
