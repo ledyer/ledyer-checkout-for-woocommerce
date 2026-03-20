@@ -272,7 +272,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			// Regular purchase.
 			// 1. Process the payment.
 			// 2. Redirect to order received page.
-			if ($this->process_payment_handler( $order_id ) ) {
+			if ( $this->process_payment_handler( $order_id ) ) {
 				// Base64 encoded timestamp to always have a fresh URL for on hash change event.
 				return array(
 					'result'   => 'success',
@@ -374,7 +374,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		protected function hpp_redirect_handler( $order ) {
 
 			if ( empty( $order ) ) {
-				$message = __('Failed to get order for HPP.', 'ledyer-checkout-for-woocommerce');
+				$message = __( 'Failed to get order for HPP.', 'ledyer-checkout-for-woocommerce' );
 				throw new \Exception( esc_html( $message ) );
 			}
 
@@ -382,7 +382,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			// Add confirmation URL to the order.
 			$ledyer_order = ledyer()->api->create_order_session( $data );
 			if ( is_wp_error( $ledyer_order ) ) {
-				$message = __('Failed to create order session for HPP.', 'ledyer-checkout-for-woocommerce');
+				$message = __( 'Failed to create order session for HPP.', 'ledyer-checkout-for-woocommerce' );
 				throw new \Exception( esc_html( $message ) );
 			}
 
