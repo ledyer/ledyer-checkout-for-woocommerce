@@ -30,9 +30,8 @@ function lco_create_or_update_order() {
 		$ledyer_session_id = WC()->session->get( 'lco_wc_session_id' );
 		$data              = \Ledyer\Requests\Helpers\Woocommerce_Bridge::get_updated_cart_data();
 		$ledyer_order      = ledyer()->api->update_order_session( $ledyer_order_id, $data );
-		$duplicate_exists  = ledyer_order_already_exist( $ledyer_order_id );
 
-		if ( $duplicate_exists || ! $ledyer_order || ( is_object( $ledyer_order ) && is_wp_error( $ledyer_order ) ) || $ledyer_order['orderId'] !== $ledyer_order_id || $ledyer_order['sessionId'] !== $ledyer_session_id ) {
+		if ( ! $ledyer_order || ( is_object( $ledyer_order ) && is_wp_error( $ledyer_order ) ) || $ledyer_order['orderId'] !== $ledyer_order_id || $ledyer_order['sessionId'] !== $ledyer_session_id ) {
 			// If update order failed try to create new order.
 			$data         = \Ledyer\Requests\Helpers\Woocommerce_Bridge::get_cart_data();
 			$ledyer_order = ledyer()->api->create_order_session( $data );
@@ -200,41 +199,4 @@ function wc_ledyer_cart_redirect() {
 
 	wp_safe_redirect( $url );
 	exit;
-}
-
-/**
- * Checks if an order with the current Ledyer order ID already exists.
- *
- * @param string $ledyer_order_id The Ledyer order ID to check for.
- * @return bool
- */
-function ledyer_order_already_exist( $ledyer_order_id ) {
-
-	if ( ! $ledyer_order_id ) {
-		return false;
-	}
-	// Get by WC order key.
-	$orders = wc_get_orders(
-		array(
-			'meta_key'     => '_wc_ledyer_order_id',
-			'meta_value'   => $ledyer_order_id,
-			'meta_compare' => '=',
-			'limit'        => 2,
-		)
-	);
-
-	if ( 2 !== count( $orders ) ) {
-		return false;
-	}
-
-	// Make sure that both orders have the same Ledyer order ID, just in case.
-	foreach ( $orders as $order ) {
-		$order_ledyer_order_id = $order->get_meta( '_wc_ledyer_order_id' );
-
-		if ( $order_ledyer_order_id !== $ledyer_order_id ) {
-			return false;
-		}
-	}
-
-	return true;
 }
