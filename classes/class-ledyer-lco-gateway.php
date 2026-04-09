@@ -318,8 +318,6 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 				$order->update_meta_data( '_wc_ledyer_session_id', $ledyer_order['id'] );
 
-				$order->set_transaction_id( $ledyer_order['orderId'] );
-
 				$order->update_meta_data( '_ledyer_company_id', $ledyer_order['customer']['companyId'] );
 
 				$order->update_meta_data( '_ledyer_company_name', $company_name );
@@ -355,7 +353,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				do_action( 'lco_wc_process_payment', $order_id, $ledyer_order );
 
 				// Check that the transaction id got set correctly.
-				if ( $order->get_transaction_id() === $ledyer_order_id ) {
+				if ( $order->get_meta( '_wc_ledyer_order_id' ) === $ledyer_order_id ) {
 					return true;
 				}
 			}
