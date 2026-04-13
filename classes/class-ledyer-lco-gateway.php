@@ -253,6 +253,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		/**
 		 * Process the payment and return the result.
 		 *
+		 * @throws \Exception If something goes wrong during payment processing.
 		 * @param int $order_id WooCommerce order ID.
 		 *
 		 * @return array
@@ -283,9 +284,8 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					),
 				);
 			} else {
-				return array(
-					'result' => 'error',
-				);
+				$message = __( 'Could not complete the order. Please try again. If the problem persists, please contact customer support.', 'ledyer-checkout-for-woocommerce' );
+				throw new \Exception( esc_html( $message ) );
 			}
 		}
 
@@ -294,7 +294,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 *
 		 * @param int $order_id WooCommerce order ID.
 		 *
-		 * @return mixed
+		 * @return bool
 		 */
 		public function process_payment_handler( $order_id ) {
 			// Get the Ledyer order ID.
@@ -317,8 +317,6 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				$order->update_meta_data( '_wc_ledyer_order_id', $ledyer_order['orderId'] );
 
 				$order->update_meta_data( '_wc_ledyer_session_id', $ledyer_order['id'] );
-
-				$order->set_transaction_id( $ledyer_order['orderId'] );
 
 				$order->update_meta_data( '_ledyer_company_id', $ledyer_order['customer']['companyId'] );
 
@@ -355,7 +353,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				do_action( 'lco_wc_process_payment', $order_id, $ledyer_order );
 
 				// Check that the transaction id got set correctly.
-				if ( $order->get_transaction_id() === $ledyer_order_id ) {
+				if ( $order->get_meta( '_wc_ledyer_order_id' ) === $ledyer_order_id ) {
 					return true;
 				}
 			}
@@ -367,29 +365,24 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		/**
 		 * Process the payment for HPP/redirect checkout flow.
 		 *
+		 * @throws \Exception If something goes wrong during payment processing.
 		 * @param object $order The WooCommerce order.
 		 *
-		 * @return array|string[]
+		 * @return array{result: string, redirect: string}
 		 */
 		protected function hpp_redirect_handler( $order ) {
 
 			if ( empty( $order ) ) {
-
-				return array(
-					'result'   => 'error',
-					'messages' => array( 'Failed to get order for HPP.' ),
-				);
+				$message = __( 'Failed to get order for HPP.', 'ledyer-checkout-for-woocommerce' );
+				throw new \Exception( esc_html( $message ) );
 			}
 
 			$data = \Ledyer\Requests\Helpers\Woocommerce_Bridge::get_order_data( $order );
 			// Add confirmation URL to the order.
 			$ledyer_order = ledyer()->api->create_order_session( $data );
 			if ( is_wp_error( $ledyer_order ) ) {
-
-				return array(
-					'result'   => 'error',
-					'messages' => array( 'Failed to create order session for HPP.' ),
-				);
+				$message = __( 'Failed to create order session for HPP.', 'ledyer-checkout-for-woocommerce' );
+				throw new \Exception( esc_html( $message ) );
 			}
 
 			// Create a HPP url.
