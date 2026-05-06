@@ -8,6 +8,7 @@
  * Version: 1.12.3
  * Text Domain: ledyer-checkout-for-woocommerce
  * Domain Path: /languages
+ * Requires Plugins: woocommerce
  *
  * WC requires at least: 3.2.0
  * WC tested up to: 10.6.2
