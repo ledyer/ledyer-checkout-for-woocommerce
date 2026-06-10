@@ -26,8 +26,6 @@ jQuery( function ( $ ) {
 
 		// True or false if we need to update the Ledyer order. Set to false on initial page load.
 		ledyerUpdateNeeded: false,
-		shippingEmailExists: false,
-		shippingPhoneExists: false,
 		shippingFirstNameExists: false,
 		shippingLastNameExists: false,
 
@@ -188,12 +186,6 @@ jQuery( function ( $ ) {
 							);
 						}
 					} else if ( 0 < $( 'p#' + name + '_field' ).length ) {
-						if ( name === 'shipping_phone' ) {
-							lco_wc.shippingPhoneExists = true;
-						}
-						if ( name === 'shipping_email' ) {
-							lco_wc.shippingEmailExists = true;
-						}
 						if ( name === 'shipping_first_name' ) {
 							lco_wc.shippingFirstNameExists = true;
 						}
