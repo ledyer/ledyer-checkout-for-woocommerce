@@ -239,11 +239,11 @@ class AJAX extends \WC_AJAX {
 						break;
 					case 'shipping_phone':
 						$shipping_phone                     = $ledyer_order['customer']['shippingAddress']['contact']['phone'] ?? '';
-						$fields['shipping_address'][ $key ] = $shipping_phone ?: ( $ledyer_order['customer']['phone'] ?? '' );
+						$fields['shipping_address'][ $key ] = ! empty( $shipping_phone ) ? $shipping_phone : ( $ledyer_order['customer']['phone'] ?? '' );
 						break;
 					case 'shipping_email':
 						$shipping_email                     = $ledyer_order['customer']['shippingAddress']['contact']['email'] ?? '';
-						$fields['shipping_address'][ $key ] = $shipping_email ?: ( $ledyer_order['customer']['email'] ?? '' );
+						$fields['shipping_address'][ $key ] = ! empty( $shipping_email ) ? $shipping_email : ( $ledyer_order['customer']['email'] ?? '' );
 						break;
 					default:
 						unset( $fields[ $key ] );
