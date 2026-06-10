@@ -238,10 +238,12 @@ class AJAX extends \WC_AJAX {
 						$fields['billing_address'][ $key ] = $ledyer_order['customer']['email'];
 						break;
 					case 'shipping_phone':
-						$fields['shipping_address'][ $key ] = isset( $ledyer_order['customer']['shippingAddress']['contact'] ) ? $ledyer_order['customer']['shippingAddress']['contact']['phone'] : '';
+						$shipping_phone                      = isset( $ledyer_order['customer']['shippingAddress']['contact'] ) ? $ledyer_order['customer']['shippingAddress']['contact']['phone'] : '';
+						$fields['shipping_address'][ $key ] = $shipping_phone ?: $ledyer_order['customer']['phone'];
 						break;
 					case 'shipping_email':
-						$fields['shipping_address'][ $key ] = isset( $ledyer_order['customer']['shippingAddress']['contact'] ) ? $ledyer_order['customer']['shippingAddress']['contact']['email'] : '';
+						$shipping_email                      = isset( $ledyer_order['customer']['shippingAddress']['contact'] ) ? $ledyer_order['customer']['shippingAddress']['contact']['email'] : '';
+						$fields['shipping_address'][ $key ] = $shipping_email ?: $ledyer_order['customer']['email'];
 						break;
 					default:
 						unset( $fields[ $key ] );
