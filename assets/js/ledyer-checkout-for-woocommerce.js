@@ -26,8 +26,6 @@ jQuery( function ( $ ) {
 
 		// True or false if we need to update the Ledyer order. Set to false on initial page load.
 		ledyerUpdateNeeded: false,
-		shippingEmailExists: false,
-		shippingPhoneExists: false,
 		shippingFirstNameExists: false,
 		shippingLastNameExists: false,
 
@@ -188,12 +186,6 @@ jQuery( function ( $ ) {
 							);
 						}
 					} else if ( 0 < $( 'p#' + name + '_field' ).length ) {
-						if ( name === 'shipping_phone' ) {
-							lco_wc.shippingPhoneExists = true;
-						}
-						if ( name === 'shipping_email' ) {
-							lco_wc.shippingEmailExists = true;
-						}
 						if ( name === 'shipping_first_name' ) {
 							lco_wc.shippingFirstNameExists = true;
 						}
@@ -392,27 +384,6 @@ jQuery( function ( $ ) {
 					  )
 					: '';
 
-				// extra shipping fields (email, phone, name).
-				if (
-					lco_wc.shippingEmailExists === true &&
-					$( '#shipping_email' )
-				) {
-					$( '#shipping_email' ).val(
-						'shipping_email' in data.shipping_address
-							? data.shipping_address.shipping_email
-							: ''
-					);
-				}
-				if (
-					lco_wc.shippingPhoneExists === true &&
-					$( '#shipping_phone' )
-				) {
-					$( '#shipping_phone' ).val(
-						'shipping_phone' in data.shipping_address
-							? data.shipping_address.shipping_phone
-							: ''
-					);
-				}
 				if (
 					lco_wc.shippingFirstNameExists === true &&
 					$( '#shipping_first_name' )
@@ -433,6 +404,25 @@ jQuery( function ( $ ) {
 							: ''
 					);
 				}
+			}
+
+			const shippingAddress = data.shipping_address || {};
+			const billingAddress = data.billing_address || {};
+			const $shippingPhone = $( '#shipping_phone' );
+			if ( $shippingPhone.length ) {
+				$shippingPhone.val(
+					shippingAddress.shipping_phone ||
+					billingAddress.billing_phone ||
+					''
+				);
+			}
+			const $shippingEmail = $( '#shipping_email' );
+			if ( $shippingEmail.length ) {
+				$shippingEmail.val(
+					shippingAddress.shipping_email ||
+					billingAddress.billing_email ||
+					''
+				);
 			}
 		},
 
