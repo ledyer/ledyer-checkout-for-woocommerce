@@ -142,16 +142,6 @@ class Fields {
 					'autocomplete' => 'new-password',
 				),
 			),
-			'notifications_endpoint_section' => array(
-				'title' => __( 'Ledyer notifications endpoint', 'ledyer-checkout-for-woocommerce' ),
-				'type'  => 'title',
-			),
-			'notifications_endpoint_link'    => array(
-				'title'       => __( get_home_url() . '/wp-json/ledyer/v1/notifications/', 'ledyer-checkout-for-woocommerce' ),
-				'type'        => 'title',
-				'description' => __( 'Use this url when setting up notifications in the settings panel in Ledyer merchant portal', 'ledyer-checkout-for-woocommerce' ),
-			),
-
 			// Checkout.
 			'checkout_section'               => array(
 				'title' => __( 'Checkout settings', 'ledyer-checkout-for-woocommerce' ),
@@ -180,22 +170,6 @@ class Fields {
 				'description' => __( 'If checked, name fields will be shown in iframe.', 'ledyer-checkout-for-woocommerce' ),
 				'default'     => 'no',
 				'desc_tip'    => true,
-			),
-			'security_level'                 => array(
-				'title'       => __( 'Strong Customer Authentication', 'ledyer-checkout-for-woocommerce' ),
-				'type'        => 'select',
-				'options'     => array(
-					'100' => '100',
-					'110' => '110',
-					'120' => '120',
-					'200' => '200',
-					'210' => '210',
-					'220' => '220',
-					'300' => '300',
-				),
-				'description' => __( 'Each level is described in <a href="https://static.ledyer.com/docs/en-US/ledyer-security_levels.pdf" target="_blank">this document</a>', 'ledyer-checkout-for-woocommerce' ),
-				'default'     => '100',
-				'desc_tip'    => false,
 			),
 			'terms_url'                      => array(
 				'title'       => __( 'Terms & Conditions Url', 'ledyer-checkout-for-woocommerce' ),
