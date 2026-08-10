@@ -78,7 +78,7 @@ class Woocommerce_Bridge {
 			'reference'               => null,
 			'settings'                => array(
 				'security' => array(
-					'level'                   => intval( ledyer()->get_setting( 'security_level' ) ),
+					'level'                   => 200,
 					'requireClientValidation' => true,
 				),
 				'customer' => array(
@@ -171,7 +171,7 @@ class Woocommerce_Bridge {
 
 		self::$ledyer_settings = array(
 			'security' => array(
-				'level'                   => intval( ledyer()->get_setting( 'security_level' ) ),
+				'level'                   => 200,
 				'requireClientValidation' => true,
 			),
 		);
@@ -179,7 +179,7 @@ class Woocommerce_Bridge {
 		if ( $full ) {
 			self::$ledyer_settings = array(
 				'security' => array(
-					'level'                   => intval( ledyer()->get_setting( 'security_level' ) ),
+					'level'                   => 200,
 					'requireClientValidation' => true,
 				),
 				'customer' => array(
