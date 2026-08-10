@@ -148,10 +148,6 @@ msgstr ""
 msgid "If checked, name fields will be shown in iframe."
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:166
-msgid "Strong Customer Authentication"
-msgstr ""
-
 #: classes/class-ledyer-lco-fields.php:190
 msgid "Privacy Policy URL"
 msgstr ""
