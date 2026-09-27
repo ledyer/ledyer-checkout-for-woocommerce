@@ -140,14 +140,6 @@ msgstr ""
 msgid "If checked, the customer will be able to enter different shipping address in checkout iframe."
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:158
-msgid "Show name fields"
-msgstr ""
-
-#: classes/class-ledyer-lco-fields.php:161
-msgid "If checked, name fields will be shown in iframe."
-msgstr ""
-
 #: classes/class-ledyer-lco-fields.php:190
 msgid "Privacy Policy URL"
 msgstr ""
