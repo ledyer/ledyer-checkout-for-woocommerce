@@ -163,14 +163,6 @@ class Fields {
 				'default'     => 'no',
 				'desc_tip'    => true,
 			),
-			'customer_show_name_fields'      => array(
-				'title'       => __( 'Show name fields', 'ledyer-checkout-for-woocommerce' ),
-				'label'       => __( 'Allow customer to enter name', 'ledyer-checkout-for-woocommerce' ),
-				'type'        => 'checkbox',
-				'description' => __( 'If checked, name fields will be shown in iframe.', 'ledyer-checkout-for-woocommerce' ),
-				'default'     => 'no',
-				'desc_tip'    => true,
-			),
 			'terms_url'                      => array(
 				'title'       => __( 'Terms & Conditions Url', 'ledyer-checkout-for-woocommerce' ),
 				'label'       => __( 'Paste published terms and conditions page link', 'ledyer-checkout-for-woocommerce' ),

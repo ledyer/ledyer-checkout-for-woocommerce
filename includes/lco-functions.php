@@ -22,7 +22,6 @@ function lco_create_or_update_order() {
 	if ( WC()->session->get( 'lco_wc_order_id' )
 		&& ledyer()->get_setting( 'allow_custom_shipping' ) === $old_ledyer_settings['allow_custom_shipping']
 		&& ledyer()->get_setting( 'show_shipping_address_contact' ) === $old_ledyer_settings['show_shipping_address_contact']
-		&& ledyer()->get_setting( 'customer_show_name_fields' ) === $old_ledyer_settings['customer_show_name_fields']
 		&& ledyer()->get_setting( 'terms_url' ) === $old_ledyer_settings['terms_url']
 		&& ledyer()->get_setting( 'privacy_url' ) === $old_ledyer_settings['privacy_url'] ) {
 
@@ -53,7 +52,6 @@ function lco_create_or_update_order() {
 				array(
 					'allow_custom_shipping'         => ledyer()->get_setting( 'allow_custom_shipping' ),
 					'show_shipping_address_contact' => ledyer()->get_setting( 'show_shipping_address_contact' ),
-					'customer_show_name_fields'     => ledyer()->get_setting( 'customer_show_name_fields' ),
 					'terms_url'                     => ledyer()->get_setting( 'terms_url' ),
 					'privacy_url'                   => ledyer()->get_setting( 'privacy_url' ),
 				)
@@ -69,7 +67,6 @@ function lco_create_or_update_order() {
 				array(
 					'allow_custom_shipping'         => ledyer()->get_setting( 'allow_custom_shipping' ),
 					'show_shipping_address_contact' => ledyer()->get_setting( 'show_shipping_address_contact' ),
-					'customer_show_name_fields'     => ledyer()->get_setting( 'customer_show_name_fields' ),
 					'terms_url'                     => ledyer()->get_setting( 'terms_url' ),
 					'privacy_url'                   => ledyer()->get_setting( 'privacy_url' ),
 				)
@@ -99,7 +96,6 @@ function lco_create_or_update_order() {
 			array(
 				'allow_custom_shipping'         => ledyer()->get_setting( 'allow_custom_shipping' ),
 				'show_shipping_address_contact' => ledyer()->get_setting( 'show_shipping_address_contact' ),
-				'customer_show_name_fields'     => ledyer()->get_setting( 'customer_show_name_fields' ),
 				'terms_url'                     => ledyer()->get_setting( 'terms_url' ),
 				'privacy_url'                   => ledyer()->get_setting( 'privacy_url' ),
 			)
