@@ -86,6 +86,27 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		}
 
 		/**
+		 * Validate the checkout button color setting, falling back to the default on an invalid value.
+		 *
+		 * @param string $key   The field key.
+		 * @param string $value The posted value.
+		 * @return string
+		 */
+		public function validate_color_button_field( $key, $value ) {
+			$color = sanitize_hex_color( trim( wp_unslash( (string) $value ) ) );
+
+			if ( empty( $color ) ) {
+				$color = $this->get_form_fields()[ $key ]['default'] ?? '#000000';
+
+				if ( class_exists( 'WC_Admin_Settings' ) ) {
+					\WC_Admin_Settings::add_error( __( 'Checkout button color must be a hex color value such as #000000. The default color has been saved instead.', 'ledyer-checkout-for-woocommerce' ) );
+				}
+			}
+
+			return $color;
+		}
+
+		/**
 		 * Get gateway icon.
 		 *
 		 * @return string
@@ -449,8 +470,15 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			}
 		}
 
+		/**
+		 * Add the Ledyer data attributes to the checkout bootstrap script tag.
+		 *
+		 * @param string $tag    The script tag.
+		 * @param string $handle The script handle.
+		 * @return string
+		 */
 		public function add_data_attributes( $tag, $handle ) {
-			if ( $handle == 'lco-iframe' ) {
+			if ( 'lco-iframe' === $handle ) {
 
 				$env = 'production';
 
@@ -469,10 +497,9 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					}
 				}
 
-				$buy_button_color = ledyer()->get_setting( 'color_button' );
-				$no_padding       = 'yes' === ledyer()->get_setting( 'iframe_padding' ) ? 'false' : 'true';
-				$lco_order_id     = WC()->session->get( 'lco_wc_session_id' );
-				$vertical_layout  = 'yes' === ledyer()->get_setting( 'vertical_layout' ) ? 'true' : 'false';
+				$brand_color  = sanitize_hex_color( (string) ledyer()->get_setting( 'color_button' ) );
+				$no_padding   = 'yes' === ledyer()->get_setting( 'iframe_padding' ) ? 'false' : 'true';
+				$lco_order_id = WC()->session->get( 'lco_wc_session_id' );
 
 				if ( is_order_received_page() ) {
 					$order_key = filter_input( INPUT_GET, 'key', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
@@ -485,7 +512,15 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					$lco_order_id = $order->get_meta( '_wc_ledyer_session_id', true );
 				}
 
-				return str_replace( '<script', '<script data-env="' . $env . '"  data-session-id="' . $lco_order_id . '" data-container-id="lco-iframe" data-buy-button-color="' . $buy_button_color . '" data-no-padding="' . $no_padding . '" ', $tag );
+				$attributes = sprintf(
+					'<script data-env="%s" data-session-id="%s" data-container-id="lco-iframe" data-brand-color="%s" data-no-padding="%s" ',
+					esc_attr( $env ),
+					esc_attr( $lco_order_id ),
+					esc_attr( $brand_color ),
+					esc_attr( $no_padding )
+				);
+
+				return str_replace( '<script', $attributes, $tag );
 			}
 
 			return $tag;
