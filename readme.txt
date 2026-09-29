@@ -6,12 +6,17 @@ Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 7.4
 WC requires at least: 5.6.0
-WC tested up to: 11.0.0
-Stable tag: 1.12.5
+WC tested up to: 11.1.2
+Stable tag: 1.12.6
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
 == Changelog ==
+= 2026.09.29    - version 1.12.6 =
+* Tweak         - The "Show name fields" setting has been removed. Name fields are now always shown in the Ledyer checkout.
+* Tweak         - The checkout button color setting is now sent to Ledyer as the brand color.
+* Fix           - The checkout button color setting now only accepts valid hex color values.
+
 = 2026.08.10    - version 1.12.5 =
 * Tweak         - Security level handling is now managed by Ledyer and the security level option has been removed from plugin settings.
 
