@@ -1,185 +1,458 @@
-# Copyright (C) 2022 Maksimer
+# Copyright (C) 2026 Ledyer
 # This file is distributed under the same license as the Ledyer Checkout for WooCommerce plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Ledyer Checkout for WooCommerce 1.8.0\n"
+"Project-Id-Version: Ledyer Checkout for WooCommerce 1.12.6\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/ledyer-checkout-for-woocommerce\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2022-04-04T06:26:27+00:00\n"
+"POT-Creation-Date: 2026-09-29T08:26:34+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"X-Generator: WP-CLI 2.6.0\n"
+"X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: ledyer-checkout-for-woocommerce\n"
 
 #. Plugin Name of the plugin
+#: ledyer-checkout-for-woocommerce.php
 msgid "Ledyer Checkout for WooCommerce"
 msgstr ""
 
 #. Plugin URI of the plugin
-#. Author URI of the plugin
-msgid "https://www.maksimer.com/"
+#: ledyer-checkout-for-woocommerce.php
+msgid "https://github.com/ledyer/ledyer-checkout-for-woocommerce"
 msgstr ""
 
 #. Description of the plugin
+#: ledyer-checkout-for-woocommerce.php
 msgid "Ledyer Checkout payment gateway for WooCommerce."
 msgstr ""
 
 #. Author of the plugin
-msgid "Maksimer"
+#: ledyer-checkout-for-woocommerce.php
+msgid "Ledyer"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:28
+#. Author URI of the plugin
+#: ledyer-checkout-for-woocommerce.php
+msgid "https://www.ledyer.com/"
+msgstr ""
+
+#: classes/admin/class-ledyer-meta-box.php:40
+msgid "Ledyer Order Info"
+msgstr ""
+
+#: classes/admin/class-ledyer-meta-box.php:61
+msgid "Failed to retrieve the session from Ledyer."
+msgstr ""
+
+#: classes/admin/class-ledyer-meta-box.php:66
+msgid "Failed to retrieve the order from Ledyer. The customer may not have been able to complete the checkout flow"
+msgstr ""
+
+#: classes/admin/class-ledyer-meta-box.php:126
+#: classes/admin/class-ledyer-meta-box.php:193
+msgid "Environment: "
+msgstr ""
+
+#: classes/admin/class-ledyer-meta-box.php:129
+msgid "Company: "
+msgstr ""
+
+#: classes/admin/class-ledyer-meta-box.php:131
+#: classes/admin/class-ledyer-meta-box.php:196
+msgid "Company ID: "
+msgstr ""
+
+#: classes/admin/class-ledyer-meta-box.php:134
+#: classes/admin/class-ledyer-meta-box.php:199
+msgid "Name: "
+msgstr ""
+
+#: classes/admin/class-ledyer-meta-box.php:137
+msgid "Ledyer ID: "
+msgstr ""
+
+#: classes/admin/class-ledyer-meta-box.php:140
+#: classes/admin/class-ledyer-meta-box.php:202
+msgid "Payment method: "
+msgstr ""
+
+#: classes/admin/class-ledyer-meta-box.php:143
+msgid "Invoice: "
+msgstr ""
+
+#: classes/admin/class-ledyer-meta-box.php:145
+#: classes/admin/class-ledyer-meta-box.php:205
+msgid "Invoice copy: "
+msgstr ""
+
+#: classes/admin/class-ledyer-meta-box.php:149
+#: classes/admin/class-ledyer-meta-box.php:209
+msgid "GLN: "
+msgstr ""
+
+#: classes/admin/class-ledyer-meta-box.php:152
+msgid "Status: "
+msgstr ""
+
+#: classes/admin/class-ledyer-meta-box.php:155
+#: classes/admin/class-ledyer-meta-box.php:215
+msgid "Invoice reference (e.g. order number): "
+msgstr ""
+
+#: classes/admin/class-ledyer-meta-box.php:159
+#: classes/admin/class-ledyer-meta-box.php:219
+msgid "Optional reference (e.g. cost center): "
+msgstr ""
+
+#: classes/admin/class-ledyer-meta-box.php:163
+msgid "Manual review: "
+msgstr ""
+
+#: classes/admin/class-ledyer-meta-box.php:167
+msgid "Risk profile: "
+msgstr ""
+
+#: classes/admin/class-ledyer-meta-box.php:170
+msgid "Updated: "
+msgstr ""
+
+#. translators: %1$s: date, %2$s: date.
+#: classes/admin/class-ledyer-meta-box.php:173
+#, php-format
+msgid "%1$s at %2$s"
+msgstr ""
+
+#: classes/admin/class-ledyer-meta-box.php:212
+msgid "State: "
+msgstr ""
+
+#: classes/class-ledyer-callback.php:171
+#: classes/class-ledyer-confirmation.php:111
+msgid "Invoice"
+msgstr ""
+
+#: classes/class-ledyer-callback.php:174
+#: classes/class-ledyer-confirmation.php:114
+msgid "Advance Invoice"
+msgstr ""
+
+#: classes/class-ledyer-callback.php:177
+#: classes/class-ledyer-confirmation.php:117
+msgid "Card"
+msgstr ""
+
+#: classes/class-ledyer-callback.php:180
+#: classes/class-ledyer-confirmation.php:120
+msgid "Direct Debit"
+msgstr ""
+
+#: classes/class-ledyer-callback.php:183
+#: classes/class-ledyer-confirmation.php:123
+msgid "Part Payment"
+msgstr ""
+
+#: classes/class-ledyer-confirmation.php:157
+#, php-format
+msgid "New session created in Ledyer with Payment ID %1$s. %2$s"
+msgstr ""
+
+#: classes/class-ledyer-confirmation.php:170
+#, php-format
+msgid "New payment pending payment created in Ledyer with Payment ID %1$s. %2$s"
+msgstr ""
+
+#: classes/class-ledyer-confirmation.php:184
+#, php-format
+msgid "Payment successfully confirmed in Ledyer with Payment ID %1$s. %2$s"
+msgstr ""
+
+#: classes/class-ledyer-fields.php:28
 msgid "Enable/Disable"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:29
+#: classes/class-ledyer-fields.php:29
 msgid "Enable Ledyer Checkout"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:35
+#: classes/class-ledyer-fields.php:35
 msgid "Title"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:37
+#: classes/class-ledyer-fields.php:37
 msgid "Payment method title."
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:42
+#: classes/class-ledyer-fields.php:42
 msgid "Description"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:44
+#: classes/class-ledyer-fields.php:44
 msgid "Payment method description."
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:49
+#: classes/class-ledyer-fields.php:49
 msgid "Other payment method button text"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:51
+#: classes/class-ledyer-fields.php:51
 msgid "Customize the <em>Select another payment method</em> button text that is displayed in checkout if using other payment methods than Ledyer Checkout. Leave blank to use the default (and translatable) text."
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:59
+#: classes/class-ledyer-fields.php:59
 msgid "Test mode"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:60
+#: classes/class-ledyer-fields.php:60
 msgid "Enable Test Mode"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:61
-msgid "Enable vertical layout"
-msgstr ""
-
-#: classes/class-ledyer-lco-fields.php:62
+#: classes/class-ledyer-fields.php:62
 msgid "Place the payment gateway in test mode using test API keys."
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:67
+#: classes/class-ledyer-fields.php:67
 msgid "Logging"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:68
+#: classes/class-ledyer-fields.php:68
 msgid "Log debug messages"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:70
+#: classes/class-ledyer-fields.php:70
 msgid "Save debug messages to the WooCommerce System Status log."
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:75
+#: classes/class-ledyer-fields.php:75
+msgid "Checkout flow"
+msgstr ""
+
+#: classes/class-ledyer-fields.php:78
+msgid "Embedded"
+msgstr ""
+
+#: classes/class-ledyer-fields.php:79
+msgid "Redirect"
+msgstr ""
+
+#: classes/class-ledyer-fields.php:81
+msgid "<strong>Embedded:</strong> the checkout is embedded in the WooCommerce checkout page and partially replaces the checkout form. <strong>Redirect:</strong> the customer is redirected to a payment page hosted by Ledyer."
+msgstr ""
+
+#: classes/class-ledyer-fields.php:86
 msgid "Production Ledyer client ID"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:77
-#: classes/class-ledyer-lco-fields.php:97
-#: classes/class-ledyer-lco-fields.php:107
-#: classes/class-ledyer-lco-fields.php:127
+#: classes/class-ledyer-fields.php:88
+#: classes/class-ledyer-fields.php:108
+#: classes/class-ledyer-fields.php:118
+#: classes/class-ledyer-fields.php:138
 msgid "Generate credentials (client ID and secret) in the Ledyer Merchant Portal under Settings -> API credentials."
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:85
-#: classes/class-ledyer-lco-fields.php:115
+#: classes/class-ledyer-fields.php:96
 msgid "Production Ledyer Store Id"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:87
-#: classes/class-ledyer-lco-fields.php:117
+#: classes/class-ledyer-fields.php:98
+#: classes/class-ledyer-fields.php:128
 msgid "Optional. If you have multiple stores set in Ledyer account. Paste corresponding store ID found in Ledyer Merchant Portal."
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:95
+#: classes/class-ledyer-fields.php:106
 msgid "Production Ledyer client secret"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:105
+#: classes/class-ledyer-fields.php:116
 msgid "Sandbox Ledyer client ID"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:125
+#: classes/class-ledyer-fields.php:126
+msgid "Sandbox Ledyer Store Id"
+msgstr ""
+
+#: classes/class-ledyer-fields.php:136
 msgid "Sandbox Ledyer client secret"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:146
+#: classes/class-ledyer-fields.php:147
 msgid "Checkout settings"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:150
+#: classes/class-ledyer-fields.php:151
 msgid "Allow shipping address"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:151
-msgid "Allow customer to enter different shipping address."
+#: classes/class-ledyer-fields.php:152
+msgid "Allow customer to enter different shipping address"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:153
+#: classes/class-ledyer-fields.php:154
 msgid "If checked, the customer will be able to enter different shipping address in checkout iframe."
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:190
-msgid "Privacy Policy URL"
+#: classes/class-ledyer-fields.php:159
+msgid "Show custom contact details"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:193
-msgid "Merchant privacy policy that will be visible and linked in the checkout."
+#: classes/class-ledyer-fields.php:160
+msgid "Allow customers to enter different contact details for the order recipient"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:182
-msgid "Terms URL"
+#: classes/class-ledyer-fields.php:162
+msgid "If checked, the customer will be able to enter different shipping address recipient details in the checkout iframe."
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:185
-msgid "Merchant terms that will be visible and linked in the checkout."
+#: classes/class-ledyer-fields.php:167
+msgid "Terms & Conditions Url"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:199
+#: classes/class-ledyer-fields.php:168
+msgid "Paste published terms and conditions page link"
+msgstr ""
+
+#: classes/class-ledyer-fields.php:170
+msgid "Paste published terms and conditions page link. If not set woocommerce terms and conditions page will be used: <a href=\""
+msgstr ""
+
+#: classes/class-ledyer-fields.php:175
+msgid "Privacy Url"
+msgstr ""
+
+#: classes/class-ledyer-fields.php:176
+msgid "Paste published privacy page link"
+msgstr ""
+
+#: classes/class-ledyer-fields.php:178
+msgid "Paste published privacy page link. If not set woocommerce privacy page will be used: <a href=\""
+msgstr ""
+
+#: classes/class-ledyer-fields.php:184
 msgid "Iframe Settings"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:203
+#: classes/class-ledyer-fields.php:188
+msgid "Vertical layout"
+msgstr ""
+
+#: classes/class-ledyer-fields.php:189
+msgid "Enable vertical layout"
+msgstr ""
+
+#: classes/class-ledyer-fields.php:191
+msgid "Make ledyer checkout appear below shipping"
+msgstr ""
+
+#: classes/class-ledyer-fields.php:196
 msgid "Iframe padding"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:206
+#: classes/class-ledyer-fields.php:197
+msgid "Use default padding"
+msgstr ""
+
+#: classes/class-ledyer-fields.php:199
 msgid "Ledyer checkout comes with a wrapping padding of 12px by default."
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:211
+#: classes/class-ledyer-fields.php:204
 msgid "Checkout button color"
 msgstr ""
 
-#: classes/class-ledyer-lco-fields.php:213
+#: classes/class-ledyer-fields.php:206
 msgid "Enter a color hex value to change the background color for the buy button, depending on the color provided the button text will be set to black or white."
 msgstr ""
 
-#: classes/class-ledyer-lco-gateway.php:23
+#: classes/class-ledyer-fields.php:212
+msgid "Payment Settings"
+msgstr ""
+
+#: classes/class-ledyer-fields.php:216
+msgid "Card Payment Status"
+msgstr ""
+
+#: classes/class-ledyer-fields.php:217
+msgid "Keep card payments in processing status (when autocomplete is active)"
+msgstr ""
+
+#: classes/class-ledyer-fields.php:219
+msgid "If checked, orders paid with card will stay in processing status instead of being automatically marked as completed."
+msgstr ""
+
+#: classes/class-ledyer-fields.php:230
+msgid "Development settings"
+msgstr ""
+
+#: classes/class-ledyer-fields.php:234
+msgid "Test Environment"
+msgstr ""
+
+#: classes/class-ledyer-lco-gateway.php:39
 msgid "Ledyer Checkout"
 msgstr ""
 
-#: classes/class-ledyer-lco-gateway.php:24
+#: classes/class-ledyer-lco-gateway.php:40
 msgid "The current Ledyer Checkout replaces standard WooCommerce checkout page."
+msgstr ""
+
+#: classes/class-ledyer-lco-gateway.php:102
+msgid "Checkout button color must be a hex color value such as #000000. The default color has been saved instead."
+msgstr ""
+
+#: classes/class-ledyer-lco-gateway.php:254
+msgid "Please fill in all required checkout fields."
+msgstr ""
+
+#: classes/class-ledyer-lco-gateway.php:257
+msgid "Please try again, something went wrong with processing your order."
+msgstr ""
+
+#: classes/class-ledyer-lco-gateway.php:310
+msgid "Could not complete the order. Please try again. If the problem persists, please contact customer support."
+msgstr ""
+
+#: classes/class-ledyer-lco-gateway.php:399
+msgid "Failed to get order for HPP."
+msgstr ""
+
+#: classes/class-ledyer-lco-gateway.php:407
+msgid "Failed to create order session for HPP."
+msgstr ""
+
+#: classes/class-ledyer-lco-gateway.php:430
+msgid "Customer redirected to Ledyer Hosted Payment Page."
+msgstr ""
+
+#: classes/class-ledyer-main.php:210
+msgid "Settings"
+msgstr ""
+
+#: classes/class-ledyer-templates.php:151
+#: includes/lco-functions.php:191
+msgid "Failed to load Ledyer Checkout template file."
+msgstr ""
+
+#: classes/requests/helpers/class-ledyer-cart.php:272
+#: classes/requests/helpers/class-ledyer-cart.php:317
+msgid "Gift card"
+msgstr ""
+
+#: classes/requests/helpers/class-ledyer-cart.php:276
+msgid "Discount"
+msgstr ""
+
+#: classes/requests/helpers/class-ledyer-cart.php:336
+#: classes/requests/helpers/class-ledyer-cart.php:357
+msgid "giftcard"
+msgstr ""
+
+#: classes/requests/helpers/class-ledyer-cart.php:563
+#: classes/requests/helpers/class-ledyer-cart.php:590
+msgid "Shipping"
+msgstr ""
+
+#: includes/lco-functions.php:156
+msgid "Select another payment method"
 msgstr ""
