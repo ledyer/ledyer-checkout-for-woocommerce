@@ -53,16 +53,20 @@ class Meta_Box {
 
 		// False if automatic settings are enabled, true if not. If true then show the option.
 		if ( ! empty( $order->get_transaction_id() ) && ! empty( $order->get_meta( '_wc_ledyer_order_id', true ) ) ) {
+			\Ledyer\Logger::set_context( array( 'source' => 'admin' ) );
+			\Ledyer\Logger::add_order_context( $order );
 			$ledyer_order = ledyer()->api->get_order( $order->get_meta( '_wc_ledyer_order_id', true ) );
 
 			if ( is_wp_error( $ledyer_order ) && 404 === $ledyer_order->get_error_code() ) {
 				$ledyer_session = ledyer()->api->get_order_session( $order->get_meta( '_wc_ledyer_order_id', true ) );
 				if ( is_wp_error( $ledyer_session ) ) {
+					\Ledyer\Logger::error( 'Meta box: could not get the session from Ledyer', array( 'error' => $ledyer_session->get_error_message() ) );
 					$this->print_error_content( __( 'Failed to retrieve the session from Ledyer.', 'ledyer-checkout-for-woocommerce' ) );
 					return;
 				}
 				$this->print_session_content( $ledyer_session );
 			} elseif ( is_wp_error( $ledyer_order ) ) {
+				\Ledyer\Logger::error( 'Meta box: could not get the order from Ledyer', array( 'error' => $ledyer_order->get_error_message() ) );
 				$this->print_error_content( __( 'Failed to retrieve the order from Ledyer. The customer may not have been able to complete the checkout flow', 'ledyer-checkout-for-woocommerce' ) );
 				return;
 			} else {

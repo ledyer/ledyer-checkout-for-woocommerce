@@ -49,5 +49,9 @@ class Checkout {
 			$data         = \Ledyer\Requests\Helpers\Woocommerce_Bridge::get_updated_cart_data();
 			$ledyer_order = ledyer()->api->update_order_session( $ledyer_order_id, $data );
 		}
+
+		if ( is_wp_error( $ledyer_order ) ) {
+			Logger::error( 'Could not update the Ledyer session after cart totals were calculated', array( 'error' => $ledyer_order->get_error_message() ) );
+		}
 	}
 }

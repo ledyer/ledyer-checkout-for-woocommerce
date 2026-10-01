@@ -80,6 +80,7 @@ class AJAX extends \WC_AJAX {
 
 		// If the update failed return error.
 		if ( is_wp_error( $ledyer_order ) ) {
+			Logger::error( 'Could not update the Ledyer session after cart quantity change', array( 'error' => $ledyer_order->get_error_message() ) );
 			wp_send_json_error();
 			wp_die();
 		}
@@ -111,6 +112,8 @@ class AJAX extends \WC_AJAX {
 			WC()->session->set( 'chosen_payment_method', 'lco' );
 		}
 
+		Logger::info( 'Customer changed payment method', array( 'chosen_payment_method' => WC()->session->get( 'chosen_payment_method' ) ) );
+
 		WC()->payment_gateways()->set_current_gateway( $available_gateways );
 
 		$redirect = wc_get_checkout_url();
@@ -129,20 +132,19 @@ class AJAX extends \WC_AJAX {
 	 */
 	public static function lco_wc_log_js() {
 		check_ajax_referer( 'lco_wc_log_js', 'nonce' );
-		$ledyer_order_id = WC()->session->get( 'lco_wc_order_id' );
+		Logger::set_context( array( 'source' => 'frontend-js' ) );
 
 		// Get the content size of the request.
 		$post_size = (int) $_SERVER['CONTENT_LENGTH'] ?? 0;
 
 		// If the post data is too long, log an error message and return.
 		if ( $post_size > 1024 ) {
-			Logger::log( "Frontend JS $ledyer_order_id: message too long and can't be logged." );
+			Logger::warning( 'Message too long and can not be logged' );
 			wp_send_json_success(); // Return success to not stop anything in the frontend if this happens.
 		}
 
 		$posted_message = filter_input( INPUT_POST, 'message', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-		$message        = "Frontend JS $ledyer_order_id: $posted_message";
-		Logger::log( $message );
+		Logger::info( $posted_message );
 		wp_send_json_success();
 		wp_die();
 	}
@@ -161,6 +163,7 @@ class AJAX extends \WC_AJAX {
 		$ledyer_order = ledyer()->api->get_order_session( WC()->session->get( 'lco_wc_order_id' ) );
 
 		if ( ! $ledyer_order ) {
+			Logger::error( 'Could not get the session from Ledyer to set customer data' );
 			wp_send_json_error( $ledyer_order );
 			wp_die();
 		}
@@ -168,6 +171,7 @@ class AJAX extends \WC_AJAX {
 		$customer_fields = self::set_customer_data( $ledyer_order );
 
 		if ( ! $customer_fields ) {
+			Logger::error( 'Could not set the customer data from the Ledyer session' );
 			wp_send_json_error( 'customer data not set' );
 			exit;
 		}

@@ -155,7 +155,6 @@ class Woocommerce_Bridge {
 			$locale = str_replace( '_', '-', $locale );
 		}
 
-		\Ledyer\Logger::log( 'Using locale: ' . $locale );
 		return $locale;
 	}
 
