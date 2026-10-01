@@ -18,16 +18,12 @@ function lco_create_or_update_order() {
 	WC()->cart->calculate_shipping();
 	WC()->cart->calculate_totals();
 
-	$old_ledyer_settings = WC()->session->get( 'lco_wc_settings' );
-	if ( WC()->session->get( 'lco_wc_order_id' ) && ! lco_session_settings_match( $old_ledyer_settings ) ) {
+	$settings_match = lco_session_settings_match( WC()->session->get( 'lco_wc_settings' ) );
+	if ( WC()->session->get( 'lco_wc_order_id' ) && ! $settings_match ) {
 		\Ledyer\Logger::info( 'Ledyer settings changed since the session was created, creating a new session' );
 	}
 
-	if ( WC()->session->get( 'lco_wc_order_id' )
-		&& ledyer()->get_setting( 'allow_custom_shipping' ) === $old_ledyer_settings['allow_custom_shipping']
-		&& ledyer()->get_setting( 'show_shipping_address_contact' ) === $old_ledyer_settings['show_shipping_address_contact']
-		&& ledyer()->get_setting( 'terms_url' ) === $old_ledyer_settings['terms_url']
-		&& ledyer()->get_setting( 'privacy_url' ) === $old_ledyer_settings['privacy_url'] ) {
+	if ( WC()->session->get( 'lco_wc_order_id' ) && $settings_match ) {
 
 		$ledyer_order_id   = WC()->session->get( 'lco_wc_order_id' );
 		$ledyer_session_id = WC()->session->get( 'lco_wc_session_id' );
@@ -35,7 +31,17 @@ function lco_create_or_update_order() {
 		$ledyer_order      = ledyer()->api->update_order_session( $ledyer_order_id, $data );
 
 		if ( ! $ledyer_order || ( is_object( $ledyer_order ) && is_wp_error( $ledyer_order ) ) || $ledyer_order['orderId'] !== $ledyer_order_id || $ledyer_order['sessionId'] !== $ledyer_session_id ) {
-			\Ledyer\Logger::warning( 'Could not update the Ledyer session, creating a new session', array( 'error' => lco_get_log_error( $ledyer_order ) ) );
+			if ( is_array( $ledyer_order ) ) {
+				\Ledyer\Logger::warning(
+					'Ledyer session IDs changed after update, creating a new session',
+					array(
+						'returned_session_id' => $ledyer_order['sessionId'] ?? '',
+						'returned_order_id'   => $ledyer_order['orderId'] ?? '',
+					)
+				);
+			} else {
+				\Ledyer\Logger::warning( 'Could not update the Ledyer session, creating a new session', array( 'error' => lco_get_log_error( $ledyer_order ) ) );
+			}
 
 			// If update order failed try to create new order.
 			$data         = \Ledyer\Requests\Helpers\Woocommerce_Bridge::get_cart_data();
@@ -59,26 +65,6 @@ function lco_create_or_update_order() {
 			);
 
 			return $ledyer_order;
-		} elseif ( ( $ledyer_order_id !== $ledyer_order['orderId'] ) || ( $ledyer_session_id !== $ledyer_order['sessionId'] ) ) {
-			// If sessions somehow change??
-			\Ledyer\Logger::warning(
-				'Ledyer session IDs changed after update, updating the WooCommerce session',
-				array(
-					'previous_session_id' => $ledyer_session_id,
-					'previous_order_id'   => $ledyer_order_id,
-				)
-			);
-			WC()->session->set( 'lco_wc_session_id', $ledyer_order['sessionId'] );
-			WC()->session->set( 'lco_wc_order_id', $ledyer_order['orderId'] );
-			WC()->session->set(
-				'lco_wc_settings',
-				array(
-					'allow_custom_shipping'         => ledyer()->get_setting( 'allow_custom_shipping' ),
-					'show_shipping_address_contact' => ledyer()->get_setting( 'show_shipping_address_contact' ),
-					'terms_url'                     => ledyer()->get_setting( 'terms_url' ),
-					'privacy_url'                   => ledyer()->get_setting( 'privacy_url' ),
-				)
-			);
 		}
 		return $ledyer_order;
 	} else {
@@ -115,8 +101,10 @@ function lco_create_or_update_order() {
  * @return bool
  */
 function lco_session_settings_match( $old_ledyer_settings ) {
+	$old_ledyer_settings = is_array( $old_ledyer_settings ) ? $old_ledyer_settings : array();
+
 	foreach ( array( 'allow_custom_shipping', 'show_shipping_address_contact', 'terms_url', 'privacy_url' ) as $key ) {
-		if ( ! isset( $old_ledyer_settings[ $key ] ) || ledyer()->get_setting( $key ) !== $old_ledyer_settings[ $key ] ) {
+		if ( ledyer()->get_setting( $key ) !== ( $old_ledyer_settings[ $key ] ?? null ) ) {
 			return false;
 		}
 	}

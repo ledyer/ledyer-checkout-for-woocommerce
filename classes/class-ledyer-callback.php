@@ -86,7 +86,7 @@ class Callback {
 		$response     = new \WP_REST_Response( null, 400 );
 
 		if ( empty( $request_body ) ) {
-			Logger::error( 'Notification rejected: request body is not valid JSON', array( 'body' => $request->get_body() ) );
+			Logger::error( 'Notification rejected: request body is empty or not valid JSON', array( 'body_length' => strlen( $request->get_body() ) ) );
 			return $response;
 		}
 
@@ -94,7 +94,14 @@ class Callback {
 		$ledyer_order_id   = $request_body['orderId'] ?? null;
 
 		if ( ! isset( $ledyer_event_type, $ledyer_order_id ) ) {
-			Logger::error( 'Notification rejected: missing orderId or eventType', array( 'body' => $request_body ) );
+			Logger::error(
+				'Notification rejected: missing orderId or eventType',
+				array(
+					'has_order_id'   => isset( $ledyer_order_id ),
+					'has_event_type' => isset( $ledyer_event_type ),
+					'body_length'    => strlen( $request->get_body() ),
+				)
+			);
 			return $response;
 		}
 
@@ -237,15 +244,15 @@ class Callback {
 			);
 		}
 
-	    Confirmation::process_order_status( $ledyer_payment_status, $order, $ledyer_order_id );
+		Confirmation::process_order_status( $ledyer_payment_status, $order, $ledyer_order_id );
 	}
 
 	/**
 	 * Process the ready for capture event.
-	*
-	 * @param array $ledyer_payment_status The Ledyer payment status response.
+	 *
+	 * @param array     $ledyer_payment_status The Ledyer payment status response.
 	 * @param \WC_Order $order The WooCommerce order object.
-	 * @param string $ledyer_order_id The Ledyer order ID.
+	 * @param string    $ledyer_order_id The Ledyer order ID.
 	 *
 	 * @return void
 	 */
