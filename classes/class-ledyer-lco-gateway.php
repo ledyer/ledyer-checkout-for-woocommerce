@@ -284,8 +284,16 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		public function process_payment( $order_id ) {
 			$order = wc_get_order( $order_id );
 
+			\Ledyer\Logger::set_context(
+				array(
+					'source'      => 'checkout',
+					'wc_order_id' => $order_id,
+				)
+			);
+
 			// HPP Redirect flow.
 			if ( is_wc_endpoint_url( 'order-pay' ) || 'redirect' === ( $this->settings['checkout_flow'] ?? 'embedded' ) ) {
+				\Ledyer\Logger::info( 'Processing payment', array( 'flow' => 'redirect' ) );
 
 				// Run redirect.
 				return $this->hpp_redirect_handler( $order );
@@ -295,7 +303,9 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			// Regular purchase.
 			// 1. Process the payment.
 			// 2. Redirect to order received page.
+			\Ledyer\Logger::info( 'Processing payment', array( 'flow' => 'embedded' ) );
 			if ( $this->process_payment_handler( $order_id ) ) {
+				\Ledyer\Logger::info( 'Payment processed, redirecting the customer to the confirmation page' );
 				// Base64 encoded timestamp to always have a fresh URL for on hash change event.
 				return array(
 					'result'   => 'success',
@@ -307,6 +317,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					),
 				);
 			} else {
+				\Ledyer\Logger::error( 'Could not complete the order, an error is shown to the customer' );
 				$message = __( 'Could not complete the order. Please try again. If the problem persists, please contact customer support.', 'ledyer-checkout-for-woocommerce' );
 				throw new \Exception( esc_html( $message ) );
 			}
@@ -328,6 +339,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$ledyer_order = ledyer()->api->get_order_session( $ledyer_order_id );
 
 			if ( ! $ledyer_order || is_wp_error( $ledyer_order ) ) {
+				\Ledyer\Logger::error( 'Could not get the session from Ledyer when processing the payment', array( 'error' => is_wp_error( $ledyer_order ) ? $ledyer_order->get_error_message() : 'Empty response' ) );
 				return false;
 			}
 
@@ -375,10 +387,21 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				// Let other plugins hook into this sequence.
 				do_action( 'lco_wc_process_payment', $order_id, $ledyer_order );
 
+				\Ledyer\Logger::add_order_context( $order );
+				\Ledyer\Logger::info( 'Ledyer session linked to the WooCommerce order' );
+
 				// Check that the transaction id got set correctly.
 				if ( $order->get_meta( '_wc_ledyer_order_id' ) === $ledyer_order_id ) {
 					return true;
 				}
+
+				\Ledyer\Logger::error(
+					'Ledyer order ID on the WooCommerce order does not match the session',
+					array(
+						'session_ledyer_order_id' => $ledyer_order_id,
+						'order_ledyer_order_id'   => $order->get_meta( '_wc_ledyer_order_id' ),
+					)
+				);
 			}
 
 			// Return false if we get here. Something went wrong.
@@ -396,6 +419,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		protected function hpp_redirect_handler( $order ) {
 
 			if ( empty( $order ) ) {
+				\Ledyer\Logger::error( 'Could not get the WooCommerce order for the hosted payment page' );
 				$message = __( 'Failed to get order for HPP.', 'ledyer-checkout-for-woocommerce' );
 				throw new \Exception( esc_html( $message ) );
 			}
@@ -404,6 +428,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			// Add confirmation URL to the order.
 			$ledyer_order = ledyer()->api->create_order_session( $data );
 			if ( is_wp_error( $ledyer_order ) ) {
+				\Ledyer\Logger::error( 'Could not create the Ledyer session for the hosted payment page', array( 'error' => $ledyer_order->get_error_message() ) );
 				$message = __( 'Failed to create order session for HPP.', 'ledyer-checkout-for-woocommerce' );
 				throw new \Exception( esc_html( $message ) );
 			}
@@ -425,6 +450,9 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$order->update_meta_data( '_wc_ledyer_country', $ledyer_country );
 
 			$order->save();
+
+			\Ledyer\Logger::add_order_context( $order );
+			\Ledyer\Logger::info( 'Ledyer session created, redirecting the customer to the hosted payment page' );
 
 			// All good. Redirect customer to ledyer Hosted payment page.
 			$order->add_order_note( __( 'Customer redirected to Ledyer Hosted Payment Page.', 'ledyer-checkout-for-woocommerce' ) );
