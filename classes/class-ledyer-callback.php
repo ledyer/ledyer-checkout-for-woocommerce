@@ -79,31 +79,50 @@ class Callback {
 	 * @return \WP_REST_Response
 	 */
 	public function handle_notification( \WP_REST_Request $request ) {
+		Logger::clear_context();
+		Logger::set_context( array( 'source' => 'callback' ) );
+
 		$request_body = $request->get_json_params();
 		$response     = new \WP_REST_Response( null, 400 );
 
 		if ( empty( $request_body ) ) {
-			Logger::log( "[CALLBACK]: Request body isn't valid JSON string. Received: " . wp_json_encode( $request_body ) );
+			Logger::error( 'Notification rejected: request body is empty or not valid JSON', array( 'body_length' => strlen( $request->get_body() ) ) );
 			return $response;
 		}
 
-		$ledyer_event_type = $request_body['eventType'];
-		$ledyer_order_id   = $request_body['orderId'];
+		$ledyer_event_type = $request_body['eventType'] ?? null;
+		$ledyer_order_id   = $request_body['orderId'] ?? null;
 
 		if ( ! isset( $ledyer_event_type, $ledyer_order_id ) ) {
-			Logger::log( "[CALLBACK]: Request body doesn't hold orderId and eventType data." );
+			Logger::error(
+				'Notification rejected: missing orderId or eventType',
+				array(
+					'has_order_id'   => isset( $ledyer_order_id ),
+					'has_event_type' => isset( $ledyer_event_type ),
+					'body_length'    => strlen( $request->get_body() ),
+				)
+			);
 			return $response;
 		}
+
+		Logger::set_context( array( 'ledyer_order_id' => $ledyer_order_id ) );
+		Logger::info( 'Notification received', array( 'event_type' => $ledyer_event_type ) );
 
 		$schedule_id = as_schedule_single_action( time() + 60, 'schedule_process_notification', array( $ledyer_order_id, $ledyer_event_type ) );
 
 		if ( 0 === $schedule_id ) {
-			Logger::log( "[CALLBACK]: Couldn't schedule process_notification for order: $ledyer_order_id and type: $ledyer_event_type" );
+			Logger::error( 'Could not schedule the notification for processing', array( 'event_type' => $ledyer_event_type ) );
 			$response->set_status( 500 );
 			return $response;
 		}
 
-		Logger::log( "[CALLBACK]: Enqueued notification: $ledyer_event_type, schedule-id: $schedule_id" );
+		Logger::info(
+			'Notification scheduled for processing',
+			array(
+				'event_type'  => $ledyer_event_type,
+				'schedule_id' => $schedule_id,
+			)
+		);
 		$response->set_status( 200 );
 		return $response;
 	}
@@ -118,7 +137,14 @@ class Callback {
 	 * @param string $ledyer_event_type The type of event from Ledyer.
 	 */
 	public function process_notification( $ledyer_order_id, $ledyer_event_type ) {
-		Logger::log( "[SCHEDULER]: process notification: $ledyer_order_id" );
+		Logger::clear_context();
+		Logger::set_context(
+			array(
+				'source'          => 'scheduler',
+				'ledyer_order_id' => $ledyer_order_id,
+			)
+		);
+		Logger::info( 'Processing notification', array( 'event_type' => $ledyer_event_type ) );
 
 		$orders = wc_get_orders(
 			array(
@@ -131,7 +157,7 @@ class Callback {
 
 		$order = reset( $orders );
 		if ( ! $order ) {
-			Logger::log( "[SCHEDULER]: No WooCommerce order found for Ledyer order ID: $ledyer_order_id" );
+			Logger::error( 'No WooCommerce order found for the Ledyer order ID', array( 'event_type' => $ledyer_event_type ) );
 			return;
 		}
 
@@ -140,17 +166,39 @@ class Callback {
 
 		$wc_order_ledyer_order_id = $order->get_meta( '_wc_ledyer_order_id' );
 		if ( $ledyer_order_id !== $wc_order_ledyer_order_id ) {
-			Logger::log( "[SCHEDULER]: Order {$order->get_order_number()} has Ledyer order ID $wc_order_ledyer_order_id. Expected $ledyer_order_id" );
+			Logger::set_context( array( 'wc_order_id' => $order_id ) );
+			Logger::error(
+				'Ledyer order ID mismatch on the WooCommerce order',
+				array(
+					'order_number'             => $order->get_order_number(),
+					'wc_order_ledyer_order_id' => $wc_order_ledyer_order_id,
+				)
+			);
 			return;
 		}
 
-		Logger::log( "[SCHEDULER]: Order to process: $order_id" );
+		Logger::add_order_context( $order );
+		Logger::info(
+			'WooCommerce order found for notification',
+			array(
+				'order_number' => $order->get_order_number(),
+				'order_status' => $order->get_status(),
+			)
+		);
 
 		$ledyer_payment_status = ledyer()->api->get_payment_status( $ledyer_order_id );
 		if ( is_wp_error( $ledyer_payment_status ) ) {
-			Logger::log( "[SCHEDULER]: Could not get ledyer payment status $ledyer_order_id" );
+			Logger::error( 'Could not get the payment status from Ledyer', array( 'error' => $ledyer_payment_status->get_error_message() ) );
 			return;
 		}
+
+		Logger::info(
+			'Payment status received',
+			array(
+				'status'         => $ledyer_payment_status['status'] ?? '',
+				'payment_method' => $ledyer_payment_status['paymentMethod'] ?? array(),
+			)
+		);
 
 		// Process the ready for capture event.
 		if ( 'com.ledyer.order.ready_for_capture' === $ledyer_event_type ) {
@@ -186,22 +234,31 @@ class Callback {
 
 			$order->set_payment_method_title( sprintf( '%s (Ledyer)', $method_title ) );
 			$order->save();
+
+			Logger::info(
+				'Payment method updated on the order',
+				array(
+					'payment_type'     => $ledyer_payment_type,
+					'payment_provider' => $ledyer_payment_provider,
+				)
+			);
 		}
 
-	    Confirmation::process_order_status( $ledyer_payment_status, $order, $ledyer_order_id );
+		Confirmation::process_order_status( $ledyer_payment_status, $order, $ledyer_order_id );
 	}
 
 	/**
 	 * Process the ready for capture event.
-	*
-	 * @param array $ledyer_payment_status The Ledyer payment status response.
+	 *
+	 * @param array     $ledyer_payment_status The Ledyer payment status response.
 	 * @param \WC_Order $order The WooCommerce order object.
-	 * @param string $ledyer_order_id The Ledyer order ID.
+	 * @param string    $ledyer_order_id The Ledyer order ID.
 	 *
 	 * @return void
 	 */
 	private function process_ready_for_capture( $ledyer_payment_status, $order, $ledyer_order_id ) {
 		$order->update_meta_data( '_ledyer_ready_for_capture', true );
+		Logger::info( 'Order marked as ready for capture' );
 
 		/**
 		 * Digital orders will have the `_ledyer_waiting_on_ready_for_capture` meta key set, meaning we should wait for it to get the ready for capture event.
@@ -213,7 +270,7 @@ class Callback {
 		$waiting_on_ready_for_capture = $order->get_meta( '_ledyer_waiting_on_ready_for_capture', true );
 		if ( ! empty( $waiting_on_ready_for_capture ) || empty( $order->get_date_paid() ) ) {
 			$order->delete_meta_data( '_ledyer_waiting_on_ready_for_capture' );
-			Logger::log( "[SCHEDULER]: Order {$order->get_order_number()} was waiting for ready_for_capture event. Now processing the order." );
+			Logger::info( 'Ready for capture received, processing the order status', array( 'was_waiting_on_ready_for_capture' => ! empty( $waiting_on_ready_for_capture ) ) );
 			Confirmation::process_order_status( $ledyer_payment_status, $order, $ledyer_order_id );
 		}
 

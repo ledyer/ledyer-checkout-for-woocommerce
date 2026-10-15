@@ -37,20 +37,23 @@ class Confirmation {
 		if ( empty( $ledyer_confirm ) || empty( $order_key ) ) {
 			return;
 		}
+		Logger::set_context( array( 'source' => 'confirmation' ) );
 		$order_id = wc_get_order_id_by_order_key( $order_key );
 
 		if ( empty( $order_id ) ) {
-			\Ledyer\Logger::log( "Could not get the WooCommerce order id from order key {$order_key}" );
+			Logger::error( 'Could not get the WooCommerce order ID from the order key', array( 'order_key' => $order_key ) );
 			return;
 		}
 
+		Logger::set_context( array( 'wc_order_id' => $order_id ) );
 		$order = wc_get_order( $order_id );
 		if ( empty( $order ) ) {
-			\Ledyer\Logger::log( "Could not get the WooCommerce order with the id {$order_id}" );
+			Logger::error( 'Could not get the WooCommerce order' );
 			return;
 		}
 
-		Logger::log( "{$order_id}: Confirm the Ledyer order from the confirmation page." );
+		Logger::add_order_context( $order );
+		Logger::info( 'Customer returned to the confirmation page, confirming the order' );
 		$this->confirm_order( $order );
 		lco_unset_sessions();
 	}
@@ -69,18 +72,20 @@ class Confirmation {
 
 		// If the order is already completed or on-hold, return.
 		if ( ! empty( $order->get_date_paid() ) || $order->has_status( array( 'on-hold' ) ) ) {
+			Logger::info( 'Order is already paid or on-hold, skipping confirmation', array( 'order_status' => $order->get_status() ) );
 			return;
 		}
 
 		$payment_id = $order->get_meta( '_wc_ledyer_order_id' );
 		if ( empty( $payment_id ) ) {
-			\Ledyer\Logger::log( "Could not get the Ledyer payment id from the order {$order->get_id()}" );
+			Logger::error( 'Could not get the Ledyer order ID from the WooCommerce order' );
 			return;
 		}
 
 		$ledyer_order = ledyer()->api->get_order( $payment_id );
 		// If we could not get the Ledyer order, set it to an empty array and continue with the confirmation.
 		if ( is_wp_error( $ledyer_order ) ) {
+			Logger::warning( 'Could not get the order from Ledyer, continuing the confirmation', array( 'error' => $ledyer_order->get_error_message() ) );
 			$ledyer_order = array();
 		}
 
@@ -88,7 +93,13 @@ class Confirmation {
 
 		$ledyer_update_order_reference = ledyer()->api->update_order_reference( $payment_id, array( 'reference' => $order->get_order_number() ) );
 		if ( is_wp_error( $ledyer_update_order_reference ) ) {
-			\Ledyer\Logger::log( "Couldn't set merchant reference {$order->get_order_number()}" );
+			Logger::error(
+				'Could not set the merchant reference in Ledyer',
+				array(
+					'reference' => $order->get_order_number(),
+					'error'     => $ledyer_update_order_reference->get_error_message(),
+				)
+			);
 		} else {
 			$order->update_meta_data( '_ledyer_merchant_reference', $order->get_order_number() );
 		}
@@ -99,6 +110,8 @@ class Confirmation {
 		if ( ! is_wp_error( $ledyer_payment_status ) ) {
 			$ledyer_payment_method = $ledyer_payment_status['paymentMethod'];
 			$ledyer_note           = sanitize_text_field( $ledyer_payment_status['note'] ) ?? '';
+		} else {
+			Logger::error( 'Could not get the payment status from Ledyer', array( 'error' => $ledyer_payment_status->get_error_message() ) );
 		}
 		$ledyer_payment_provider = sanitize_text_field( $ledyer_payment_method['provider'] );
 		$ledyer_payment_type     = sanitize_text_field( $ledyer_payment_method['type'] );
@@ -126,6 +139,14 @@ class Confirmation {
 
 		$order->set_payment_method_title( sprintf( '%s (Ledyer)', $method_title ) );
 
+		Logger::info(
+			'Payment method set on the order',
+			array(
+				'payment_type'     => $ledyer_payment_type,
+				'payment_provider' => $ledyer_payment_provider,
+			)
+		);
+
 		self::process_order_status( $ledyer_payment_status, $order, $payment_id );
 
 		$order->update_meta_data( '_ledyer_date_paid', gmdate( 'Y-m-d H:i:s' ) );
@@ -135,7 +156,9 @@ class Confirmation {
 
 		$response = ledyer()->api->acknowledge_order( $payment_id );
 		if ( is_wp_error( $response ) ) {
-			\Ledyer\Logger::log( "Couldn't acknowledge order {$payment_id}|{$order->get_id()}" );
+			Logger::error( 'Could not acknowledge the order in Ledyer', array( 'error' => $response->get_error_message() ) );
+		} else {
+			Logger::info( 'Order confirmed and acknowledged in Ledyer', array( 'order_status' => $order->get_status() ) );
 		}
 	}
 
@@ -149,8 +172,20 @@ class Confirmation {
 	 * @return void
 	 */
 	public static function process_order_status( $ledyer_payment_status, $order, $ledyer_order_id ) {
-		$ack_order = false;
-		switch ( $ledyer_payment_status['status'] ) {
+		$ack_order  = false;
+		$old_status = $order->get_status();
+		$status     = is_array( $ledyer_payment_status ) && isset( $ledyer_payment_status['status'] ) ? $ledyer_payment_status['status'] : '';
+
+		Logger::add_order_context( $order );
+		Logger::info(
+			'Processing order status from Ledyer',
+			array(
+				'ledyer_status' => $status,
+				'order_status'  => $old_status,
+			)
+		);
+
+		switch ( $status ) {
 			case \LedyerPaymentStatus::ORDER_PENDING:
 				if ( ! $order->has_status( array( 'on-hold', 'processing', 'completed' ) ) ) {
 					$note = sprintf(
@@ -199,10 +234,11 @@ class Confirmation {
 						// Set the metadata to indicate the order is still waiting for the ready for capture event.
 						$order->update_meta_data( '_ledyer_waiting_on_ready_for_capture', true );
 						$order->save();
-						Logger::log( "[SCHEDULER]: Order {$order->get_order_number()} is paid but waiting for ready_for_capture event." );
+						Logger::info( 'Order is paid but waiting for the ready_for_capture event' );
 						break;
 					}
 					$order->payment_complete( $ledyer_order_id );
+					Logger::info( 'Payment completed on the order' );
 				}
 				break;
 			case \LedyerPaymentStatus::ORDER_CAPTURED:
@@ -230,24 +266,48 @@ class Confirmation {
 			case \LedyerPaymentStatus::ORDER_CANCELLED:
 				$order->update_status( 'cancelled' );
 				break;
+			case \LedyerPaymentStatus::ORDER_INITIATED:
+				Logger::info( 'Order is initiated in Ledyer but not yet placed, no status change' );
+				break;
+			default:
+				Logger::warning( 'Unhandled payment status from Ledyer', array( 'ledyer_status' => $status ) );
+				break;
+		}
+
+		if ( $order->get_status() !== $old_status ) {
+			Logger::info(
+				'Order status changed',
+				array(
+					'from' => $old_status,
+					'to'   => $order->get_status(),
+				)
+			);
 		}
 
 		// If we need to acknowledge the order, do it now.
 		if ( $ack_order ) {
 			$response = ledyer()->api->acknowledge_order( $ledyer_order_id );
 			if ( is_wp_error( $response ) ) {
-				Logger::log( "[SCHEDULER]: Couldn't acknowledge order $ledyer_order_id" );
+				Logger::error( 'Could not acknowledge the order in Ledyer', array( 'error' => $response->get_error_message() ) );
 				return;
 			}
+			Logger::info( 'Order acknowledged in Ledyer' );
 
 			// If the merchant reference was not already set, set it now.
 			$merchant_reference = $order->get_meta( '_ledyer_merchant_reference', true );
 			if ( empty( $merchant_reference ) ) {
 				$ledyer_update_order = ledyer()->api->update_order_reference( $ledyer_order_id, array( 'reference' => $order->get_order_number() ) );
 				if ( is_wp_error( $ledyer_update_order ) ) {
-					Logger::log( "[SCHEDULER]: Couldn't set merchant reference {$order->get_order_number()}" );
+					Logger::error(
+						'Could not set the merchant reference in Ledyer',
+						array(
+							'reference' => $order->get_order_number(),
+							'error'     => $ledyer_update_order->get_error_message(),
+						)
+					);
 					return;
 				}
+				Logger::info( 'Merchant reference set in Ledyer', array( 'reference' => $order->get_order_number() ) );
 			}
 		}
 	}
