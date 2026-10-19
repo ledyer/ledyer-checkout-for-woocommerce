@@ -111,6 +111,7 @@ abstract class Request {
 		}
 
 		$client = new \WP_Http();
+		$start  = microtime( true );
 
 		$headers = array(
 			'Authorization' => 'Basic ' . base64_encode( $client_credentials['merchant_id'] . ':' . $client_credentials['shared_secret'] ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions
@@ -123,6 +124,12 @@ abstract class Request {
 				'timeout' => 60,
 			)
 		);
+
+		$token_args = array(
+			'headers' => $headers,
+			'method'  => 'POST',
+		);
+		Logger::log_request( 'Get access token', 'POST', $api_auth_base . 'oauth/token', $token_args, $response, microtime( true ) - $start );
 
 		$body = $this->process_response( $response, array( 'grant_type' => 'client_credentials' ), $api_auth_base . 'oauth/token' );
 
@@ -145,7 +152,15 @@ abstract class Request {
 		$url  = $this->get_request_url();
 		$args = $this->get_request_args();
 
+		$start    = microtime( true );
 		$response = wp_remote_request( $url, $args );
+
+		// Add the Ledyer order ID to the log context if it is not already known.
+		$log_context = Logger::get_context();
+		if ( ! empty( $this->arguments['orderId'] ) && empty( $log_context['ledyer_order_id'] ) ) {
+			Logger::set_context( array( 'ledyer_order_id' => $this->arguments['orderId'] ) );
+		}
+		Logger::log_request( $this->log_title, $this->method, $url, $args, $response, microtime( true ) - $start );
 
 		return $this->process_response( $response, $args, $url );
 	}
@@ -204,7 +219,6 @@ abstract class Request {
 
 	/**
 	 * Process response. Return response body or error.
-	 * Log errors.
 	 *
 	 * @param mixed|\WP_Error $response The response from the request.
 	 * @param array           $request_args The arguments sent with the request.
@@ -213,12 +227,6 @@ abstract class Request {
 	 * @return mixed|\WP_Error
 	 */
 	protected function process_response( $response, $request_args, $request_url ) {
-		$code = wp_remote_retrieve_response_code( $response );
-
-		$log = Logger::format_log( '', 'POST', $this->log_title, $request_args, json_decode( wp_remote_retrieve_body( $response ), true ), $code );
-
-		Logger::log( $log );
-
 		if ( is_wp_error( $response ) ) {
 			return $response;
 		}
@@ -235,7 +243,7 @@ abstract class Request {
 					$error_message .= ' ' . $error['message'];
 				}
 			}
-			$return = new \WP_Error( $response_code, $error_message, $data );
+			$return = new \WP_Error( $response_code, trim( $error_message ), $data );
 		} else {
 			$return = json_decode( wp_remote_retrieve_body( $response ), true );
 		}
