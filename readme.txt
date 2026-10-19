@@ -3,7 +3,7 @@ Contributors: ledyerdevelopment
 Tags: woocommerce, ledyer, ecommerce, e-commerce, checkout
 Donate link: https://ledyer.com
 Requires at least: 5.0
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 7.4
 WC requires at least: 5.6.0
 WC tested up to: 11.2.1
