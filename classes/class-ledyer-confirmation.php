@@ -105,13 +105,18 @@ class Confirmation {
 		}
 
 		$ledyer_note           = '';
-		$ledyer_payment_method = $ledyer_order['paymentMethod'] ?? array( 'provider' => '', 'type' => '' );
+		$ledyer_payment_method = $ledyer_order['paymentMethod'] ?? array(
+			'provider' => '',
+			'type'     => '',
+		);
 		$ledyer_payment_status = ledyer()->api->get_payment_status( $payment_id );
 		if ( ! is_wp_error( $ledyer_payment_status ) ) {
 			$ledyer_payment_method = $ledyer_payment_status['paymentMethod'];
 			$ledyer_note           = sanitize_text_field( $ledyer_payment_status['note'] ) ?? '';
 		} else {
-			Logger::error( 'Could not get the payment status from Ledyer', array( 'error' => $ledyer_payment_status->get_error_message() ) );
+			Logger::error( 'Could not get the payment status from Ledyer, aborting the confirmation', array( 'error' => $ledyer_payment_status->get_error_message() ) );
+			$order->save();
+			return;
 		}
 		$ledyer_payment_provider = sanitize_text_field( $ledyer_payment_method['provider'] );
 		$ledyer_payment_type     = sanitize_text_field( $ledyer_payment_method['type'] );
@@ -165,9 +170,9 @@ class Confirmation {
 	/**
 	 * Process the order status based on the Ledyer payment status.
 	 *
-	 * @param array $ledyer_payment_status The Ledyer payment status response.
+	 * @param array     $ledyer_payment_status The Ledyer payment status response.
 	 * @param \WC_Order $order The WooCommerce order object.
-	 * @param string $ledyer_order_id The Ledyer order ID.
+	 * @param string    $ledyer_order_id The Ledyer order ID.
 	 *
 	 * @return void
 	 */
@@ -223,7 +228,6 @@ class Confirmation {
 						$ledyer_order_id,
 						$ledyer_payment_status['note']
 					);
-
 
 					$order->add_order_note( $note );
 					$ack_order = true;
