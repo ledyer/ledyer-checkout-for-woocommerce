@@ -120,14 +120,16 @@ abstract class Request {
 		$response = $client->post(
 			$api_auth_base . 'oauth/token?grant_type=client_credentials',
 			array(
-				'headers' => $headers,
-				'timeout' => 60,
+				'headers'    => $headers,
+				'timeout'    => 60,
+				'user-agent' => $this->get_user_agent(),
 			)
 		);
 
 		$token_args = array(
-			'headers' => $headers,
-			'method'  => 'POST',
+			'headers'    => $headers,
+			'method'     => 'POST',
+			'user-agent' => $this->get_user_agent(),
 		);
 		Logger::log_request( 'Get access token', 'POST', $api_auth_base . 'oauth/token', $token_args, $response, microtime( true ) - $start );
 
@@ -184,9 +186,10 @@ abstract class Request {
 	 */
 	protected function get_request_args() {
 		$request_args = array(
-			'headers' => $this->get_request_headers(),
-			'method'  => $this->method,
-			'timeout' => apply_filters( 'ledyer_request_timeout', 10 ),
+			'headers'    => $this->get_request_headers(),
+			'method'     => $this->method,
+			'timeout'    => apply_filters( 'ledyer_request_timeout', 10 ),
+			'user-agent' => $this->get_user_agent(),
 		);
 
 		if ( 'POST' === $this->method && $this->arguments['data'] ) {
@@ -206,6 +209,26 @@ abstract class Request {
 			'Authorization' => sprintf( 'Bearer %s', $this->token() ),
 			'Content-Type'  => 'application/json',
 		);
+	}
+
+	/**
+	 * Get the user agent sent with every request to Ledyer.
+	 *
+	 * @return string
+	 */
+	protected function get_user_agent() {
+		$user_agent = 'WordPress/' . get_bloginfo( 'version' ) . '; ' . get_bloginfo( 'url' )
+			. ' - WooCommerce: ' . ( defined( 'WC_VERSION' ) ? WC_VERSION : 'unknown' )
+			. ' - LCO: ' . LCO_WC_VERSION
+			. ' - PHP Version: ' . phpversion()
+			. ' - Krokedil';
+
+		/**
+		 * Filters the User-Agent sent with Ledyer Checkout API requests.
+		 *
+		 * @param string $user_agent The user agent string.
+		 */
+		return apply_filters( 'ledyer_checkout_request_user_agent', $user_agent );
 	}
 
 	/**
